@@ -1,0 +1,69 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid"
+                    xmlns:columns="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns"
+                    xmlns:vmCol="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid.Columns;assembly=OpenBudget.Application" >
+
+    <DataTemplate DataType="{x:Type vmCol:PayeeCellViewModel}">
+        <local:TransactionGridCell>
+            <local:TransactionGridCell.NormalTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Value.Name}"/>
+                </DataTemplate>
+            </local:TransactionGridCell.NormalTemplate>
+            <local:TransactionGridCell.EditTemplate>
+                <DataTemplate>
+                    <columns:PayeeColumn 
+                        SearchText="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        ResultsOpen="{Binding ShowResults, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Results="{Binding Results, Mode=OneWay}"/>
+                </DataTemplate>
+            </local:TransactionGridCell.EditTemplate>
+        </local:TransactionGridCell>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vmCol:DateCellViewModel}">
+        <local:TransactionGridCell>
+            <local:TransactionGridCell.NormalTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Value, StringFormat=d}" HorizontalAlignment="Right"/>
+                </DataTemplate>
+            </local:TransactionGridCell.NormalTemplate>
+            <local:TransactionGridCell.EditTemplate>
+                <DataTemplate>
+                    <DatePicker SelectedDate="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
+                </DataTemplate>
+            </local:TransactionGridCell.EditTemplate>
+        </local:TransactionGridCell>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vmCol:DecimalCellViewModel}">
+        <local:TransactionGridCell>
+            <local:TransactionGridCell.NormalTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Value, StringFormat=C}" HorizontalAlignment="Right"/>
+                </DataTemplate>
+            </local:TransactionGridCell.NormalTemplate>
+            <local:TransactionGridCell.EditTemplate>
+                <DataTemplate>
+                    <TextBox Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                </DataTemplate>
+            </local:TransactionGridCell.EditTemplate>
+        </local:TransactionGridCell>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vmCol:StringCellViewModel}">
+        <local:TransactionGridCell>
+            <local:TransactionGridCell.NormalTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Value}" HorizontalAlignment="Right"/>
+                </DataTemplate>
+            </local:TransactionGridCell.NormalTemplate>
+            <local:TransactionGridCell.EditTemplate>
+                <DataTemplate>
+                    <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
+                </DataTemplate>
+            </local:TransactionGridCell.EditTemplate>
+        </local:TransactionGridCell>
+    </DataTemplate>
+</ResourceDictionary>

@@ -1,0 +1,15 @@
+language: csharp
+mono: latest
+dotnet: 2.0.0
+dist: trusty
+sudo: required
+solution: src/OpenBudget.sln
+
+install:
+# sudo cp -R /usr/lib/mono/xbuild/15.0/ExtensionsPath-ToolsVersion/Microsoft.Common.targets/* /usr/lib/mono/xbuild/15.0/Microsoft.Common.targets/
+# sudo cp -R /usr/lib/mono/xbuild/ExtensionsPath/Microsoft/* /usr/lib/mono/xbuild/Microsoft/
+- nuget restore src/OpenBudget.sln
+- nuget install NUnit.Runners -Version 3.7.0 -OutputDirectory testrunner
+script:
+- msbuild /t:restore /t:build /p:Configuration=Linux src/OpenBudget.sln
+- mono ./testrunner/NUnit.ConsoleRunner.3.7.0/tools/nunit3-console.exe ./src/OpenBudget.Model.Tests/bin/Debug/OpenBudget.Model.Tests.dll

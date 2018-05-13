@@ -1,0 +1,43 @@
+﻿<Window x:Class="OpenBudget.Presentation.Windows.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels;assembly=OpenBudget.Application"
+        xmlns:vmTrx="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application"
+        xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
+        mc:Ignorable="d"
+        Title="{Binding Header}" Height="600" Width="885.938">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:MainBudgetViewModel}" x:Shared="False">
+            <local:MainBudgetView IsTabStop="False"/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:WelcomeViewModel}" x:Shared="False">
+            <local:WelcomeView IsTabStop="False"/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:CreateBudgetViewModel}" x:Shared="False">
+            <local:CreateBudgetView IsTabStop="False"/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vmTrx:TransactionGridViewModel}" x:Shared="False">
+            <local:TransactionGridView IsTabStop="False"/>
+        </DataTemplate>
+    </Window.Resources>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Budget" Command="{Binding NewBudgetCommand}" />
+                <MenuItem Header="_Open Budget" Command="{Binding OpenBudgetCommand}" />
+                <MenuItem Header="E_xit" Command="{Binding CloseCommand}" InputGestureText="Alt+F4" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_Force GC" Command="{Binding ForceGCCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <ContentControl Content="{Binding CurrentWorkspace}" />
+
+    </DockPanel>
+</Window>
