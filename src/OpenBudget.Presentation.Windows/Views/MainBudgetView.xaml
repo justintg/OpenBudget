@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="OpenBudget.Presentation.Windows.Views.MainBudgetView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
+             xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels;assembly=OpenBudget.Application"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="{d:DesignData vm:MainBudgetViewModel}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <DockPanel>
+
+            <Button DockPanel.Dock="Bottom" Content="Add Account" Command="{Binding AddAccountCommand}" />
+            <Button DockPanel.Dock="Bottom" Content="Rename Account" Command="{Binding RenameAccountCommand}" />
+            <ListBox ItemsSource="{Binding BudgetModel.Budget.Accounts}" SelectedItem="{Binding SelectedAccount}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text="{Binding Balance, StringFormat=C}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <GridSplitter Width="4" Grid.Column="1" Grid.RowSpan="1" HorizontalAlignment="Stretch"/>
+
+        <ContentControl Content="{Binding CurrentScreen}" Grid.Column="2"/>
+    </Grid>
+</UserControl>

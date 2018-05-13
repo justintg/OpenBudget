@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="OpenBudget.Presentation.Windows.Views.TransactionGridView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
+             mc:Ignorable="d"
+             xmlns:trxGrid="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid"
+             xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application"
+             d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignInstance vm:TransactionGridViewModel}">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/OpenBudget;component/Controls/TransactionGrid/TransactionGridResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <DockPanel>
+        <trxGrid:TransactionGrid TransactionRows="{Binding Rows}">
+            <!--Account="{Binding Account}" CurrentEditingTransaction="{Binding CurrentEditingTransaction, Mode=OneWay}">-->
+        </trxGrid:TransactionGrid>
+    </DockPanel>
+</UserControl>

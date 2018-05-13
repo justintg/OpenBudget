@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="OpenBudget.Presentation.Windows.Views.WelcomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
+             xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels;assembly=OpenBudget.Application"
+             xmlns:model="clr-namespace:OpenBudget.Application.Model;assembly=OpenBudget.Application"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="{d:DesignInstance vm:WelcomeViewModel}">
+    <UserControl.Resources>
+        <DataTemplate DataType="{x:Type model:BudgetStub}">
+            <Button Command="{Binding Path=DataContext.OpenRecentBudgetCommand,RelativeSource={RelativeSource AncestorType=local:WelcomeView}}"
+                            CommandParameter="{Binding}">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{Binding BudgetName}" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding BudgetPath}"/>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+    </UserControl.Resources>
+    <StackPanel Orientation="Vertical">
+        <TextBlock Text="Welcome View" />
+        <ContentControl Content="{Binding LastBudget}">
+            <ContentControl.Resources>
+                <Style TargetType="Button">
+                    <Style.Setters>
+                        <Setter Property="Background" Value="Red" />
+                    </Style.Setters>
+                </Style>
+            </ContentControl.Resources>
+        </ContentControl>
+        <ItemsControl ItemsSource="{Binding RecentBudgets}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <Button Content="New Budget" Command="{Binding NewBudgetCommand}" />
+        <Button Content="Open Budget" Command="{Binding OpenBudgetCommand}" />
+        <Button Content="Go Back" Command="{Binding BackCommand}" />
+    </StackPanel>
+</UserControl>
+
+    

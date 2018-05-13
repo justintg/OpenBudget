@@ -1,0 +1,28 @@
+﻿<Window x:Class="OpenBudget.Presentation.Windows.Views.AddAccountView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels;assembly=OpenBudget.Application"
+        xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance vm:AddAccountViewModel}"
+        Title="Add Account" Height="200" Width="300" WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Bottom">
+            <Button Content="Add Account" Command="{Binding AddAccountCommand}"/>
+            <Button Content="Cancel" Command="{Binding GoBackCommand}"/>
+        </StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Account Name" />
+                <TextBox Text="{Binding Account.Name}" Width="150"/>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>
