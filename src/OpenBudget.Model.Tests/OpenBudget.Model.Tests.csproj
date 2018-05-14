@@ -70,6 +70,7 @@
     <Compile Include="SerializationTests.cs" />
     <Compile Include="TransactionTests.cs" />
     <Compile Include="TestEventStore.cs" />
+    <Compile Include="VectorClockTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

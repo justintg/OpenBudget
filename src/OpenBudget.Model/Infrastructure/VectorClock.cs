@@ -31,6 +31,15 @@ namespace OpenBudget.Model.Infrastructure
         /// <summary>
         /// Initialises a new instance of the <see cref="VectorClock"/> class.
         /// </summary>
+        /// <param name="vector">Initial vector in byte array format</param>
+        public VectorClock(byte[] vector) : this(ConvertBytesToVector(vector), false)
+        {
+
+        }
+
+        /// <summary>
+        /// Initialises a new instance of the <see cref="VectorClock"/> class.
+        /// </summary>
         /// <param name="vector">Initial vector</param>
         /// <param name="copyVector">If the vector should be copied</param>
         private VectorClock(Dictionary<Guid, int> vector, bool copyVector)
@@ -299,6 +308,57 @@ namespace OpenBudget.Model.Infrastructure
         private Dictionary<Guid, int> CopyVector()
         {
             return this.Vector.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        private const int GUID_LENGTH = 16;
+        private const int INT_LENGTH = 4;
+        private const int KEY_VALUE_LENGTH = GUID_LENGTH + INT_LENGTH;
+
+        /// <summary>
+        /// Converts the Vector represented by this VectorClock into a byte array.
+        /// </summary>
+        /// <returns>The vector as a byte array.</returns>
+        public byte[] ToByteArray()
+        {
+            byte[] bytes = new byte[(KEY_VALUE_LENGTH) * this.Vector.Count];
+            int i = 0;
+
+            foreach (var kvp in this.Vector)
+            {
+                byte[] guidBytes = kvp.Key.ToByteArray();
+                byte[] intBytes = BitConverter.GetBytes(kvp.Value);
+                Array.Copy(guidBytes, 0, bytes, i * (KEY_VALUE_LENGTH), GUID_LENGTH);
+                Array.Copy(intBytes, 0, bytes, (i * (KEY_VALUE_LENGTH)) + GUID_LENGTH, INT_LENGTH);
+                i++;
+            }
+
+            return bytes;
+        }
+
+        /// <summary>
+        /// Convert a byte array from <see cref="VectorClock.ToByteArray"/> back into a vector
+        /// dictionary.
+        /// </summary>
+        /// <param name="bytes">The vector in byte[] format.</param>
+        /// <returns>The vector as a <see cref="Dictionary{Guid, string}"/>.</returns>
+        public static Dictionary<Guid, int> ConvertBytesToVector(byte[] bytes)
+        {
+            int count = bytes.Length / (KEY_VALUE_LENGTH);
+            int remainder = bytes.Length % (KEY_VALUE_LENGTH);
+            if (remainder != 0) throw new ArgumentException("Byte array is invalid", nameof(bytes));
+
+            Dictionary<Guid, int> vector = new Dictionary<Guid, int>();
+            byte[] guidBuffer = new byte[GUID_LENGTH];
+
+            for (int i = 0; i < count; i++)
+            {
+                Array.Copy(bytes, i * (KEY_VALUE_LENGTH), guidBuffer, 0, GUID_LENGTH);
+                Guid guid = new Guid(guidBuffer);
+                int value = BitConverter.ToInt32(bytes, (i * (KEY_VALUE_LENGTH)) + GUID_LENGTH);
+                vector.Add(guid, value);
+            }
+
+            return vector;
         }
     }
 }
