@@ -66,7 +66,32 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         public bool IsEditing
         {
             get { return _isEditing; }
-            internal set { _isEditing = value; RaisePropertyChanged(); }
+            internal set
+            {
+                bool wasEditing = _isEditing;
+                _isEditing = value;
+
+                if (_isEditing && !wasEditing)
+                {
+                    OnBeginEdit();
+                }
+
+                if (wasEditing && !_isEditing)
+                {
+                    OnEndEdit();
+                }
+                RaisePropertyChanged();
+            }
+        }
+
+        protected virtual void OnBeginEdit()
+        {
+
+        }
+
+        protected virtual void OnEndEdit()
+        {
+
         }
 
         public virtual void Dispose()
@@ -90,7 +115,13 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             if (e.PropertyName == this.Column.PropertyName && !_settingValue)
             {
                 RaisePropertyChanged(nameof(Value));
+                OnValueChanged();
             }
+        }
+
+        protected virtual void OnValueChanged()
+        {
+
         }
 
         private bool _settingValue = false;

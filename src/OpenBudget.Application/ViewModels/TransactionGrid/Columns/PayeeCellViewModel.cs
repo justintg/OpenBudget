@@ -21,7 +21,33 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             AccountSource = accountSource;
 
             SelectResultItemCommand = new RelayCommand<ResultItemViewModel>(SelectResultItem);
+        }
+
+        protected override void OnBeginEdit()
+        {
+            ResetEditState();
+        }
+
+        protected override void OnEndEdit()
+        {
+            ResetEditState();
+        }
+
+        protected override void OnValueChanged()
+        {
+            RaisePropertyChanged(nameof(DisplayText));
+        }
+
+        private void ResetEditState()
+        {
             _searchText = ConvertToDisplayText(this.Value);
+            RaisePropertyChanged(nameof(SearchText));
+
+            _results = null;
+            RaisePropertyChanged(nameof(Results));
+
+            _showResults = false;
+            RaisePropertyChanged(nameof(ShowResults));
         }
 
         public RelayCommand<ResultItemViewModel> SelectResultItemCommand { get; private set; }

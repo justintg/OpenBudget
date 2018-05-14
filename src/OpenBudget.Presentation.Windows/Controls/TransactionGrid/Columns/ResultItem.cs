@@ -25,7 +25,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         public ResultItem()
         {
-            this.PreviewMouseLeftButtonUp    += ResultItem_PreviewMouseLeftButtonUp;
+            this.PreviewMouseLeftButtonUp += ResultItem_PreviewMouseLeftButtonUp;
         }
 
         private void ResultItem_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
