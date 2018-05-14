@@ -37,29 +37,27 @@
     </Style>
 
     <Style TargetType="{x:Type columns:PayeeColumn}">
-        <Style.Setters>
-            <Setter Property="ResultsBoxTemplate">
-                <Setter.Value>
-                    <DataTemplate>
-                        <Border Background="Blue" Padding="5" CornerRadius="5" Focusable="False">
-                            <StackPanel Background="White">
-                                <ItemsControl x:Name="PART_ResultsItemControl"  Style="{StaticResource ResultItemBox}" />
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="columns:PayeeColumn">
-                        <Grid>
-                            <TextBox Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         x:Name="PART_SearchTextBox"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style.Setters>
+        <Setter Property="ResultsBoxTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Border Background="Blue" Padding="5" CornerRadius="5" Focusable="False">
+                        <StackPanel Background="White">
+                            <ItemsControl x:Name="PART_ResultsItemControl"  Style="{StaticResource ResultItemBox}" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="columns:PayeeColumn">
+                    <TextBox Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                x:Name="PART_SearchTextBox"/>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Focusable" Value="False" />
     </Style>
 
 
@@ -255,7 +253,7 @@
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
                 <DataTrigger.Setters>
-                    <Setter Property="Background" Value="AliceBlue" />
+                    <Setter Property="Background" Value="Red" />
                 </DataTrigger.Setters>
             </DataTrigger>
         </Style.Triggers>

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,7 +33,6 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
         public PayeeColumn()
         {
             this.PreviewKeyDown += PayeeColumn_PreviewKeyDown;
-            //this.GotKeyboardFocus += PayeeColumn_GotKeyboardFocus;
         }
 
         public override void OnApplyTemplate()
@@ -40,10 +40,10 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
             base.OnApplyTemplate();
 
             _searchTextBox = GetTemplateChild("PART_SearchTextBox") as TextBox;
-            _searchTextBox.PreviewKeyDown += SearchTextBox_KeyDown;
-            _searchTextBox.GotKeyboardFocus += _searchTextBox_GotKeyboardFocus;
-            _searchTextBox.LostKeyboardFocus += _searchTextBox_LostKeyboardFocus;
-            _searchTextBox.SelectionChanged += _searchTextBox_SelectionChanged;
+            _searchTextBox.PreviewKeyDown += SearchTextBox_PreviewKeyDown;
+            _searchTextBox.GotKeyboardFocus += SearchTextBox_GotKeyboardFocus;
+            _searchTextBox.PreviewMouseDown += SearchTextBox_PreviewMouseDown;
+            _searchTextBox.LostKeyboardFocus += SearchTextBox_LostKeyboardFocus;
             _popupContent = ResultsBoxTemplate.LoadContent() as FrameworkElement;
             _dropDown = new PopupAdorner(_searchTextBox, _popupContent);
             _resultsItemControl = _popupContent.FindName("PART_ResultsItemControl") as ItemsControl;
@@ -54,31 +54,33 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
             _popupContent.AddHandler(ResultItem.ResultItemSelectedEvent, new RoutedEventHandler(OnResultItemSelected));
             _popupContent.AddHandler(ResultItem.ResultItemClickedEvent, new RoutedEventHandler(OnResultItemClicked));
-            _popupContent.MouseDown += _popupContent_PreviewMouseUp;
+            _popupContent.MouseDown += PopupContent_MouseDown;
         }
 
-        private void _searchTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        private void SearchTextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //Check if the SearchTextBox doesnt have Keyboard focus before a click
+            //If it doesn't we give it focus but stop additional side effects of the click
+            //which allows the focus event to select the text without also placing the cursor
+            if ((!_searchTextBox.IsKeyboardFocusWithin))
+            {
+                _searchTextBox.Focus();
+                e.Handled = true;
+            }
+        }
+
+        private void SearchTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             _searchTextBox.SelectAll();
         }
 
-        private bool _settingSelection = false;
-
-        private void _searchTextBox_SelectionChanged(object sender, RoutedEventArgs e)
+        private void PopupContent_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            /*Dispatcher.Invoke(() =>
-            {
-                _settingSelection = false;
-
-            }, System.Windows.Threading.DispatcherPriority.Background);*/
-        }
-
-        private void _popupContent_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
+            //Stop click events on the popup from bubbling up to the Adorner layer which may cause the control to lose focus
             e.Handled = true;
         }
 
-        private void _searchTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        private void SearchTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             if (ResultsOpen)
             {
@@ -89,7 +91,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
         private void OnResultItemClicked(object sender, RoutedEventArgs e)
         {
             ResultItem item = e.OriginalSource as ResultItem;
-
+            SelectResultItemCommand?.Execute(item.DataContext);
         }
 
         private void OnResultItemSelected(object sender, RoutedEventArgs e)
@@ -139,76 +141,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
             }
         }
 
-        private void PayeeColumn_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
-
-
-
-
-
-        private void ResultsBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            /*if (e.Key == Key.Enter || e.Key == Key.Tab)
-            {
-                if (ResultsOpen)
-                {
-                    var payee = _payeeResultsBox.SelectedItem as Payee;
-                    if (payee == null) return;
-
-                    SelectedPayeeOrAccount = payee;
-                    ResultsOpen = false;
-                    e.Handled = true;
-                }
-            }
-            else if (e.Key == Key.Up)
-            {
-                if (ResultsOpen)
-                {
-                    if (_payeeResultsBox.SelectedIndex == 0)
-                    {
-                        _searchTextBox.Focus();
-                        e.Handled = true;
-                    }
-                }
-            }*/
-        }
-
-        private void ResultsBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            /*var listItem = (e.OriginalSource as DependencyObject)?.FindParent<ListBoxItem>();
-            if (listItem != null)
-            {
-                SelectedPayeeOrAccount = _payeeResultsBox.SelectedItem as Payee;
-                ResultsOpen = false;
-                e.Handled = true;
-            }*/
-        }
-
-        void MoveToNextUIElement()
-        {
-            // Creating a FocusNavigationDirection object and setting it to a
-            // local field that contains the direction selected.
-            FocusNavigationDirection focusDirection = FocusNavigationDirection.Next;
-
-            // MoveFocus takes a TraveralReqest as its argument.
-            TraversalRequest request = new TraversalRequest(focusDirection);
-
-            // Gets the element with keyboard focus.
-            UIElement elementWithFocus = Keyboard.FocusedElement as UIElement;
-
-            // Change keyboard focus.
-            if (elementWithFocus != null)
-            {
-                if (elementWithFocus.MoveFocus(request))
-                {
-
-                }
-            }
-        }
-
-        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void SearchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Down)
             {
@@ -236,11 +169,12 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
                     }
                 }
             }
-            else if (e.Key == Key.Tab)
+            else if (e.Key == Key.Tab || e.Key == Key.Enter)
             {
                 if (ResultsOpen)
                 {
-
+                    SelectResultItemCommand?.Execute(SelectedResultItem.DataContext);
+                    if (e.Key == Key.Enter) e.Handled = true;
                 }
             }
         }
@@ -251,6 +185,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
             {
                 var categoryContent = _resultsItemControl.ItemContainerGenerator.ContainerFromItem(category) as DependencyObject;
                 var categoryItemControl = categoryContent.GetChildOfType<ItemsControl>();
+                if (categoryItemControl == null) continue;
                 foreach (var item in category.Items)
                 {
                     var itemContainer = categoryItemControl.ItemContainerGenerator.ContainerFromItem(item);
@@ -287,15 +222,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
             if ((bool)e.NewValue)
             {
                 payeeColumn._dropDown.Show();
-                payeeColumn.Dispatcher.Invoke(() =>
-                {
-                    var items = payeeColumn.GetResultItems().ToList();
-                    var firstItem = items.FirstOrDefault();
-                    if (firstItem != null)
-                    {
-                        firstItem.IsSelected = true;
-                    }
-                }, System.Windows.Threading.DispatcherPriority.Background);
+                payeeColumn.SelectFirstResultItem();
             }
             else
             {
@@ -321,8 +248,32 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         // Using a DependencyProperty as the backing store for Results.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ResultsProperty =
-            DependencyProperty.Register("Results", typeof(ObservableCollection<ResultCategoryViewModel>), typeof(PayeeColumn), new PropertyMetadata(null));
+            DependencyProperty.Register("Results", typeof(ObservableCollection<ResultCategoryViewModel>), typeof(PayeeColumn), new PropertyMetadata(null, OnResultsChanged));
 
+        private static void OnResultsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var payeeColumn = d as PayeeColumn;
+            if (payeeColumn.ResultsOpen)
+            {
+                payeeColumn.SelectFirstResultItem();
+            }
+        }
 
+        private void SelectFirstResultItem()
+        {
+            if (Results == null) return;
+            Task.Run(() =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    var items = GetResultItems().ToList();
+                    var firstItem = items.FirstOrDefault();
+                    if (firstItem != null)
+                    {
+                        firstItem.IsSelected = true;
+                    }
+                }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+            });
+        }
     }
 }
