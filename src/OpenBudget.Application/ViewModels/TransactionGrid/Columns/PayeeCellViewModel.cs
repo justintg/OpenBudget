@@ -72,7 +72,11 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         private string ConvertToDisplayText(EntityBase entity)
         {
-            if (entity is Account)
+            if (entity == null)
+            {
+                return null;
+            }
+            else if (entity is Account)
             {
                 return "Transfer: " + (entity as Account).Name;
             }

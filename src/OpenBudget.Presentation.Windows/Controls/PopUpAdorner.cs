@@ -46,11 +46,11 @@ namespace OpenBudget.Presentation.Windows.Controls
             }
             else
             {
-                yPos = AdornedElement.DesiredSize.Height;
+                var adornedElement = AdornedElement as FrameworkElement;
+                yPos = adornedElement.ActualHeight;
             }
-            // -(_presenter.DesiredSize.Height);
             _presenter.Arrange(new Rect(0, yPos, finalSize.Width, finalSize.Height));
-            return _presenter.RenderSize;
+            return finalSize;
         }
 
         private bool ShouldOpenOnTop()
