@@ -13,10 +13,11 @@
             </local:TransactionGridCell.NormalTemplate>
             <local:TransactionGridCell.EditTemplate>
                 <DataTemplate>
-                    <columns:PayeeColumn 
+                    <columns:PayeeColumn
                         SearchText="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         ResultsOpen="{Binding ShowResults, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Results="{Binding Results, Mode=OneWay}"/>
+                        Results="{Binding Results, Mode=OneWay}"
+                        SelectResultItemCommand="{Binding SelectResultItemCommand}"/>
                 </DataTemplate>
             </local:TransactionGridCell.EditTemplate>
         </local:TransactionGridCell>

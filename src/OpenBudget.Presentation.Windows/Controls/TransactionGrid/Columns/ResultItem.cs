@@ -25,11 +25,12 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         public ResultItem()
         {
-            this.PreviewMouseLeftButtonDown += ResultItem_PreviewMouseLeftButtonDown;
+            this.PreviewMouseLeftButtonUp    += ResultItem_PreviewMouseLeftButtonUp;
         }
 
-        private void ResultItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void ResultItem_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             IsSelected = true;
             RaiseResultItemClicked();
         }
