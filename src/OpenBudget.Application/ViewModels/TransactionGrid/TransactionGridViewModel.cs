@@ -30,8 +30,9 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             ObservableCollection<TransactionGridColumnViewModel> columns = new ObservableCollection<TransactionGridColumnViewModel>();
             columns.Add(new DateColumnViewModel(t => t.TransactionDate, (t, val) => { t.TransactionDate = val; }, "Date", nameof(Transaction.TransactionDate), 100));
-            columns.Add(new PayeeColumnViewModel(t => t.PayeeOrAccount, (t, val) => { t.PayeeOrAccount = val; }, "Payee", nameof(Transaction.Payee), 300, _account, _model.Budget.Payees, _model.Budget.Accounts));
-            columns.Add(new StringColumnViewModel(t => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(Transaction.Memo), 500));
+            columns.Add(new PayeeColumnViewModel(t => t.PayeeOrAccount, (t, val) => { t.PayeeOrAccount = val; }, "Payee", nameof(Transaction.Payee), 200, _account, _model.Budget.Payees, _model.Budget.Accounts));
+            columns.Add(new CategoryColumnViewModel(t => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(Transaction.Category), 200, _model.Budget.BudgetCategories, _model.Budget.IncomeCategories));
+            columns.Add(new StringColumnViewModel(t => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(Transaction.Memo), 300));
             columns.Add(new DecimalColumnViewModel(t =>
             {
                 if (t.Amount > 0) return t.Amount;

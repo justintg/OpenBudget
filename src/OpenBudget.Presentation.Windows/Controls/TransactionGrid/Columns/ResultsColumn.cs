@@ -18,43 +18,47 @@ using System.Windows.Media;
 
 namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 {
-    public class PayeeColumn : Control
+    public class ResultsColumn : Control
     {
-        static PayeeColumn()
+        static ResultsColumn()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(PayeeColumn), new FrameworkPropertyMetadata(typeof(PayeeColumn)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(ResultsColumn), new FrameworkPropertyMetadata(typeof(ResultsColumn)));
         }
 
         private TextBox _searchTextBox;
         private ItemsControl _resultsItemControl;
         private PopupAdorner _dropDown;
-        private FrameworkElement _popupContent;
+        private FrameworkElement _dropDownContent;
 
-        public PayeeColumn()
+        public ResultsColumn()
         {
-            this.PreviewKeyDown += PayeeColumn_PreviewKeyDown;
         }
 
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
+            InitializeSearchTextBox();
+            InitializeDropDown();
+        }
 
+        private void InitializeSearchTextBox()
+        {
             _searchTextBox = GetTemplateChild("PART_SearchTextBox") as TextBox;
             _searchTextBox.PreviewKeyDown += SearchTextBox_PreviewKeyDown;
             _searchTextBox.GotKeyboardFocus += SearchTextBox_GotKeyboardFocus;
             _searchTextBox.PreviewMouseDown += SearchTextBox_PreviewMouseDown;
             _searchTextBox.LostKeyboardFocus += SearchTextBox_LostKeyboardFocus;
-            _popupContent = ResultsBoxTemplate.LoadContent() as FrameworkElement;
-            _dropDown = new PopupAdorner(_searchTextBox, _popupContent);
-            _resultsItemControl = _popupContent.FindName("PART_ResultsItemControl") as ItemsControl;
-            _resultsItemControl.SetBinding(ItemsControl.DataContextProperty, new Binding("DataContext") { Source = this });
+        }
 
-            /*FocusManager.SetIsFocusScope(this, true);
-            FocusManager.SetFocusedElement(this, _searchTextBox);*/
-
-            _popupContent.AddHandler(ResultItem.ResultItemSelectedEvent, new RoutedEventHandler(OnResultItemSelected));
-            _popupContent.AddHandler(ResultItem.ResultItemClickedEvent, new RoutedEventHandler(OnResultItemClicked));
-            _popupContent.MouseDown += PopupContent_MouseDown;
+        private void InitializeDropDown()
+        {
+            _dropDownContent = ResultsBoxTemplate.LoadContent() as FrameworkElement;
+            _dropDown = new PopupAdorner(_searchTextBox, _dropDownContent);
+            _resultsItemControl = _dropDownContent.FindName("PART_ResultsItemControl") as ItemsControl;
+            _dropDownContent.SetBinding(FrameworkElement.DataContextProperty, new Binding("DataContext") { Source = this });
+            _dropDownContent.AddHandler(ResultItem.ResultItemSelectedEvent, new RoutedEventHandler(OnResultItemSelected));
+            _dropDownContent.AddHandler(ResultItem.ResultItemClickedEvent, new RoutedEventHandler(OnResultItemClicked));
+            _dropDownContent.MouseDown += PopupContent_MouseDown;
         }
 
         private void SearchTextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -108,7 +112,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         // Using a DependencyProperty as the backing store for SelectedResultItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedResultItemProperty =
-            DependencyProperty.Register("SelectedResultItem", typeof(ResultItem), typeof(PayeeColumn), new PropertyMetadata(null, OnSelectedResultItemChanged));
+            DependencyProperty.Register("SelectedResultItem", typeof(ResultItem), typeof(ResultsColumn), new PropertyMetadata(null, OnSelectedResultItemChanged));
 
         private static void OnSelectedResultItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -125,11 +129,10 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         // Using a DependencyProperty as the backing store for ResultsBoxTemplate.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ResultsBoxTemplateProperty =
-            DependencyProperty.Register("ResultsBoxTemplate", typeof(DataTemplate), typeof(PayeeColumn), new PropertyMetadata(null));
+            DependencyProperty.Register("ResultsBoxTemplate", typeof(DataTemplate), typeof(ResultsColumn), new PropertyMetadata(null));
 
 
-
-        private void PayeeColumn_PreviewKeyDown(object sender, KeyEventArgs e)
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
@@ -139,6 +142,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
                     e.Handled = true;
                 }
             }
+            base.OnPreviewKeyDown(e);
         }
 
         private void SearchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -204,7 +208,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         // Using a DependencyProperty as the backing store for SearchText.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SearchTextProperty =
-            DependencyProperty.Register("SearchText", typeof(string), typeof(PayeeColumn), new PropertyMetadata(null));
+            DependencyProperty.Register("SearchText", typeof(string), typeof(ResultsColumn), new PropertyMetadata(null));
 
         public bool ResultsOpen
         {
@@ -214,11 +218,11 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         // Using a DependencyProperty as the backing store for ResultsOpen.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ResultsOpenProperty =
-            DependencyProperty.Register("ResultsOpen", typeof(bool), typeof(PayeeColumn), new PropertyMetadata(false, OnResultsOpenChanged));
+            DependencyProperty.Register("ResultsOpen", typeof(bool), typeof(ResultsColumn), new PropertyMetadata(false, OnResultsOpenChanged));
 
         private static void OnResultsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var payeeColumn = d as PayeeColumn;
+            var payeeColumn = d as ResultsColumn;
             if ((bool)e.NewValue)
             {
                 payeeColumn._dropDown.Show();
@@ -238,7 +242,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         // Using a DependencyProperty as the backing store for SelectResultItemCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectResultItemCommandProperty =
-            DependencyProperty.Register("SelectResultItemCommand", typeof(ICommand), typeof(PayeeColumn), new PropertyMetadata(null));
+            DependencyProperty.Register("SelectResultItemCommand", typeof(ICommand), typeof(ResultsColumn), new PropertyMetadata(null));
 
         public ObservableCollection<ResultCategoryViewModel> Results
         {
@@ -248,11 +252,11 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
 
         // Using a DependencyProperty as the backing store for Results.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ResultsProperty =
-            DependencyProperty.Register("Results", typeof(ObservableCollection<ResultCategoryViewModel>), typeof(PayeeColumn), new PropertyMetadata(null, OnResultsChanged));
+            DependencyProperty.Register("Results", typeof(ObservableCollection<ResultCategoryViewModel>), typeof(ResultsColumn), new PropertyMetadata(null, OnResultsChanged));
 
         private static void OnResultsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var payeeColumn = d as PayeeColumn;
+            var payeeColumn = d as ResultsColumn;
             if (payeeColumn.ResultsOpen)
             {
                 payeeColumn.SelectFirstResultItem();

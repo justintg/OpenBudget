@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 {
-    public class PayeeCellViewModel : TransactionGridCellViewModel<EntityBase>
+    public class PayeeCellViewModel : ResultsCellViewModel
     {
         public ObservableCollection<Payee> PayeeSource { get; private set; }
         public ObservableCollection<Account> AccountSource { get; private set; }
@@ -19,71 +19,6 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             CurrentAccount = currentAccount;
             PayeeSource = payeeSource;
             AccountSource = accountSource;
-
-            SelectResultItemCommand = new RelayCommand<ResultItemViewModel>(SelectResultItem);
-        }
-
-        protected override void OnBeginEdit()
-        {
-            ResetEditState();
-        }
-
-        protected override void OnEndEdit()
-        {
-            ResetEditState();
-        }
-
-        protected override void OnValueChanged()
-        {
-            RaisePropertyChanged(nameof(DisplayText));
-        }
-
-        private void ResetEditState()
-        {
-            _searchText = ConvertToDisplayText(this.Value);
-            RaisePropertyChanged(nameof(SearchText));
-
-            _results = null;
-            RaisePropertyChanged(nameof(Results));
-
-            _showResults = false;
-            RaisePropertyChanged(nameof(ShowResults));
-        }
-
-        public RelayCommand<ResultItemViewModel> SelectResultItemCommand { get; private set; }
-
-        private void SelectResultItem(ResultItemViewModel item)
-        {
-            try
-            {
-                _forceSetItem = true;
-                SearchText = item.DisplayText;
-                ShowResults = false;
-                Value = item.ReferencedEntity;
-                Results = null;
-            }
-            finally
-            {
-                _forceSetItem = false;
-            }
-        }
-
-        private bool _forceSetItem = false;
-
-        private void FilterResultsAndSetPayee()
-        {
-            if (_forceSetItem) return;
-
-            var filteredAccounts = AccountSource.Where(a => a.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
-            var filteredPayees = PayeeSource.Where(p => p.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
-
-            Results = new ObservableCollection<ResultCategoryViewModel>(ConvertToResultCategories(filteredAccounts, filteredPayees));
-            if (Results.Count > 0)
-                ShowResults = true;
-            else
-                ShowResults = false;
-
-            Value = new Payee() { Name = SearchText };
         }
 
         private IEnumerable<ResultCategoryViewModel> ConvertToResultCategories(List<Account> accountResults, List<Payee> payeeResults)
@@ -96,54 +31,37 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
                 yield return new ResultCategoryViewModel("Payee", payeeResults.Select(p => new ResultItemViewModel(ConvertToDisplayText(p), p, ResultItemType.Payee)));
         }
 
-        private string ConvertToDisplayText(EntityBase entity)
+        protected override string ConvertToDisplayText(EntityBase value)
         {
-            if (entity == null)
+            if (value == null)
             {
                 return null;
             }
-            else if (entity is Account)
+            else if (value is Account a)
             {
-                return "Transfer: " + (entity as Account).Name;
+                return "Transfer: " + a.Name;
             }
-            else if (entity is Payee)
+            else if (value is Payee p)
             {
-                return (entity as Payee).Name;
+                return p.Name;
             }
 
             return "ERROR";
         }
 
-        public string DisplayText
+        protected override ObservableCollection<ResultCategoryViewModel> FilterResults()
         {
-            get
-            {
-                return ConvertToDisplayText(this.Value);
-            }
+            var filteredAccounts = AccountSource.Where(a => a.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
+            var filteredPayees = PayeeSource.Where(p => p.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
+
+            return new ObservableCollection<ResultCategoryViewModel>(ConvertToResultCategories(filteredAccounts, filteredPayees));
+
         }
 
-        private string _searchText;
-
-        public string SearchText
+        protected override EntityBase SearchTextSetValue(out bool shouldSetValue)
         {
-            get { return _searchText; }
-            set { _searchText = value; RaisePropertyChanged(); FilterResultsAndSetPayee(); }
-        }
-
-        private bool _showResults;
-
-        public bool ShowResults
-        {
-            get { return _showResults; }
-            set { _showResults = value; RaisePropertyChanged(); }
-        }
-
-        private ObservableCollection<ResultCategoryViewModel> _results;
-
-        public ObservableCollection<ResultCategoryViewModel> Results
-        {
-            get { return _results; }
-            set { _results = value; RaisePropertyChanged(); }
+            shouldSetValue = true;
+            return new Payee() { Name = SearchText };
         }
     }
 }

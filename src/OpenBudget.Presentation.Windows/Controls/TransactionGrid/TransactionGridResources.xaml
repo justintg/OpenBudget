@@ -4,16 +4,16 @@
                     xmlns:columns="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns"
                     xmlns:vmCol="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid.Columns;assembly=OpenBudget.Application" >
 
-    <DataTemplate DataType="{x:Type vmCol:PayeeCellViewModel}">
+    <DataTemplate DataType="{x:Type vmCol:ResultsCellViewModel}">
         <local:TransactionGridCell>
             <local:TransactionGridCell.NormalTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Value.Name}"/>
+                    <TextBlock Text="{Binding DisplayText}"/>
                 </DataTemplate>
             </local:TransactionGridCell.NormalTemplate>
             <local:TransactionGridCell.EditTemplate>
                 <DataTemplate>
-                    <columns:PayeeColumn
+                    <columns:ResultsColumn
                         SearchText="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         ResultsOpen="{Binding ShowResults, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Results="{Binding Results, Mode=OneWay}"

@@ -464,6 +464,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected void SetEntityReference<T>(T value, [CallerMemberName]string property = null) where T : EntityBase
         {
+            if (value == null)
+            {
+                SetProperty<EntityReference>(null, property);
+                return;
+            }
+
             if (this.IsAttached && value.IsAttached && (_model != value.Model))
                 throw new InvalidOperationException("You cannot set an entity reference to an Entity attached to a different model");
 
