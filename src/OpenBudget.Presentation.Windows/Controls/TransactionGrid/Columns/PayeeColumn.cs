@@ -262,18 +262,16 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
         private void SelectFirstResultItem()
         {
             if (Results == null) return;
-            Task.Run(() =>
+
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, (Action)(() =>
             {
-                Dispatcher.Invoke(() =>
+                var items = GetResultItems().ToList();
+                var firstItem = items.FirstOrDefault();
+                if (firstItem != null)
                 {
-                    var items = GetResultItems().ToList();
-                    var firstItem = items.FirstOrDefault();
-                    if (firstItem != null)
-                    {
-                        firstItem.IsSelected = true;
-                    }
-                }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-            });
+                    firstItem.IsSelected = true;
+                }
+            }));
         }
     }
 }
