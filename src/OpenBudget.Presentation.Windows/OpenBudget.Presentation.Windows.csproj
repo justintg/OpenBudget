@@ -100,7 +100,7 @@
     <Compile Include="Controls\TransactionGrid\TransactionGridCell.cs" />
     <Compile Include="Controls\TransactionGrid\TransactionGridRow.cs" />
     <Compile Include="Controls\TransactionGrid\ColumnProxy.cs" />
-    <Compile Include="Controls\TransactionGrid\Columns\PayeeColumn.cs" />
+    <Compile Include="Controls\TransactionGrid\Columns\ResultsColumn.cs" />
     <Compile Include="Controls\TransactionGrid\TransactionGrid.cs" />
     <Compile Include="Converters\BooleanConverter.cs" />
     <Compile Include="Services\WindowsBudgetLoader.cs" />

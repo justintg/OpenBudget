@@ -36,7 +36,7 @@
         <Setter Property="Focusable" Value="False" />
     </Style>
 
-    <Style TargetType="{x:Type columns:PayeeColumn}">
+    <Style TargetType="{x:Type columns:ResultsColumn}">
         <Setter Property="ResultsBoxTemplate">
             <Setter.Value>
                 <DataTemplate>
@@ -50,7 +50,7 @@
         </Setter>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="columns:PayeeColumn">
+                <ControlTemplate TargetType="columns:ResultsColumn">
                     <TextBox Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 x:Name="PART_SearchTextBox"/>
 
