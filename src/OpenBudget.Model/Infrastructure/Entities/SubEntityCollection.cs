@@ -22,6 +22,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
         internal SubEntityCollection(EntityBase parent, Func<T> itemInitializer)
         {
             _itemIntializer = itemInitializer;
+            _collection.CollectionChanged += (sender, e) =>
+            {
+                RaiseCollectionChanged(e);
+            };
         }
 
         private Dictionary<string, T> _identityMap = new Dictionary<string, T>();
@@ -33,10 +37,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public int Count => _collection.Count;
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            add { _collection.CollectionChanged += value; }
-            remove { _collection.CollectionChanged -= value; }
+            CollectionChanged?.Invoke(this, e);
         }
 
         public T Create()
