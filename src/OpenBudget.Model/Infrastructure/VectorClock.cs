@@ -34,7 +34,7 @@ namespace OpenBudget.Model.Infrastructure
         /// <param name="vector">Initial vector in byte array format</param>
         public VectorClock(byte[] vector) : this(ConvertBytesToVector(vector), false)
         {
-
+            this.Timestamp = GetDate(vector);
         }
 
         /// <summary>
@@ -313,6 +313,7 @@ namespace OpenBudget.Model.Infrastructure
         private const int GUID_LENGTH = 16;
         private const int INT_LENGTH = 4;
         private const int KEY_VALUE_LENGTH = GUID_LENGTH + INT_LENGTH;
+        private const int DATETIME_LENGTH = 8;
 
         /// <summary>
         /// Converts the Vector represented by this VectorClock into a byte array.
@@ -320,19 +321,26 @@ namespace OpenBudget.Model.Infrastructure
         /// <returns>The vector as a byte array.</returns>
         public byte[] ToByteArray()
         {
-            byte[] bytes = new byte[(KEY_VALUE_LENGTH) * this.Vector.Count];
-            int i = 0;
-
+            byte[] bytes = new byte[DATETIME_LENGTH + (KEY_VALUE_LENGTH) * this.Vector.Count];
+            byte[] dateBytes = BitConverter.GetBytes(this.Timestamp.Ticks);
+            Array.Copy(dateBytes, bytes, DATETIME_LENGTH);
+            int i = DATETIME_LENGTH;
             foreach (var kvp in this.Vector)
             {
                 byte[] guidBytes = kvp.Key.ToByteArray();
                 byte[] intBytes = BitConverter.GetBytes(kvp.Value);
-                Array.Copy(guidBytes, 0, bytes, i * (KEY_VALUE_LENGTH), GUID_LENGTH);
-                Array.Copy(intBytes, 0, bytes, (i * (KEY_VALUE_LENGTH)) + GUID_LENGTH, INT_LENGTH);
-                i++;
+                Array.Copy(guidBytes, 0, bytes, i, GUID_LENGTH);
+                Array.Copy(intBytes, 0, bytes, i + GUID_LENGTH, INT_LENGTH);
+                i += KEY_VALUE_LENGTH;
             }
 
             return bytes;
+        }
+
+        private DateTime GetDate(byte[] vector)
+        {
+            long ticks = BitConverter.ToInt64(vector, 0);
+            return new DateTime(ticks, DateTimeKind.Utc);
         }
 
         /// <summary>
@@ -343,18 +351,18 @@ namespace OpenBudget.Model.Infrastructure
         /// <returns>The vector as a <see cref="Dictionary{Guid, string}"/>.</returns>
         public static Dictionary<Guid, int> ConvertBytesToVector(byte[] bytes)
         {
-            int count = bytes.Length / (KEY_VALUE_LENGTH);
-            int remainder = bytes.Length % (KEY_VALUE_LENGTH);
+            int count = (bytes.Length - DATETIME_LENGTH) / (KEY_VALUE_LENGTH);
+            int remainder = (bytes.Length - DATETIME_LENGTH) % (KEY_VALUE_LENGTH);
             if (remainder != 0) throw new ArgumentException("Byte array is invalid", nameof(bytes));
 
             Dictionary<Guid, int> vector = new Dictionary<Guid, int>();
             byte[] guidBuffer = new byte[GUID_LENGTH];
 
-            for (int i = 0; i < count; i++)
+            for (int i = DATETIME_LENGTH; i < bytes.Length; i += KEY_VALUE_LENGTH)
             {
-                Array.Copy(bytes, i * (KEY_VALUE_LENGTH), guidBuffer, 0, GUID_LENGTH);
+                Array.Copy(bytes, i, guidBuffer, 0, GUID_LENGTH);
                 Guid guid = new Guid(guidBuffer);
-                int value = BitConverter.ToInt32(bytes, (i * (KEY_VALUE_LENGTH)) + GUID_LENGTH);
+                int value = BitConverter.ToInt32(bytes, i + GUID_LENGTH);
                 vector.Add(guid, value);
             }
 

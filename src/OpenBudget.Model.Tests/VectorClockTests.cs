@@ -27,6 +27,7 @@ namespace OpenBudget.Model.Tests
 
             var newClock = new VectorClock(bytes);
             Assert.That(clock.Count, Is.EqualTo(newClock.Count));
+            Assert.That(clock.Timestamp, Is.EqualTo(newClock.Timestamp));
             foreach(var kvp in clock)
             {
                 Assert.That(newClock.ContainsKey(kvp.Key), Is.True);
