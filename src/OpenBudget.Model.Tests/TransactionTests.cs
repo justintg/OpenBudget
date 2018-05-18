@@ -48,6 +48,74 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void SetCategoryMakesSplitTransacationNormal()
+        {
+            Account Account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction();
+            transaction.MakeSplitTransaction();
+            Account.Transactions.Add(transaction);
+
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 100;
+
+            TestBudget.BudgetModel.SaveChanges();
+            Assert.That(transaction.TransactionType, Is.EqualTo(TransactionTypes.SplitTransaction));
+            Assert.That(transaction.SubTransactions.Count, Is.EqualTo(1));
+
+            var category = TestBudget.Budget.IncomeCategories.GetIncomeCategory(DateTime.Today);
+            transaction.Category = category;
+
+            TestBudget.BudgetModel.SaveChanges();
+            Assert.That(transaction.TransactionType, Is.EqualTo(TransactionTypes.Normal));
+            Assert.That(transaction.SubTransactions.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CanCancelMakingTransactionSplit()
+        {
+            Account Account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction();
+            Account.Transactions.Add(transaction);
+            transaction.Amount = 300;
+            TestBudget.BudgetModel.SaveChanges();
+            Assert.That(transaction.TransactionType, Is.EqualTo(TransactionTypes.Normal));
+
+            transaction.MakeSplitTransaction();
+
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 100;
+
+            var subTransaction2 = transaction.SubTransactions.Create();
+            subTransaction2.Amount = 200;
+
+            transaction.CancelCurrentChanges();
+            Assert.That(transaction.TransactionType, Is.EqualTo(TransactionTypes.Normal));
+            Assert.That(transaction.SubTransactions.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Cancel_Changes_On_Transaction_Also_Cancels_Changes_On_SubTransactions()
+        {
+            Account Account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction();
+            Account.Transactions.Add(transaction);
+            transaction.Amount = 100;
+
+            transaction.MakeSplitTransaction();
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 100;
+            TestBudget.BudgetModel.SaveChanges();
+
+            int eventCount = TestBudget.TestEvents.Count;
+            subTransaction.Amount = 200;
+            transaction.CancelCurrentChanges();
+            TestBudget.BudgetModel.SaveChanges();
+
+            Assert.That(TestBudget.TestEvents.Count, Is.EqualTo(eventCount));
+            Assert.That(subTransaction.Amount, Is.EqualTo(100));
+        }
+
+        [Test]
         public void CannotCreateSubTransactionOnNormalTransaction()
         {
             Transaction transaction = new Transaction();

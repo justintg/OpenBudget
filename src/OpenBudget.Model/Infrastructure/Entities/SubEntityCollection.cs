@@ -14,9 +14,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
     public interface ISubEntityCollection : IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent>
     {
         IEnumerable<ModelEvent> GetChanges();
+        void CancelCurrentChanges();
     }
 
-    public class SubEntityCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged,  ISubEntityCollection where T : EntityBase
+    public class SubEntityCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, ISubEntityCollection where T : EntityBase
     {
         internal SubEntityCollection(EntityBase parent, Func<T> itemInitializer)
         {
@@ -25,6 +26,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private Dictionary<string, T> _identityMap = new Dictionary<string, T>();
         private ObservableCollection<T> _collection = new ObservableCollection<T>();
+        private List<T> _pendingAdds = new List<T>();
         private Func<T> _itemIntializer;
 
         public T this[int index] => _collection[index];
@@ -42,7 +44,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var entity = _itemIntializer();
             _identityMap.Add(entity.EntityID, entity);
             _collection.Add(entity);
+            _pendingAdds.Add(entity);
             return entity;
+        }
+
+        internal void Clear()
+        {
+            _identityMap.Clear();
+            _collection.Clear();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_collection).GetEnumerator();
@@ -58,6 +67,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     yield return change;
                 }
             }
+
+            //At this point we assume changes are commited and clear pending changes
+            _pendingAdds.Clear();
         }
 
         public virtual T GetEntity(string entityID)
@@ -100,6 +112,22 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             T entity = this.GetEntity(message.EntityID);
             entity.ReplayEvents(message.Yield());
+        }
+
+        public void CancelCurrentChanges()
+        {
+            foreach (var pendingAdd in _pendingAdds)
+            {
+                _collection.Remove(pendingAdd);
+                _identityMap.Remove(pendingAdd.EntityID);
+            }
+
+            _pendingAdds.Clear();
+
+            foreach (var subEntity in _collection)
+            {
+                subEntity.CancelCurrentChanges();
+            }
         }
     }
 }
