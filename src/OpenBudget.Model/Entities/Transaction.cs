@@ -156,6 +156,11 @@ namespace OpenBudget.Model.Entities
                 SetEntityReference(value);
                 RaisePropertyChanged(nameof(IncomeCategory));
                 RaisePropertyChanged(nameof(TransactionCategory));
+
+                if (this.TransactionType == TransactionTypes.SplitTransaction)
+                {
+                    this.MakeNormalTransaction();
+                }
             }
         }
 
@@ -175,15 +180,35 @@ namespace OpenBudget.Model.Entities
             TransactionType = TransactionTypes.Transfer;
         }
 
-        public void MakeNormalTransaction()
+        private void MakeNormalTransaction()
         {
             if (this.TransactionType == TransactionTypes.Normal)
                 return; // Throw exception
+
+            if (SubTransactions.Count > 0)
+            {
+                SubTransactions.Clear();
+            }
+
+            this.TransactionType = TransactionTypes.Normal;
         }
 
         public void MakeSplitTransaction()
         {
             TransactionType = TransactionTypes.SplitTransaction;
+        }
+
+        protected override void OnReplayChange(string field, object previousValue, FieldChange change)
+        {
+            if (field == nameof(TransactionType) && previousValue != null)
+            {
+                TransactionTypes before = (TransactionTypes)previousValue;
+                TransactionTypes after = (TransactionTypes)change.NewValue;
+                if (before == TransactionTypes.SplitTransaction && after != before)
+                {
+                    if (SubTransactions.Count > 0) SubTransactions.Clear();
+                }
+            }
         }
 
         internal override void BeforeSaveChanges()

@@ -361,17 +361,26 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 foreach (var change in evt.Changes)
                 {
+                    object previousValue = null;
+                    _entityData.TryGetValue(change.Key, out previousValue);
+
                     _entityData[change.Key] = change.Value.NewValue;
                     SerializedProperty serializedProperty = null;
                     if (_serializedProperties.TryGetValue(change.Key, out serializedProperty))
                     {
                         serializedProperty.ForceRefresh();
                     }
+                    OnReplayChange(change.Key, previousValue, change.Value);
                 }
             }
 
             foreach (var prop in changedProperties)
                 RaisePropertyChanged(prop);
+        }
+
+        protected virtual void OnReplayChange(string field, object previousValue, FieldChange change)
+        {
+
         }
 
         internal virtual void HandleSubEntityEvent(FieldChangeEvent @event)
@@ -398,6 +407,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 _entityData[change.Key] = change.Value.PreviousValue;
             }
             notifyAllPropertiesChanged();
+
+            foreach (var subEntity in _subEntities)
+            {
+                subEntity.Value.CancelCurrentChanges();
+            }
 
             CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
         }
@@ -444,7 +458,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             if (reference == null)
                 return null;
 
-            if (reference.IsReferenceResolved)
+            if (reference.IsReferenceResolved(_model))
             {
                 if (reference.ReferencedEntity is T)
                     return (T)reference.ReferencedEntity;

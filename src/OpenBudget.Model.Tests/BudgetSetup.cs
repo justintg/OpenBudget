@@ -17,6 +17,12 @@ namespace OpenBudget.Model.Tests
         public Guid DeviceID;
         public Budget Budget;
         public List<ModelEvent> TestEvents;
+
+        public void ReloadBudget()
+        {
+            BudgetModel = BudgetModel.Load(DeviceID, EventStore);
+            Budget = BudgetModel.Budget;
+        }
     }
 
     public class BudgetSetup
