@@ -31,5 +31,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         {
             return new CategoryCellViewModel(this, row, transaction, _categorySource, _incomeCategorySource);
         }
+
+        public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
