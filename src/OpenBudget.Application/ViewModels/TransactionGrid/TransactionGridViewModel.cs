@@ -66,6 +66,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 },
                 (transformed) =>
                 {
+                    transformed.Dispose();
                     transformed.PropertyChanged -= Row_PropertyChanged;
                 });
 

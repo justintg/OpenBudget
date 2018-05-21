@@ -11,15 +11,21 @@ namespace OpenBudget.Application.Collections
 {
     public class TransformingObservableCollection<TSource, TTransformed> : IList<TTransformed>, INotifyCollectionChanged, IDisposable
     {
-        private ObservableCollection<TSource> _sourceCollection;
+        private IReadOnlyList<TSource> _sourceCollection;
+        private INotifyCollectionChanged _collectionChanged;
         private Dictionary<TSource, TTransformed> _mapping;
         private List<TTransformed> _transformedCollection;
         Func<TSource, TTransformed> _onAddAction;
         Action<TTransformed> _onRemovedAction;
 
-        public TransformingObservableCollection(ObservableCollection<TSource> sourceCollection, Func<TSource, TTransformed> onAddAction, Action<TTransformed> onRemovedAction)
+        public TransformingObservableCollection(IReadOnlyList<TSource> sourceCollection, Func<TSource, TTransformed> onAddAction, Action<TTransformed> onRemovedAction)
         {
             _sourceCollection = sourceCollection;
+            if (!(_sourceCollection is INotifyCollectionChanged collectionChanged))
+            {
+                throw new ArgumentException(nameof(sourceCollection));
+            }
+            _collectionChanged = collectionChanged;
             _transformedCollection = new List<TTransformed>();
             _mapping = new Dictionary<TSource, TTransformed>();
             _onAddAction = onAddAction;
@@ -29,12 +35,13 @@ namespace OpenBudget.Application.Collections
 
         private void InitializeCollection()
         {
+
             foreach (var source in _sourceCollection)
             {
                 AddSource(source);
             }
 
-            _sourceCollection.CollectionChanged += SourceCollection_CollectionChanged;
+            _collectionChanged.CollectionChanged += SourceCollection_CollectionChanged;
         }
 
         private void ResetCollection()
@@ -200,7 +207,8 @@ namespace OpenBudget.Application.Collections
                 _onRemovedAction(transformed);
             }
             _mapping.Clear();
-            _sourceCollection.CollectionChanged -= CollectionChanged;
+            _collectionChanged.CollectionChanged -= CollectionChanged;
+            _collectionChanged = null;
             _sourceCollection = null;
             _transformedCollection = null;
             _mapping = null;
