@@ -13,6 +13,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
     internal interface IEntityCollection : IHasChanges
     {
         void AttachToModel(BudgetModel model);
+        void RequestDeletion(EntityBase child);
+        void CancelDeletion(EntityBase child);
         void ForceRemoveChild(EntityBase child);
         void ForceAddChild(EntityBase child);
     }

@@ -74,7 +74,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             IsDeleted = true;
             if (Parent != null)
-                Parent.RemoveReferenceToChild(this);
+                Parent.RequestChildDeletion(this);
         }
 
         public bool HasChanges
@@ -111,18 +111,31 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         internal void RemoveReferenceToChild(EntityBase child)
         {
-            var childType = child.GetType();
-            var childCollectionType = typeof(EntityCollection<>).MakeGenericType(childType);
-            var childCollection = _childEntities.Where(c => c.GetType() == childCollectionType).FirstOrDefault();
-            (childCollection as IEntityCollection).ForceRemoveChild(child);
+            GetChildCollection(child)?.ForceRemoveChild(child);
         }
 
         internal void ForceReferenceToChild(EntityBase child)
         {
+
+            GetChildCollection(child)?.ForceAddChild(child);
+        }
+
+        internal void RequestChildDeletion(EntityBase child)
+        {
+            GetChildCollection(child)?.RequestDeletion(child);
+        }
+
+        internal void CancelChildDeletion(EntityBase child)
+        {
+            GetChildCollection(child)?.CancelDeletion(child);
+        }
+
+        private IEntityCollection GetChildCollection(EntityBase child)
+        {
             var childType = child.GetType();
             var childCollectionType = typeof(EntityCollection<>).MakeGenericType(childType);
             var childCollection = _childEntities.Where(c => c.GetType() == childCollectionType).FirstOrDefault();
-            (childCollection as IEntityCollection).ForceAddChild(child);
+            return childCollection;
         }
 
         void IHasChanges.BeforeSaveChanges()
@@ -430,6 +443,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
         protected virtual void OnCancelChange(string property, FieldChange change)
         {
             if (property == nameof(Parent)) HandleParentCancel(change);
+            if (property == nameof(IsDeleted)) HandleDeletedCancel(change);
+        }
+
+        private void HandleDeletedCancel(FieldChange genericChange)
+        {
+            if (!(genericChange is TypedFieldChange<bool> change)) return;
+            if (change.TypedNewValue && !change.TypedPreviousValue)
+            {
+                this.Parent.CancelChildDeletion(this);
+            }
         }
 
         private void HandleParentCancel(FieldChange genericChange)
