@@ -15,11 +15,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
         [DataMember]
         public string EntityID { get; private set; }
 
-        public bool IsReferenceResolved(BudgetModel model)
-        {
-            return this.ReferencedEntity != null && (this.ReferencedEntity.Model == model || !this.ReferencedEntity.IsAttached);
-        }
-
         [IgnoreDataMember]
         public EntityBase ReferencedEntity { get; private set; }
 
@@ -42,6 +37,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             ReferencedEntity = null;
         }
 
+        public bool IsReferenceResolved(BudgetModel model)
+        {
+            return this.ReferencedEntity != null && (this.ReferencedEntity.Model == model || !this.ReferencedEntity.IsAttached);
+        }
+
         public T Resolve<T>(BudgetModel model) where T : EntityBase
         {
             var genericEntity = ResolveGeneric(model);
@@ -53,7 +53,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public EntityBase ResolveGeneric(BudgetModel model)
         {
-            var entity = model.FindEntity(this.EntityType, this.EntityID);
+            var entity = model.FindEntity(this);
             ReferencedEntity = entity;
             return entity;
         }

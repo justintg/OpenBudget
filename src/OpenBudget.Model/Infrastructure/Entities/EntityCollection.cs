@@ -75,6 +75,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var messenger = model.InternalMessageBus;
             messenger.RegisterForMessages<EntityUpdatedEvent>(typeof(T).Name, this);
             messenger.RegisterForMessages<EntityCreatedEvent>(typeof(T).Name, this);
+
+            var externalMessenger = model.MessageBus;
+            _externalUpdateHandler = new MessageHandler<EntityUpdatedEvent>(e => HandleDeletedEvent(e));
+            externalMessenger.RegisterForMessages<EntityUpdatedEvent>(typeof(T).Name, _externalUpdateHandler);
             _generator = model.FindGenerator<T>();
             _messenger = messenger;
 
@@ -133,6 +137,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
             HandleParentEvent(message, true);
         }
 
+        private MessageHandler<EntityUpdatedEvent> _externalUpdateHandler;
+
         private void HandleDeletedEvent(EntityUpdatedEvent message)
         {
             FieldChange fieldChange;
@@ -142,22 +148,18 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 if (!isDeleted)
                     return;
 
-                foreach (var entity in this)
-                {
-                    if (entity.EntityID == message.EntityID)
-                    {
-                        try
-                        {
-                            _isBuilding = true;
-                            this.Remove(entity);
-                        }
-                        finally
-                        {
-                            _isBuilding = false;
-                        }
-                    }
-                }
+                var entity = this.Where(e => e.EntityID == message.EntityID).SingleOrDefault();
+                if (entity == null) return;
 
+                try
+                {
+                    _isBuilding = true;
+                    this.Remove(entity);
+                }
+                finally
+                {
+                    _isBuilding = false;
+                }
             }
         }
 
@@ -197,28 +199,19 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     _isBuilding = false;
                 }
             }
-            /*else
-            {
-                if (noRemove)
-                    return;
+        }
 
-                foreach (var entity in this)
-                {
-                    if (entity.EntityID == message.EntityID)
-                    {
-                        try
-                        {
-                            _isBuilding = true;
-                            this.Remove(entity);
-                        }
-                        finally
-                        {
-                            _isBuilding = false;
-                        }
-                        break;
-                    }
-                }
-            }*/
+        private void BuildCollection(Action action)
+        {
+            try
+            {
+                _isBuilding = true;
+                action();
+            }
+            finally
+            {
+                _isBuilding = false;
+            }
         }
 
         void IEntityCollection.ForceRemoveChild(EntityBase child)
@@ -226,15 +219,21 @@ namespace OpenBudget.Model.Infrastructure.Entities
             T typedChild = child as T;
             if (typedChild == null) return;
 
-            try
+            BuildCollection(() =>
             {
-                _isBuilding = true;
                 this.Remove(typedChild);
-            }
-            finally
+            });
+        }
+
+        void IEntityCollection.ForceAddChild(EntityBase child)
+        {
+            T typedChild = child as T;
+            if (typedChild == null) return;
+
+            BuildCollection(() =>
             {
-                _isBuilding = false;
-            }
+                this.Add(typedChild);
+            });
         }
     }
 }

@@ -55,6 +55,11 @@ namespace OpenBudget.Model
             return generator.GetEntity(EntityID);
         }
 
+        public EntityBase FindEntity(EntityReference reference)
+        {
+            return this.FindEntity(reference.EntityType, reference.EntityID);
+        }
+
         protected BudgetModel(Guid deviceId, IEventStore eventStore) : this(deviceId, eventStore, true)
         {
 

@@ -73,6 +73,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
         public virtual void Delete()
         {
             IsDeleted = true;
+            if (Parent != null)
+                Parent.RemoveReferenceToChild(this);
         }
 
         public bool HasChanges
@@ -113,6 +115,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var childCollectionType = typeof(EntityCollection<>).MakeGenericType(childType);
             var childCollection = _childEntities.Where(c => c.GetType() == childCollectionType).FirstOrDefault();
             (childCollection as IEntityCollection).ForceRemoveChild(child);
+        }
+
+        internal void ForceReferenceToChild(EntityBase child)
+        {
+            var childType = child.GetType();
+            var childCollectionType = typeof(EntityCollection<>).MakeGenericType(childType);
+            var childCollection = _childEntities.Where(c => c.GetType() == childCollectionType).FirstOrDefault();
+            (childCollection as IEntityCollection).ForceAddChild(child);
         }
 
         void IHasChanges.BeforeSaveChanges()
@@ -405,6 +415,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             foreach (var change in changes)
             {
                 _entityData[change.Key] = change.Value.PreviousValue;
+                OnCancelChange(change.Key, change.Value);
             }
             notifyAllPropertiesChanged();
 
@@ -414,6 +425,25 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
 
             CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
+        }
+
+        protected virtual void OnCancelChange(string property, FieldChange change)
+        {
+            if (property == nameof(Parent)) HandleParentCancel(change);
+        }
+
+        private void HandleParentCancel(FieldChange genericChange)
+        {
+            if (!(genericChange is TypedFieldChange<EntityReference> change)) return;
+            if (change.TypedPreviousValue != null
+                && change.TypedNewValue != null
+                && change.TypedPreviousValue != change.TypedNewValue)
+            {
+                var parent = change.TypedPreviousValue.Resolve<EntityBase>(_model);
+                var canceledParent = change.TypedNewValue.Resolve<EntityBase>(_model);
+                canceledParent.RemoveReferenceToChild(this);
+                parent.ForceReferenceToChild(this);
+            }
         }
 
         protected Dictionary<string, object> _entityData = new Dictionary<string, object>();
