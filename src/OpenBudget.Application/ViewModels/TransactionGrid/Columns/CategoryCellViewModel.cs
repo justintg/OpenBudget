@@ -56,7 +56,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             }
             else
             {
-                base.SelectResultItem(item);
+                base.SetResultItemToValue(item);
             }
         }
 
