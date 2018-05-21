@@ -44,6 +44,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             BeginEditCommand = new RelayCommand(BeginEdit);
             CancelEditCommand = new RelayCommand(CancelEdit);
             SaveCommand = new RelayCommand(Save);
+            DeleteTransactionCommand = new RelayCommand(Delete);
         }
 
         private void InitializeCells()
@@ -155,6 +156,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 _model.SaveChanges();
                 IsEditing = false;
             }
+        }
+
+        public RelayCommand DeleteTransactionCommand { get; private set; }
+
+        private void Delete()
+        {
+            this.Transaction.Delete();
+            _model.SaveChanges();
         }
 
         public event EventHandler TransactionAddFinished;

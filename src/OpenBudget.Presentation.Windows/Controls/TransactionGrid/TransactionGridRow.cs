@@ -26,22 +26,44 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
 
         public TransactionGridRow()
         {
-            this.MouseLeftButtonUp += TransactionGridRow_MouseLeftButtonUp;
         }
 
-        private void TransactionGridRow_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
         {
             if (!IsSelected)
             {
                 IsSelected = true;
+            }
+            base.OnMouseRightButtonUp(e);
+        }
+
+
+
+        protected override void OnContextMenuOpening(ContextMenuEventArgs e)
+        {
+            if (IsEditing)
+            {
+                e.Handled = true;
+            }
+            base.OnContextMenuOpening(e);
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            if (!IsSelected)
+            {
+                IsSelected = true;
+                e.Handled = true;
             }
             else if (IsSelected && !IsEditing)
             {
                 if (BeginEditCommand != null)
                 {
                     BeginEditCommand.Execute(null);
+                    e.Handled = true;
                 }
             }
+            base.OnMouseLeftButtonUp(e);
         }
 
         public ObservableCollection<TransactionGridCellViewModel> Cells

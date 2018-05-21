@@ -24,6 +24,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         static TransactionGrid()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(TransactionGrid), new FrameworkPropertyMetadata(typeof(TransactionGrid)));
+            FocusableProperty.OverrideMetadata(typeof(TransactionGrid), new FrameworkPropertyMetadata(true));
         }
 
         private ScrollBar _verticalScrollBar;
@@ -37,7 +38,6 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         {
             this.DataContextChanged += TransactionGrid_DataContextChanged;
             this.AddHandler(TransactionGridRow.RowSelectedEvent, new RoutedEventHandler(OnRowSelected));
-            this.PreviewKeyDown += TransactionGrid_PreviewKeyDown;
             this.KeyDown += TransactionGrid_KeyDown;
         }
 
@@ -52,9 +52,20 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             }
         }
 
-        private void TransactionGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            if (!IsKeyboardFocusWithin)
+            {
+                Focus();
+            }
+            base.OnMouseLeftButtonUp(e);
+        }
+
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             HandleUpDownNavigation(e);
+            base.OnPreviewKeyDown(e);
         }
 
         private void HandleUpDownNavigation(KeyEventArgs e)
@@ -62,6 +73,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             if (!(e.Key == Key.Down || e.Key == Key.Up)) return;
             if (SelectedRow == null) return;
             if (SelectedRow.IsEditing) return;
+            if (IsAdding) return;
 
             e.Handled = true;
             int currentIndex = TransactionRows.IndexOf(SelectedRowViewModel);
@@ -91,6 +103,16 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
                 }
             }
         }
+
+        public bool IsAdding
+        {
+            get { return (bool)GetValue(IsAddingProperty); }
+            set { SetValue(IsAddingProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsAdding.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsAddingProperty =
+            DependencyProperty.Register("IsAdding", typeof(bool), typeof(TransactionGrid), new PropertyMetadata(false));
 
         private static void OnRowSelected(object sender, RoutedEventArgs e)
         {

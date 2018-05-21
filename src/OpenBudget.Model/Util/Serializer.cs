@@ -98,6 +98,7 @@ namespace OpenBudget.Model.Util
             [53] = typeof(TypedFieldChange<DateTime>),
             [54] = typeof(TypedFieldChange<AccountBudgetTypes>),
             [55] = typeof(TypedFieldChange<TransactionTypes>),
+            [56] = typeof(TypedFieldChange<bool>)
         };
 
         public void BindToName(Type serializedType, out string assemblyName, out string typeName)

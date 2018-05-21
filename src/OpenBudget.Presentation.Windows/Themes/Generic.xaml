@@ -67,6 +67,7 @@
         <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Item" />
         <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+        <Setter Property="IsAdding" Value="{Binding IsAdding}" />
         <Setter Property="Width" Value="{Binding Width, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -189,7 +190,8 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <ItemsPresenter />
+                            <ItemsPresenter>
+                            </ItemsPresenter>
 
                             <StackPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
                                 <Button Content="Save" Command="{Binding SaveCommand}"/>
@@ -198,6 +200,13 @@
                         </Grid>
                     </Border>
                 </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu>
+                    <MenuItem Header="Delete Transaction" Command="{Binding DeleteTransactionCommand}" />
+                </ContextMenu>
             </Setter.Value>
         </Setter>
         <Setter Property="Focusable" Value="False" />
