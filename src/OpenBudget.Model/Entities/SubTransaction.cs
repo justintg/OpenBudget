@@ -23,28 +23,43 @@ namespace OpenBudget.Model.Entities
             set => SetProperty(value);
         }
 
+        public string Memo
+        {
+            get => GetProperty<string>();
+            set => SetProperty(value);
+        }
+
+        public Account TransferAccount
+        {
+            get => ResolveEntityReference<Account>();
+            set => SetEntityReference(value);
+        }
+
         public BudgetSubCategory TransactionCategory
         {
-            get { return ResolveEntityReference<BudgetSubCategory>("Category"); }
-            set { SetEntityReference(value, "Category"); }
+            get { return ResolveEntityReference<BudgetSubCategory>(nameof(Category)); }
+            set { Category = value; }
         }
 
         public IncomeCategory IncomeCategory
         {
-            get { return ResolveEntityReference<IncomeCategory>("Category"); }
-            set { SetEntityReference(value, "Category"); }
+            get { return ResolveEntityReference<IncomeCategory>(nameof(Category)); }
+            set { Category = value; }
         }
 
-        public EntityReference Category
+        public EntityBase Category
         {
-            get { return GetProperty<EntityReference>(); }
+            get { return ResolveEntityReference<EntityBase>(); }
             set
             {
-                IEnumerable<string> ValidTypes = (new Type[] { typeof(IncomeCategory), typeof(BudgetSubCategory) }).Select(t => t.Name);
-                if (!ValidTypes.Contains(value.EntityType))
+                IEnumerable<Type> ValidTypes = (new Type[] { typeof(IncomeCategory), typeof(BudgetSubCategory) });
+                if (value != null && !ValidTypes.Contains(value.GetType()))
                     throw new InvalidOperationException("You must assign either a IncomeCategory or BudgetSubCategory to the Category Property!");
 
-                SetProperty(value);
+                SetEntityReference(value);
+
+                RaisePropertyChanged(nameof(IncomeCategory));
+                RaisePropertyChanged(nameof(TransactionCategory));
             }
         }
     }

@@ -217,6 +217,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
         public virtual void Dispose()
         {
+            SubTransactions?.Dispose();
             Transaction.PropertyChanged -= Transaction_PropertyChanged;
             foreach (var cell in Cells)
             {

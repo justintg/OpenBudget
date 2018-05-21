@@ -446,7 +446,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             if (property == nameof(IsDeleted)) HandleDeletedCancel(change);
         }
 
-        private void HandleDeletedCancel(FieldChange genericChange)
+        protected virtual void HandleDeletedCancel(FieldChange genericChange)
         {
             if (!(genericChange is TypedFieldChange<bool> change)) return;
             if (change.TypedNewValue && !change.TypedPreviousValue)
@@ -455,7 +455,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        private void HandleParentCancel(FieldChange genericChange)
+        protected virtual void HandleParentCancel(FieldChange genericChange)
         {
             if (!(genericChange is TypedFieldChange<EntityReference> change)) return;
             if (change.TypedPreviousValue != null
