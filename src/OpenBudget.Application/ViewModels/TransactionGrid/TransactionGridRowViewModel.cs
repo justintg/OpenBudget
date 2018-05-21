@@ -20,6 +20,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _model = model;
             _columns = columns;
             _transaction = transaction;
+            _transaction.PropertyChanged += Transaction_PropertyChanged;
 
             InitializeCommands();
             InitializeCells();
@@ -30,6 +31,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _model = model;
             _columns = columns;
             _transaction = new Transaction();
+            _transaction.PropertyChanged += Transaction_PropertyChanged;
             _transaction.TransactionDate = DateTime.Today;
             _addToAccount = addToAccount;
             _isAdding = true;
@@ -37,6 +39,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
             InitializeCommands();
             InitializeCells();
+        }
+
+        private void Transaction_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Transaction.TransactionType))
+            {
+                RaisePropertyChanged(nameof(IsSplitTransaction));
+            }
         }
 
         private void InitializeCommands()
@@ -99,6 +109,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 _isAdding = value;
                 if (_isAdding && !IsEditing) IsEditing = true;
                 RaisePropertyChanged();
+            }
+        }
+
+        public bool IsSplitTransaction
+        {
+            get
+            {
+                return Transaction.TransactionType == TransactionTypes.SplitTransaction;
             }
         }
 
@@ -175,6 +193,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
         public virtual void Dispose()
         {
+            Transaction.PropertyChanged -= Transaction_PropertyChanged;
             foreach (var cell in Cells)
             {
                 cell.Dispose();
