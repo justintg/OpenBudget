@@ -14,5 +14,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
     {
         void AttachToModel(BudgetModel model);
         void ForceRemoveChild(EntityBase child);
+        void ForceAddChild(EntityBase child);
     }
 }

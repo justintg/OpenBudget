@@ -23,6 +23,38 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void CanDeleteTransaction()
+        {
+            Account account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction() { Amount = 1000 };
+            account.Transactions.Add(transaction);
+            TestBudget.BudgetModel.SaveChanges();
+
+            transaction.Delete();
+            TestBudget.BudgetModel.SaveChanges();
+
+            Assert.That(transaction.IsDeleted, Is.True);
+            Assert.That(account.Transactions.Contains(transaction), Is.False);
+        }
+
+        [Test]
+        public void CanCancelDeleteTransaction()
+        {
+            Account account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction() { Amount = 1000 };
+            account.Transactions.Add(transaction);
+            TestBudget.BudgetModel.SaveChanges();
+
+            transaction.Delete();
+            Assert.That(transaction.IsDeleted, Is.True);
+            transaction.CancelCurrentChanges();
+            TestBudget.BudgetModel.SaveChanges();
+
+            Assert.That(transaction.IsDeleted, Is.False);
+            Assert.That(account.Transactions.Contains(transaction), Is.True);
+        }
+
+        [Test]
         public void CreateSubTransaction()
         {
             Account Account = TestBudget.Budget.Accounts[0];
@@ -331,6 +363,34 @@ namespace OpenBudget.Model.Tests
             Assert.That(transaction.Parent, Is.EqualTo(otherAccount));
             Assert.That(parent.Transactions, Has.No.Member(transaction));
             Assert.That(otherAccount.Transactions, Contains.Item(transaction));
+        }
+
+        [Test]
+        public void Can_Cancel_Move_Between_Accounts()
+        {
+            Account parent = this.TestBudget.Budget.Accounts[0];
+            Account otherAccount = this.TestBudget.Budget.Accounts[1];
+
+            Transaction transaction = new Transaction();
+            transaction.Amount = 100;
+            transaction.Memo = "Test Memo";
+            transaction.TransactionDate = DateTime.Today;
+            parent.Transactions.Add(transaction);
+
+            TestBudget.BudgetModel.SaveChanges();
+            TestBudget.TestEvents.Clear();
+
+            Assert.That(transaction.Parent, Is.EqualTo(parent));
+            Assert.That(parent.Transactions, Contains.Item(transaction));
+
+            otherAccount.Transactions.Add(transaction);
+            transaction.CancelCurrentChanges();
+            TestBudget.BudgetModel.SaveChanges();
+
+            Assert.That(transaction.Parent, Is.EqualTo(parent));
+            Assert.That(parent.Transactions, Contains.Item(transaction));
+            Assert.That(otherAccount.Transactions, Has.No.Member(transaction));
+            Assert.That(TestBudget.TestEvents.Count, Is.EqualTo(0));
         }
 
         [TearDown]

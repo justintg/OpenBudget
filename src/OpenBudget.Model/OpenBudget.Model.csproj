@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>OpenBudget.Model</AssemblyName>
-    <RootNamespace>BudgetFirst.Model</RootNamespace>
+    <RootNamespace>OpenBudget.Model</RootNamespace>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
