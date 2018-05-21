@@ -14,9 +14,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
     {
         private EntityBase _parent;
 
+        private List<Tuple<T, int>> _pendingDeletions;
+
         public EntityCollection(EntityBase parent)
         {
             _parent = parent;
+            _pendingDeletions = new List<Tuple<T, int>>();
             this.CollectionChanged += EntityCollection_CollectionChanged;
         }
 
@@ -107,6 +110,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
         internal IEnumerable<ModelEvent> GetAndSaveChanges()
         {
             foreach (EntityBase entity in this)
+            {
+                var changes = entity.GetAndSaveChanges();
+                foreach (var change in changes)
+                {
+                    yield return change;
+                }
+            }
+
+            //Allow deleted entities to broadcast their events
+            foreach (EntityBase entity in _pendingDeletions.Select(t => t.Item1))
             {
                 var changes = entity.GetAndSaveChanges();
                 foreach (var change in changes)
@@ -233,6 +246,31 @@ namespace OpenBudget.Model.Infrastructure.Entities
             BuildCollection(() =>
             {
                 this.Add(typedChild);
+            });
+        }
+
+        void IEntityCollection.RequestDeletion(EntityBase child)
+        {
+            T typedChild = child as T;
+            if (typedChild == null) return;
+
+            int childIndex = IndexOf(typedChild);
+            _pendingDeletions.Add((typedChild, childIndex).ToTuple());
+
+            BuildCollection(() =>
+            {
+                this.Remove(typedChild);
+            });
+        }
+
+        void IEntityCollection.CancelDeletion(EntityBase child)
+        {
+            Tuple<T, int> deletion = _pendingDeletions.Where(t => t.Item1 == child).FirstOrDefault();
+            if (deletion == null) return;
+
+            BuildCollection(() =>
+            {
+                this.Insert(deletion.Item2, deletion.Item1);
             });
         }
     }
