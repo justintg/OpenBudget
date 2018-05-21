@@ -188,12 +188,17 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <ItemsPresenter>
                             </ItemsPresenter>
 
-                            <StackPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="1">
+                            <TextBlock Grid.Row="1"
+                                Text="Split Transaction" 
+                                Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}" />
+
+                            <StackPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2">
                                 <Button Content="Save" Command="{Binding SaveCommand}"/>
                                 <Button Content="Cancel" Command="{Binding CancelEditCommand}" />
                             </StackPanel>

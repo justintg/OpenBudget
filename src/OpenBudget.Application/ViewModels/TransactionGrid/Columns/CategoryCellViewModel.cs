@@ -28,7 +28,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         protected override string ConvertToDisplayText(EntityBase value)
         {
-            if (Transaction.TransactionType == TransactionTypes.SplitTransaction)
+            if (value == null && Transaction.TransactionType == TransactionTypes.SplitTransaction)
             {
                 return "Split Transaction";
             }
