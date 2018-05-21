@@ -172,6 +172,28 @@
         </Setter>
     </Style>
 
+    <Style x:Key="SubTransactionItemsControl" TargetType="ItemsControl">
+        <Setter Property="ItemsSource" Value="{Binding SubTransactions}" />
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <ItemsControl ItemsSource="{Binding Cells}">
+                        <ItemsControl.ItemContainerStyle>
+                            <Style>
+                                <Setter Property="Control.Width" Value="{Binding Column.Width}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type trxGrid:TransactionGridRow}">
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
@@ -194,9 +216,9 @@
                             <ItemsPresenter>
                             </ItemsPresenter>
 
-                            <TextBlock Grid.Row="1"
-                                Text="Split Transaction" 
-                                Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}" />
+                            <ItemsControl Grid.Row="1"
+                                Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}"
+                                          Style="{StaticResource SubTransactionItemsControl}"/>
 
                             <StackPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2">
                                 <Button Content="Save" Command="{Binding SaveCommand}"/>
