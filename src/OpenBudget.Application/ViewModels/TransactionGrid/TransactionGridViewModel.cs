@@ -34,21 +34,31 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             columns.Add(new PayeeColumnViewModel(t => t.PayeeOrAccount, (t, val) => { t.PayeeOrAccount = val; }, "Payee", nameof(Transaction.Payee), 200, _account, _model.Budget.Payees, _model.Budget.Accounts));
             columns.Add(new CategoryColumnViewModel(t => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(Transaction.Category), 200, _model.Budget.BudgetCategories, _model.Budget.IncomeCategories));
             columns.Add(new StringColumnViewModel(t => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(Transaction.Memo), 300));
-            columns.Add(new DecimalColumnViewModel(t =>
+            columns.Add(new DecimalColumnViewModel((Transaction t) =>
             {
                 if (t.Amount > 0) return t.Amount;
                 else return 0;
             }, (t, val) => { t.Amount = val; }, "Inflow", nameof(Transaction.Amount), 100));
-            columns.Add(new DecimalColumnViewModel(t =>
+            columns.Add(new DecimalColumnViewModel((Transaction t) =>
             {
                 if (t.Amount < 0) return -t.Amount;
                 else return 0;
             }, (t, val) => { t.Amount = -val; }, "Outflow", nameof(Transaction.Amount), 100));
 
-
-
-
             _columns = columns;
+
+            ObservableCollection<TransactionGridColumnViewModel> subTransactionColumns = new ObservableCollection<TransactionGridColumnViewModel>();
+            _subTransactionColumns = subTransactionColumns;
+            subTransactionColumns.Add(new DecimalColumnViewModel((SubTransaction t) =>
+            {
+                if (t.Amount > 0) return t.Amount;
+                else return 0;
+            }, (t, val) => { t.Amount = val; }, "Inflow", nameof(Transaction.Amount), 100));
+            subTransactionColumns.Add(new DecimalColumnViewModel((SubTransaction t) =>
+            {
+                if (t.Amount < 0) return -t.Amount;
+                else return 0;
+            }, (t, val) => { t.Amount = -val; }, "Outflow", nameof(Transaction.Amount), 100));
         }
 
         private void InitializeGrid(Account account)
@@ -62,7 +72,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 _account.Transactions,
                 (transaction) =>
                 {
-                    var row = new TransactionGridRowViewModel(this.Columns, transaction, _model);
+                    var row = new TransactionGridRowViewModel(this.Columns, this.SubTransactionColumns, transaction, _model);
                     row.PropertyChanged += Row_PropertyChanged;
                     return row;
                 },
@@ -198,7 +208,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
         private void AddTransaction()
         {
-            var addTransaction = new TransactionGridRowViewModel(Columns, this.Account, _model);
+            var addTransaction = new TransactionGridRowViewModel(Columns, this.SubTransactionColumns, this.Account, _model);
             CurrentAddingTransaction = addTransaction;
         }
 

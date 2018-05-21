@@ -53,6 +53,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             if (item.ItemType == ResultItemType.SplitCategory)
             {
                 Transaction.MakeSplitTransaction();
+                Transaction.SubTransactions.Create();
             }
             else
             {
