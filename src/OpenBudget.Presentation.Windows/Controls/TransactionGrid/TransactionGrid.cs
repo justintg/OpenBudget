@@ -259,21 +259,21 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             _contentScrollViewer.ScrollToHome();
         }
 
-        public ObservableCollection<TransactionGridRowViewModel> TransactionRows
+        public IList<TransactionGridRowViewModel> TransactionRows
         {
-            get { return (ObservableCollection<TransactionGridRowViewModel>)GetValue(TransactionRowsProperty); }
+            get { return (IList<TransactionGridRowViewModel>)GetValue(TransactionRowsProperty); }
             set { SetValue(TransactionRowsProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for TransactionRows.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TransactionRowsProperty =
-            DependencyProperty.Register("TransactionRows", typeof(ObservableCollection<TransactionGridRowViewModel>), typeof(TransactionGrid), new PropertyMetadata(OnTransactionRowsChanged));
+            DependencyProperty.Register("TransactionRows", typeof(IList<TransactionGridRowViewModel>), typeof(TransactionGrid), new PropertyMetadata(OnTransactionRowsChanged));
 
         private static void OnTransactionRowsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var grid = d as TransactionGrid;
 
-            grid.ItemsSource = e.NewValue as ObservableCollection<TransactionGridRowViewModel>;
+            grid.ItemsSource = e.NewValue as IList<TransactionGridRowViewModel>;
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
