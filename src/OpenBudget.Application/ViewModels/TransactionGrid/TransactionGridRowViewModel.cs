@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using OpenBudget.Application.Collections;
 
 namespace OpenBudget.Application.ViewModels.TransactionGrid
 {
@@ -22,6 +23,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _transaction = transaction;
             _transaction.PropertyChanged += Transaction_PropertyChanged;
 
+            InitializeSubTransactions();
             InitializeCommands();
             InitializeCells();
         }
@@ -37,6 +39,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _isAdding = true;
             _isEditing = true;
 
+            InitializeSubTransactions();
             InitializeCommands();
             InitializeCells();
         }
@@ -47,6 +50,19 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             {
                 RaisePropertyChanged(nameof(IsSplitTransaction));
             }
+        }
+
+        private void InitializeSubTransactions()
+        {
+            _subTransactions = new TransformingObservableCollection<SubTransaction, SubTransactionRowViewModel>(_transaction.SubTransactions,
+                (subTransaction) =>
+                {
+                    return new SubTransactionRowViewModel();
+                },
+                (subTransaction) =>
+                {
+
+                });
         }
 
         private void InitializeCommands()
@@ -77,6 +93,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             get { return _cells; }
             set { _cells = value; RaisePropertyChanged(); }
+        }
+
+        private TransformingObservableCollection<SubTransaction, SubTransactionRowViewModel> _subTransactions;
+
+        public TransformingObservableCollection<SubTransaction, SubTransactionRowViewModel> SubTransactions
+        {
+            get { return _subTransactions; }
+            set { _subTransactions = value; RaisePropertyChanged(); }
         }
 
         private Transaction _transaction;
