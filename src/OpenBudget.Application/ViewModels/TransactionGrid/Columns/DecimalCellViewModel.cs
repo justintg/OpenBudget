@@ -10,5 +10,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         public DecimalCellViewModel(TransactionGridColumnViewModel<decimal> column, TransactionGridRowViewModel row, Transaction transaction) : base(column, row, transaction)
         {
         }
+
+        public DecimalCellViewModel(TransactionGridColumnViewModel<decimal> column, TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
+            : base(column, row, transaction, subTransactionRow, subTransaction)
+        {
+        }
     }
 }

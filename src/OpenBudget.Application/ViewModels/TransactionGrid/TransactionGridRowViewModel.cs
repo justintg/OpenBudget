@@ -16,10 +16,15 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         private BudgetModel _model;
         private Account _addToAccount;
 
-        public TransactionGridRowViewModel(ObservableCollection<TransactionGridColumnViewModel> columns, Transaction transaction, BudgetModel model)
+        public TransactionGridRowViewModel(
+            ObservableCollection<TransactionGridColumnViewModel> columns,
+            ObservableCollection<TransactionGridColumnViewModel> subTransactionColumns,
+            Transaction transaction,
+            BudgetModel model)
         {
             _model = model;
             _columns = columns;
+            _subTransactionColumns = subTransactionColumns;
             _transaction = transaction;
             _transaction.PropertyChanged += Transaction_PropertyChanged;
 
@@ -28,10 +33,15 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             InitializeCells();
         }
 
-        public TransactionGridRowViewModel(ObservableCollection<TransactionGridColumnViewModel> columns, Account addToAccount, BudgetModel model)
+        public TransactionGridRowViewModel(
+            ObservableCollection<TransactionGridColumnViewModel> columns,
+            ObservableCollection<TransactionGridColumnViewModel> subTransactionColumns,
+            Account addToAccount,
+            BudgetModel model)
         {
             _model = model;
             _columns = columns;
+            _subTransactionColumns = subTransactionColumns;
             _transaction = new Transaction();
             _transaction.PropertyChanged += Transaction_PropertyChanged;
             _transaction.TransactionDate = DateTime.Today;
@@ -57,7 +67,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _subTransactions = new TransformingObservableCollection<SubTransaction, SubTransactionRowViewModel>(_transaction.SubTransactions,
                 (subTransaction) =>
                 {
-                    return new SubTransactionRowViewModel();
+                    return new SubTransactionRowViewModel(SubTransactionColumns, this.Transaction, this, subTransaction);
                 },
                 (subTransaction) =>
                 {
@@ -85,6 +95,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             get { return _columns; }
             private set { _columns = value; RaisePropertyChanged(); }
+        }
+
+        private ObservableCollection<TransactionGridColumnViewModel> _subTransactionColumns;
+
+        public ObservableCollection<TransactionGridColumnViewModel> SubTransactionColumns
+        {
+            get { return _subTransactionColumns; }
+            private set { _subTransactionColumns = value; RaisePropertyChanged(); }
         }
 
         private ObservableCollection<TransactionGridCellViewModel> _cells;

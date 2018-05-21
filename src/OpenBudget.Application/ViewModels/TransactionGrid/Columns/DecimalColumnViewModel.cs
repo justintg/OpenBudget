@@ -11,6 +11,11 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         {
         }
 
+        public DecimalColumnViewModel(Func<SubTransaction, decimal> getter, Action<SubTransaction, decimal> setter, string header, string properyName, int width)
+            : base(getter, setter, header, properyName, width)
+        {
+        }
+
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction)
         {
             return new DecimalCellViewModel(this, row, transaction);
@@ -18,7 +23,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
         {
-            throw new NotImplementedException();
+            return new DecimalCellViewModel(this, row, transaction, subTransactionRow, subTransaction);
         }
     }
 }
