@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace OpenBudget.Application.Collections
 {
-    public class TransformingObservableCollection<TSource, TTransformed> : IReadOnlyList<TTransformed>, INotifyCollectionChanged, IDisposable
+    public class TransformingObservableCollection<TSource, TTransformed> : IList<TTransformed>, INotifyCollectionChanged, IDisposable
     {
         private ObservableCollection<TSource> _sourceCollection;
         private Dictionary<TSource, TTransformed> _mapping;
@@ -63,19 +64,49 @@ namespace OpenBudget.Application.Collections
 
         private void ReorderCollection()
         {
-            _transformedCollection.Clear();
-            foreach (var source in _sourceCollection)
+            if (_sortAction != null)
             {
-                TTransformed transformed;
-                if (_mapping.TryGetValue(source, out transformed))
+                _sortAction();
+            }
+            {
+                _transformedCollection.Clear();
+                foreach (var source in _sourceCollection)
                 {
-                    _transformedCollection.Add(transformed);
-                }
-                else
-                {
-                    throw new InvalidOperationException();
+                    TTransformed transformed;
+                    if (_mapping.TryGetValue(source, out transformed))
+                    {
+                        _transformedCollection.Add(transformed);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException();
+                    }
                 }
             }
+        }
+
+        private Action _sortAction;
+
+        public void Sort<TKey>(Func<TTransformed, TKey> orderFunc)
+        {
+            _sortAction = () =>
+            {
+                _transformedCollection = _transformedCollection.OrderBy(orderFunc).ToList();
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+                CollectionChanged?.Invoke(this, args);
+            };
+            _sortAction();
+        }
+
+        public void SortDescending<TKey>(Func<TTransformed, TKey> orderFunc)
+        {
+            _sortAction = () =>
+            {
+                _transformedCollection = _transformedCollection.OrderByDescending(orderFunc).ToList();
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+                CollectionChanged?.Invoke(this, args);
+            };
+            _sortAction();
         }
 
         private void SourceCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -145,19 +176,34 @@ namespace OpenBudget.Application.Collections
             return transformed;
         }
 
-        public TTransformed this[int index] => _transformedCollection[index];
+        public TTransformed this[int index]
+        {
+            get
+            {
+                return _transformedCollection[index];
+            }
+        }
 
         public int Count => _transformedCollection.Count;
+
+        public bool IsReadOnly => throw new NotImplementedException();
+
+        TTransformed IList<TTransformed>.this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
         public void Dispose()
         {
-            _mapping.Clear();
-            foreach (var transformed in _transformedCollection)
+            _transformedCollection.Clear();
+            foreach (var transformed in _mapping.Values)
             {
                 _onRemovedAction(transformed);
             }
+            _mapping.Clear();
+            _sourceCollection.CollectionChanged -= CollectionChanged;
+            _sourceCollection = null;
+            _transformedCollection = null;
+            _mapping = null;
         }
 
         IEnumerator<TTransformed> IEnumerable<TTransformed>.GetEnumerator()
@@ -168,6 +214,37 @@ namespace OpenBudget.Application.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _transformedCollection.GetEnumerator();
+        }
+
+        public int IndexOf(TTransformed item) => _transformedCollection.IndexOf(item);
+
+        public void Insert(int index, TTransformed item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Add(TTransformed item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(TTransformed item) => _transformedCollection.Contains(item);
+
+        public void CopyTo(TTransformed[] array, int arrayIndex) => _transformedCollection.CopyTo(array, arrayIndex);
+
+        public bool Remove(TTransformed item)
+        {
+            throw new NotImplementedException();
         }
     }
 }

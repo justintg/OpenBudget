@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using OpenBudget.Application.Collections;
 
 namespace OpenBudget.Application.ViewModels.TransactionGrid
 {
@@ -50,51 +51,30 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
         private void InitializeGrid(Account account)
         {
-            if (_account != null)
+            if (_account != null && Rows != null)
             {
-                _account.Transactions.CollectionChanged -= Transactions_CollectionChanged;
+                Rows.Dispose();
             }
             _account = account;
-            _account.Transactions.CollectionChanged += Transactions_CollectionChanged;
-            var rows = _account.Transactions.Select(t =>
-            {
-                var row = new TransactionGridRowViewModel(this.Columns, t, _model);
-                row.PropertyChanged += Row_PropertyChanged;
-                return row;
+            Rows = new TransformingObservableCollection<Transaction, TransactionGridRowViewModel>(
+                _account.Transactions,
+                (transaction) =>
+                {
+                    var row = new TransactionGridRowViewModel(this.Columns, transaction, _model);
+                    row.PropertyChanged += Row_PropertyChanged;
+                    return row;
+                },
+                (transformed) =>
+                {
+                    transformed.PropertyChanged -= Row_PropertyChanged;
+                });
 
-            }).OrderBy(r => r.Transaction.TransactionDate);
-            Rows = new ObservableCollection<TransactionGridRowViewModel>(rows);
+            SortRows();
         }
 
         private void SortRows()
         {
-            Rows = new ObservableCollection<TransactionGridRowViewModel>(Rows.OrderBy(r => r.Transaction.TransactionDate));
-        }
-
-        private void Transactions_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            if (e.NewItems != null)
-            {
-                foreach (Transaction transaction in e.NewItems)
-                {
-                    var row = new TransactionGridRowViewModel(this.Columns, transaction, _model);
-                    row.PropertyChanged += Row_PropertyChanged;
-                    Rows.Add(row);
-                    SortRows();
-                }
-            }
-            if (e.OldItems != null)
-            {
-                foreach (Transaction transaction in e.OldItems)
-                {
-                    var row = Rows.Where(r => r.Transaction == transaction).FirstOrDefault();
-                    if (row != null)
-                    {
-                        Rows.Remove(row);
-                        row.PropertyChanged -= Row_PropertyChanged;
-                    }
-                }
-            }
+            Rows.Sort(t => t.Transaction.TransactionDate);
         }
 
         private void Row_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -143,9 +123,9 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             private set { _columns = value; RaisePropertyChanged(); }
         }
 
-        private ObservableCollection<TransactionGridRowViewModel> _rows;
+        private TransformingObservableCollection<Transaction, TransactionGridRowViewModel> _rows;
 
-        public ObservableCollection<TransactionGridRowViewModel> Rows
+        public TransformingObservableCollection<Transaction, TransactionGridRowViewModel> Rows
         {
             get { return _rows; }
             set { _rows = value; RaisePropertyChanged(); }
@@ -213,11 +193,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
         public virtual void Dispose()
         {
-            _account.Transactions.CollectionChanged -= Transactions_CollectionChanged;
-            foreach (var row in Rows)
-            {
-                row.Dispose();
-            }
+            Rows.Dispose();
         }
 
         public bool IsAdding
