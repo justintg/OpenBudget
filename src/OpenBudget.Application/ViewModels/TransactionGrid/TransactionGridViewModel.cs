@@ -46,6 +46,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             }, (t, val) => { t.Amount = -val; }, "Outflow", nameof(Transaction.Amount), 100));
 
 
+
+
             _columns = columns;
         }
 
@@ -122,6 +124,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             get { return _columns; }
             private set { _columns = value; RaisePropertyChanged(); }
+        }
+
+        private ObservableCollection<TransactionGridColumnViewModel> _subTransactionColumns;
+
+        public ObservableCollection<TransactionGridColumnViewModel> SubTransactionColumns
+        {
+            get { return _subTransactionColumns; }
+            private set { _subTransactionColumns = value; RaisePropertyChanged(); }
         }
 
         private TransformingObservableCollection<Transaction, TransactionGridRowViewModel> _rows;

@@ -33,5 +33,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         {
             return new PayeeCellViewModel(this, row, transaction, _currentAccount, _payeeSource, _accountSource);
         }
+
+        public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

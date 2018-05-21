@@ -8,14 +8,37 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 {
     public abstract class TransactionGridCellViewModel : ViewModelBase, IDisposable
     {
-        public TransactionGridCellViewModel(TransactionGridColumnViewModel column, TransactionGridRowViewModel row, Transaction transaction)
+        public TransactionGridCellViewModel(
+            TransactionGridColumnViewModel column,
+            TransactionGridRowViewModel row,
+            Transaction transaction)
         {
             _column = column;
             _row = row;
             _row.PropertyChanged += Row_PropertyChanged;
             _transaction = transaction;
             _isEditing = row.IsEditing;
+            CellType = ColumnType.Transaction;
         }
+
+        public TransactionGridCellViewModel(
+            TransactionGridColumnViewModel column,
+            TransactionGridRowViewModel row,
+            Transaction transaction,
+            SubTransactionRowViewModel subTransactionRow,
+            SubTransaction subTransaction)
+        {
+            _column = column;
+            _row = row;
+            _row.PropertyChanged += Row_PropertyChanged;
+            _transaction = transaction;
+            _subTransaction = subTransaction;
+            _subTransactionRow = subTransactionRow;
+            _isEditing = row.IsEditing;
+            CellType = ColumnType.SubTransaction;
+        }
+
+        public ColumnType CellType { get; private set; }
 
         private void Row_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -61,6 +84,22 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             private set { _row = value; RaisePropertyChanged(); }
         }
 
+        private SubTransactionRowViewModel _subTransactionRow;
+
+        public SubTransactionRowViewModel SubTransactionRow
+        {
+            get { return _subTransactionRow; }
+            private set { _subTransactionRow = value; RaisePropertyChanged(); }
+        }
+
+        private SubTransaction _subTransaction;
+
+        public SubTransaction SubTransaction
+        {
+            get { return _subTransaction; }
+            private set { _subTransaction = value; RaisePropertyChanged(); }
+        }
+
         private bool _isEditing;
 
         public bool IsEditing
@@ -104,10 +143,24 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
     {
         protected TransactionGridColumnViewModel<T> InternalColumn { get; private set; }
 
-        public TransactionGridCellViewModel(TransactionGridColumnViewModel<T> column, TransactionGridRowViewModel row, Transaction transaction) : base(column, row, transaction)
+        public TransactionGridCellViewModel(
+            TransactionGridColumnViewModel<T> column,
+            TransactionGridRowViewModel row,
+            Transaction transaction) : base(column, row, transaction)
         {
             this.InternalColumn = column;
             this.Transaction.PropertyChanged += Transaction_PropertyChanged;
+        }
+
+        public TransactionGridCellViewModel(
+            TransactionGridColumnViewModel<T> column,
+            TransactionGridRowViewModel row,
+            Transaction transaction,
+             SubTransactionRowViewModel subTransactionRow,
+            SubTransaction subTransaction) : base(column, row, transaction, subTransactionRow, subTransaction)
+        {
+            this.InternalColumn = column;
+            this.SubTransaction.PropertyChanged += Transaction_PropertyChanged;
         }
 
         private void Transaction_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -130,12 +183,18 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             get
             {
-                return InternalColumn.Getter(this.Transaction);
+                if (this.CellType == ColumnType.SubTransaction)
+                    return InternalColumn.SubTransactionGetter(this.SubTransaction);
+                else
+                    return InternalColumn.TransactionGetter(this.Transaction);
             }
             set
             {
                 _settingValue = true;
-                InternalColumn.Setter(this.Transaction, value);
+                if (this.CellType == ColumnType.SubTransaction)
+                    InternalColumn.SubTransactionSetter(this.SubTransaction, value);
+                else
+                    InternalColumn.TransactionSetter(this.Transaction, value);
                 RaisePropertyChanged();
                 _settingValue = false;
             }
@@ -143,7 +202,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
         public override void Dispose()
         {
-            this.Transaction.PropertyChanged -= Transaction_PropertyChanged;
+            if (this.CellType == ColumnType.Transaction)
+                this.Transaction.PropertyChanged -= Transaction_PropertyChanged;
+            else
+                this.SubTransaction.PropertyChanged -= Transaction_PropertyChanged;
             base.Dispose();
         }
     }

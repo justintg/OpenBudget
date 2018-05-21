@@ -15,5 +15,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         {
             return new DateCellViewModel(this, row, transaction);
         }
+
+        public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
