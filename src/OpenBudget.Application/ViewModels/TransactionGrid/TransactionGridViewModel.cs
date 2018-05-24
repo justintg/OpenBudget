@@ -197,6 +197,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         private void DisconnectAddingTransaction(TransactionGridRowViewModel transaction)
         {
             transaction.TransactionAddFinished -= OnTransactionAddFinished;
+            transaction.Dispose();
         }
 
         private void OnTransactionAddFinished(object sender, EventArgs e)

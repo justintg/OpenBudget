@@ -60,10 +60,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
     public abstract class TransactionGridColumnViewModel<T> : TransactionGridColumnViewModel
     {
         public ColumnType ColumnType { get; private set; }
-        public Func<Transaction, T> TransactionGetter { get; private set; }
-        public Action<Transaction, T> TransactionSetter { get; private set; }
-        public Func<SubTransaction, T> SubTransactionGetter { get; private set; }
-        public Action<SubTransaction, T> SubTransactionSetter { get; private set; }
+        public Func<EntityBase, T> Getter { get; private set; }
+        public Action<EntityBase, T> Setter { get; private set; }
 
         public TransactionGridColumnViewModel(
             Func<Transaction, T> getter,
@@ -73,8 +71,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             int width)
             : base(header, propertyName, width)
         {
-            this.TransactionGetter = getter;
-            this.TransactionSetter = setter;
+            this.Getter = (entity) => getter((Transaction)entity);
+            this.Setter = (entity, value) => setter((Transaction)entity, value);
             ColumnType = ColumnType.Transaction;
         }
 
@@ -86,8 +84,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             int width)
             : base(header, propertyName, width)
         {
-            this.SubTransactionGetter = getter;
-            this.SubTransactionSetter = setter;
+            this.Getter = (entity) => getter((SubTransaction)entity);
+            this.Setter = (entity, value) => setter((SubTransaction)entity, value);
             ColumnType = ColumnType.SubTransaction;
         }
     }
