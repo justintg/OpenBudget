@@ -47,6 +47,11 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
             _columns = columns;
 
+            InitializeSubTransactionColumns();
+        }
+
+        private void InitializeSubTransactionColumns()
+        {
             ObservableCollection<TransactionGridColumnViewModel> subTransactionColumns = new ObservableCollection<TransactionGridColumnViewModel>();
             _subTransactionColumns = subTransactionColumns;
             subTransactionColumns.Add(new DecimalColumnViewModel((SubTransaction t) =>
@@ -54,6 +59,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 if (t.Amount > 0) return t.Amount;
                 else return 0;
             }, (t, val) => { t.Amount = val; }, "Inflow", nameof(Transaction.Amount), 100));
+            _subTransactionColumns[0].MarginLeft = 800;
             subTransactionColumns.Add(new DecimalColumnViewModel((SubTransaction t) =>
             {
                 if (t.Amount < 0) return -t.Amount;

@@ -103,6 +103,7 @@
     <Compile Include="Controls\TransactionGrid\Columns\ResultsColumn.cs" />
     <Compile Include="Controls\TransactionGrid\TransactionGrid.cs" />
     <Compile Include="Converters\BooleanConverter.cs" />
+    <Compile Include="Converters\MarginLeftConverter.cs" />
     <Compile Include="Services\WindowsBudgetLoader.cs" />
     <Compile Include="Services\WindowsNavigationService.cs" />
     <Compile Include="Services\WindowsServiceLocator.cs" />
