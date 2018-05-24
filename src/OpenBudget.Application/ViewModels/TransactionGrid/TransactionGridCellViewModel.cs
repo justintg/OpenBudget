@@ -3,11 +3,14 @@ using GalaSoft.MvvmLight;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenBudget.Model.Infrastructure.Entities;
 
 namespace OpenBudget.Application.ViewModels.TransactionGrid
 {
     public abstract class TransactionGridCellViewModel : ViewModelBase, IDisposable
     {
+        protected EntityBase _entity;
+
         public TransactionGridCellViewModel(
             TransactionGridColumnViewModel column,
             TransactionGridRowViewModel row,
@@ -19,6 +22,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _transaction = transaction;
             _isEditing = row.IsEditing;
             CellType = ColumnType.Transaction;
+            _entity = transaction;
         }
 
         public TransactionGridCellViewModel(
@@ -36,6 +40,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _subTransactionRow = subTransactionRow;
             _isEditing = row.IsEditing;
             CellType = ColumnType.SubTransaction;
+            _entity = subTransaction;
         }
 
         public ColumnType CellType { get; private set; }
@@ -149,7 +154,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             Transaction transaction) : base(column, row, transaction)
         {
             this.InternalColumn = column;
-            this.Transaction.PropertyChanged += Transaction_PropertyChanged;
+            _entity.PropertyChanged += Entity_PropertyChanged;
         }
 
         public TransactionGridCellViewModel(
@@ -160,10 +165,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             SubTransaction subTransaction) : base(column, row, transaction, subTransactionRow, subTransaction)
         {
             this.InternalColumn = column;
-            this.SubTransaction.PropertyChanged += Transaction_PropertyChanged;
+            _entity.PropertyChanged += Entity_PropertyChanged;
         }
 
-        private void Transaction_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void Entity_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == this.Column.PropertyName && !_settingValue)
             {
@@ -183,18 +188,12 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             get
             {
-                if (this.CellType == ColumnType.SubTransaction)
-                    return InternalColumn.SubTransactionGetter(this.SubTransaction);
-                else
-                    return InternalColumn.TransactionGetter(this.Transaction);
+                return this.InternalColumn.Getter(_entity);
             }
             set
             {
                 _settingValue = true;
-                if (this.CellType == ColumnType.SubTransaction)
-                    InternalColumn.SubTransactionSetter(this.SubTransaction, value);
-                else
-                    InternalColumn.TransactionSetter(this.Transaction, value);
+                this.InternalColumn.Setter(_entity, value);
                 RaisePropertyChanged();
                 _settingValue = false;
             }
@@ -202,10 +201,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
         public override void Dispose()
         {
-            if (this.CellType == ColumnType.Transaction)
-                this.Transaction.PropertyChanged -= Transaction_PropertyChanged;
-            else
-                this.SubTransaction.PropertyChanged -= Transaction_PropertyChanged;
+            _entity.PropertyChanged -= Entity_PropertyChanged;
             base.Dispose();
         }
     }
