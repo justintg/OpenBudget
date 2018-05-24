@@ -13,5 +13,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         {
             _stringColumn = column;
         }
+
+        public StringCellViewModel(StringColumnViewModel column, TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction) : base(column, row, transaction, subTransactionRow, subTransaction)
+        {
+            _stringColumn = column;
+        }
     }
 }

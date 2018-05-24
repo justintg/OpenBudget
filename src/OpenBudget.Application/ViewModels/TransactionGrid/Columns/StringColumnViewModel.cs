@@ -11,6 +11,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         {
         }
 
+        public StringColumnViewModel(Func<SubTransaction, string> getter, Action<SubTransaction, string> setter, string header, string propertyName, int width) : base(getter, setter, header, propertyName, width)
+        {
+        }
+
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction)
         {
             return new StringCellViewModel(this, row, transaction);
@@ -18,7 +22,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
         {
-            throw new NotImplementedException();
+            return new StringCellViewModel(this, row, transaction, subTransactionRow, subTransaction);
         }
     }
 }
