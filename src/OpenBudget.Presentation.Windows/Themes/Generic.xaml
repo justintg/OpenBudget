@@ -181,6 +181,7 @@
                         <ItemsControl.ItemContainerStyle>
                             <Style>
                                 <Setter Property="Control.Width" Value="{Binding Column.Width}" />
+                                <Setter Property="Control.Margin" Value="{Binding Column.MarginLeft, Converter={StaticResource MarginLeftConverter}}" />
                             </Style>
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemsPanel>

@@ -4,5 +4,6 @@
                     xmlns:conv="clr-namespace:OpenBudget.Presentation.Windows.Converters">
     <BooleanToVisibilityConverter x:Key="BoolToVis" />
     <conv:BooleanToVisibilityConverter x:Key="InvBoolToVis" True="Collapsed" False="Visible" />
+    <conv:MarginLeftConverter x:Key="MarginLeftConverter" />
 
 </ResourceDictionary>

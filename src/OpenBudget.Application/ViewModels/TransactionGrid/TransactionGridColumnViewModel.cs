@@ -20,6 +20,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _propertyName = propertyName;
             _header = header;
             _width = width;
+            _marginLeft = 0;
         }
 
         private string _header;
@@ -36,6 +37,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             get { return _propertyName; }
             private set { _propertyName = value; RaisePropertyChanged(); }
+        }
+
+        private int _marginLeft;
+
+        public int MarginLeft
+        {
+            get { return _marginLeft; }
+            set { _marginLeft = value; RaisePropertyChanged(); }
         }
 
         private int _width;
