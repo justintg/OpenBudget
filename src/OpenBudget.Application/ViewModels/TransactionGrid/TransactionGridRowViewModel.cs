@@ -59,6 +59,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             if (e.PropertyName == nameof(Transaction.TransactionType))
             {
                 RaisePropertyChanged(nameof(IsSplitTransaction));
+                AddSubTransactionCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -81,6 +82,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             CancelEditCommand = new RelayCommand(CancelEdit);
             SaveCommand = new RelayCommand(Save);
             DeleteTransactionCommand = new RelayCommand(Delete);
+            AddSubTransactionCommand = new RelayCommand(AddSubTransaction, CanAddSubTransaction);
         }
 
         private void InitializeCells()
@@ -216,6 +218,18 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 _model.SaveChanges();
                 IsEditing = false;
             }
+        }
+
+        public RelayCommand AddSubTransactionCommand { get; private set; }
+
+        public bool CanAddSubTransaction()
+        {
+            return this.IsSplitTransaction;
+        }
+
+        private void AddSubTransaction()
+        {
+            this.Transaction.SubTransactions.Create();
         }
 
         public RelayCommand DeleteTransactionCommand { get; private set; }

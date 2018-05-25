@@ -218,9 +218,14 @@
                             <ItemsPresenter>
                             </ItemsPresenter>
 
-                            <ItemsControl Grid.Row="1"
-                                Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}"
-                                          Style="{StaticResource SubTransactionItemsControl}"/>
+                            <DockPanel Grid.Row="1" Visibility="{Binding IsSplitTransaction, Converter={StaticResource BoolToVis}}">
+
+                                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+                                    <Button Content="Add Sub-Transaction" Command="{Binding AddSubTransactionCommand}" />
+                                </StackPanel>
+
+                                <ItemsControl Style="{StaticResource SubTransactionItemsControl}"/>
+                            </DockPanel>
 
                             <StackPanel Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2">
                                 <Button Content="Save" Command="{Binding SaveCommand}"/>

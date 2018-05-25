@@ -55,6 +55,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             ObservableCollection<TransactionGridColumnViewModel> subTransactionColumns = new ObservableCollection<TransactionGridColumnViewModel>();
             _subTransactionColumns = subTransactionColumns;
 
+            subTransactionColumns.Add(new CommandColumnViewModel("Delete", 10, (st) => st.DeleteSubTransactionCommand));
             subTransactionColumns.Add(new PayeeColumnViewModel((SubTransaction t) => t.TransferAccount, (t, val) => { t.TransferAccount = val as Account; }, "Payee", nameof(SubTransaction.TransferAccount), 200, _account, _model.Budget.Accounts));
             subTransactionColumns.Add(new CategoryColumnViewModel((SubTransaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(SubTransaction.Category), 200, _model.Budget.BudgetCategories, _model.Budget.IncomeCategories));
             subTransactionColumns.Add(new StringColumnViewModel((SubTransaction t) => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(SubTransaction.Memo), 300));
@@ -69,7 +70,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 else return 0;
             }, (t, val) => { t.Amount = -val; }, "Outflow", nameof(SubTransaction.Amount), 100));
 
-            _subTransactionColumns[0].MarginLeft = 100;
+            _subTransactionColumns[0].MarginLeft = 90;
         }
 
         private void InitializeGrid(Account account)
