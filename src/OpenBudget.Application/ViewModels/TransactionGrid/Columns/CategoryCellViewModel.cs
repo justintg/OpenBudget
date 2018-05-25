@@ -26,9 +26,24 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             _incomeCategorySource = incomeCategorySource;
         }
 
+        public CategoryCellViewModel(
+            TransactionGridColumnViewModel<EntityBase> column,
+            TransactionGridRowViewModel row, Transaction transaction,
+            SubTransactionRowViewModel subTransactionRow,
+            SubTransaction subTransaction,
+            ObservableCollection<BudgetCategory> categorySource,
+            IncomeCategoryFinder incomeCategorySource)
+            : base(column, row, transaction, subTransactionRow, subTransaction)
+        {
+            _categorySource = categorySource;
+            _incomeCategorySource = incomeCategorySource;
+        }
+
         protected override string ConvertToDisplayText(EntityBase value)
         {
-            if (value == null && Transaction.TransactionType == TransactionTypes.SplitTransaction)
+            if (this.CellType == ColumnType.Transaction
+                && value == null
+                && Transaction.TransactionType == TransactionTypes.SplitTransaction)
             {
                 return "Split Transaction";
             }
@@ -45,12 +60,13 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
                 return null;
             }
 
-            return "ERROR";
+            throw new InvalidOperationException("Unrecognized entity in CategoryCellViewModel ConvertToDisplayText.");
         }
 
         protected override void SetResultItemToValue(ResultItemViewModel item)
         {
-            if (item.ItemType == ResultItemType.SplitCategory)
+            if (this.CellType == ColumnType.Transaction
+                && item.ItemType == ResultItemType.SplitCategory)
             {
                 Transaction.MakeSplitTransaction();
                 Transaction.SubTransactions.Create();
@@ -69,8 +85,11 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         private IEnumerable<ResultCategoryViewModel> FilterInternal()
         {
-            var split = GetFilteredSplitCategory();
-            if (split != null) yield return split;
+            if (this.CellType == ColumnType.Transaction)
+            {
+                var split = GetFilteredSplitCategory();
+                if (split != null) yield return split;
+            }
 
             var income = GetFilteredIncomeCategory();
             if (income != null) yield return income;
