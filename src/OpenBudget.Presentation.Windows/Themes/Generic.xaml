@@ -174,10 +174,11 @@
 
     <Style x:Key="SubTransactionItemsControl" TargetType="ItemsControl">
         <Setter Property="ItemsSource" Value="{Binding SubTransactions}" />
+        <Setter Property="Focusable" Value="False"/>
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <ItemsControl ItemsSource="{Binding Cells}">
+                    <ItemsControl ItemsSource="{Binding Cells}" Focusable="False">
                         <ItemsControl.ItemContainerStyle>
                             <Style>
                                 <Setter Property="Control.Width" Value="{Binding Column.Width}" />
@@ -186,7 +187,7 @@
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" />
+                                <StackPanel Orientation="Horizontal" Focusable="False"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
