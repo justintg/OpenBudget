@@ -66,6 +66,35 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void On_Reload_Deleted_SubTransaction_IsDeleted()
+        {
+            Account Account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction();
+            transaction.Amount = 100;
+            transaction.MakeSplitTransaction();
+            Account.Transactions.Add(transaction);
+
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 50;
+
+            var subTransaction2 = transaction.SubTransactions.Create();
+            subTransaction2.Amount = 50;
+
+            TestBudget.BudgetModel.SaveChanges();
+
+            subTransaction.Delete();
+            subTransaction2.Amount = 100;
+
+            TestBudget.BudgetModel.SaveChanges();
+            TestBudget.ReloadBudget();
+
+            transaction = TestBudget.BudgetModel.FindEntity<Transaction>(transaction.EntityID);
+            Assert.That(transaction.SubTransactions.Count, Is.EqualTo(1));
+            Assert.That(transaction.SubTransactions[0].EntityID, Is.EqualTo(subTransaction2.EntityID));
+            Assert.That(transaction.SubTransactions[0].Amount, Is.EqualTo(100));
+        }
+
+        [Test]
         public void On_Reload_Transaction_Moves_Between_Accounts()
         {
             Account parent = this.TestBudget.Budget.Accounts[0];

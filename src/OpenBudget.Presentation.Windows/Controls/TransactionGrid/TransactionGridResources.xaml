@@ -2,13 +2,91 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid"
                     xmlns:columns="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns"
-                    xmlns:vmCol="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid.Columns;assembly=OpenBudget.Application" >
+                    xmlns:vmCol="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid.Columns;assembly=OpenBudget.Application"
+                    xmlns:conv="clr-namespace:OpenBudget.Presentation.Windows.Converters">
+
+    <conv:SplitTransactionVisibilityConverter x:Key="SplitVisiblityConverter" />
+
+    <Style TargetType="{x:Type ToggleButton}" x:Key="ExpandingToggleButton">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Path RenderTransformOrigin=".5,.5"
+                        Data="M0,0 5,5 10,0 z"
+                        Width="10"
+                        Height="5"
+                        Fill="Black" 
+                        x:Name="TogglePath"
+                        VerticalAlignment="Center">
+                        <Path.RenderTransform>
+                            <RotateTransform Angle="-90" x:Name="PathRotation"/>
+                        </Path.RenderTransform>
+                    </Path>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="PathRotation"
+                                            Storyboard.TargetProperty="Angle" 
+                                            To="0" 
+                                            Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="PathRotation"
+                                            Storyboard.TargetProperty="Angle" 
+                                            To="-90" 
+                                            Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <DataTemplate DataType="{x:Type vmCol:ResultsCellViewModel}">
         <local:TransactionGridCell>
             <local:TransactionGridCell.NormalTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayText}"/>
+                </DataTemplate>
+            </local:TransactionGridCell.NormalTemplate>
+            <local:TransactionGridCell.EditTemplate>
+                <DataTemplate>
+                    <columns:ResultsColumn
+                        SearchText="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        ResultsOpen="{Binding ShowResults, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Results="{Binding Results, Mode=OneWay}"
+                        SelectResultItemCommand="{Binding SelectResultItemCommand}"/>
+                </DataTemplate>
+            </local:TransactionGridCell.EditTemplate>
+        </local:TransactionGridCell>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vmCol:CategoryCellViewModel}">
+        <local:TransactionGridCell>
+            <local:TransactionGridCell.NormalTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <ToggleButton Margin="0 0 3 0" IsChecked="{Binding Row.ExpandSplitTransactions}" Style="{StaticResource ExpandingToggleButton}">
+                            <ToggleButton.Visibility>
+                                <MultiBinding Converter="{StaticResource SplitVisiblityConverter}">
+                                    <Binding Path="CellType" Mode="OneWay"/>
+                                    <Binding Path="Row.IsSplitTransaction" Mode="OneWay"/>
+                                </MultiBinding>
+                            </ToggleButton.Visibility>
+                        </ToggleButton>
+                        <TextBlock Text="{Binding DisplayText}"/>
+                    </StackPanel>
                 </DataTemplate>
             </local:TransactionGridCell.NormalTemplate>
             <local:TransactionGridCell.EditTemplate>

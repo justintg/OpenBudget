@@ -36,7 +36,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             private set { _isAttached = value; }
         }
 
-        public EntityBase Parent
+        public virtual EntityBase Parent
         {
             get { return ResolveEntityReference<EntityBase>(); }
             internal set { SetEntityReference<EntityBase>(value); }
@@ -122,7 +122,15 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         internal void RequestChildDeletion(EntityBase child)
         {
-            GetChildCollection(child)?.RequestDeletion(child);
+            if (child is SubEntity childSubEntity)
+            {
+                var collection = GetSubEntityCollection(childSubEntity);
+                collection.DeleteChild(childSubEntity);
+            }
+            else
+            {
+                GetChildCollection(child)?.RequestDeletion(child);
+            }
         }
 
         internal void CancelChildDeletion(EntityBase child)
@@ -136,6 +144,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var childCollectionType = typeof(EntityCollection<>).MakeGenericType(childType);
             var childCollection = _childEntities.Where(c => c.GetType() == childCollectionType).FirstOrDefault();
             return childCollection;
+        }
+
+        private ISubEntityCollection GetSubEntityCollection(SubEntity child)
+        {
+            var entityType = child.GetType().Name;
+            return _subEntities[entityType];
         }
 
         void IHasChanges.BeforeSaveChanges()
@@ -330,7 +344,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return childEntityCollection;
         }
 
-        protected SubEntityCollection<T> RegisterSubEntityCollection<T>(SubEntityCollection<T> subEntityCollection) where T : EntityBase
+        internal SubEntityCollection<T> RegisterSubEntityCollection<T>(SubEntityCollection<T> subEntityCollection) where T : SubEntity
         {
             _subEntities.Add(typeof(T).Name, subEntityCollection);
             return subEntityCollection;
@@ -338,7 +352,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private List<IEntityCollection> _childEntities;
 
-        protected Dictionary<string, ISubEntityCollection> _subEntities;
+        internal Dictionary<string, ISubEntityCollection> _subEntities;
 
 
         internal void rebuildEntityData(IEnumerable<FieldChangeEvent> events)

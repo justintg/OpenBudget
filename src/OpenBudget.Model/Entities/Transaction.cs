@@ -200,15 +200,6 @@ namespace OpenBudget.Model.Entities
 
         protected override void OnReplayChange(string field, object previousValue, FieldChange change)
         {
-            if (field == nameof(TransactionType) && previousValue != null)
-            {
-                TransactionTypes before = (TransactionTypes)previousValue;
-                TransactionTypes after = (TransactionTypes)change.NewValue;
-                if (before == TransactionTypes.SplitTransaction && after != before)
-                {
-                    if (SubTransactions.Count > 0) SubTransactions.Clear();
-                }
-            }
         }
 
         internal override void BeforeSaveChanges()

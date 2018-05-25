@@ -12,7 +12,9 @@ namespace OpenBudget.Model.Entities
     public enum AccountBudgetTypes
     {
         None = 0,
+        [Label("On-Budget")]
         OnBudget = 1,
+        [Label("Off-Budget")]
         OffBudget = 2
     }
 
@@ -38,9 +40,9 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
-        public string Type
+        public AccountBudgetTypes AccountType
         {
-            get { return GetProperty<string>(); }
+            get { return GetProperty<AccountBudgetTypes>(); }
             set { SetProperty(value); }
         }
 
