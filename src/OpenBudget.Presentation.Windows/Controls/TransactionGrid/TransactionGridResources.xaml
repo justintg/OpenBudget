@@ -67,4 +67,19 @@
             </local:TransactionGridCell.EditTemplate>
         </local:TransactionGridCell>
     </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vmCol:CommandCellViewModel}">
+        <local:TransactionGridCell>
+            <local:TransactionGridCell.NormalTemplate>
+                <DataTemplate>
+
+                </DataTemplate>
+            </local:TransactionGridCell.NormalTemplate>
+            <local:TransactionGridCell.EditTemplate>
+                <DataTemplate>
+                    <Button Command="{Binding Command}" Content="-" />
+                </DataTemplate>
+            </local:TransactionGridCell.EditTemplate>
+        </local:TransactionGridCell>
+    </DataTemplate>
 </ResourceDictionary>

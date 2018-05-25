@@ -1,4 +1,5 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using OpenBudget.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -24,13 +25,26 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _parentRow = row;
             _subTransaction = subTransaction;
 
+            InitializeCommands();
             InitializeCells();
-
         }
+
         private void InitializeCells()
         {
             List<TransactionGridCellViewModel> cells = Columns.Select(col => col.CreateCell(_parentRow, _transaction, this, _subTransaction)).ToList();
             _cells = new ObservableCollection<TransactionGridCellViewModel>(cells);
+        }
+
+        private void InitializeCommands()
+        {
+            DeleteSubTransactionCommand = new RelayCommand(DeleteSubTransaction);
+        }
+
+        public RelayCommand DeleteSubTransactionCommand { get; private set; }
+
+        private void DeleteSubTransaction()
+        {
+            _subTransaction.Delete();
         }
 
         private ObservableCollection<TransactionGridColumnViewModel> _columns;

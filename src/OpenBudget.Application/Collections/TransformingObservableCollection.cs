@@ -124,7 +124,7 @@ namespace OpenBudget.Application.Collections
                 return;
             }
             List<TTransformed> newItems = new List<TTransformed>();
-            List<TTransformed> removedItems = new List<TTransformed>();
+            List<Tuple<int, TTransformed>> removedItems = new List<Tuple<int, TTransformed>>();
             if (e.NewItems != null)
             {
                 foreach (TSource source in e.NewItems)
@@ -137,7 +137,9 @@ namespace OpenBudget.Application.Collections
             {
                 foreach (TSource source in e.OldItems)
                 {
-                    removedItems.Add(RemoveSource(source));
+                    var transformed = _mapping[source];
+                    int index = _transformedCollection.IndexOf(transformed);
+                    removedItems.Add((index, RemoveSource(source)).ToTuple());
                 }
             }
 
@@ -150,9 +152,9 @@ namespace OpenBudget.Application.Collections
                 var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems);
                 CollectionChanged?.Invoke(this, args);
             }
-            else if (removedItems.Count > 0)
+            else if (removedItems.Count == 1)
             {
-                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems);
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems.Select(t => t.Item2).ToList(), removedItems[0].Item1);
                 CollectionChanged?.Invoke(this, args);
             }
             else
