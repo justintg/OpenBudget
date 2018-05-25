@@ -14,10 +14,31 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         public ObservableCollection<Account> AccountSource { get; private set; }
         public Account CurrentAccount { get; private set; }
 
-        public PayeeCellViewModel(TransactionGridColumnViewModel<EntityBase> column, TransactionGridRowViewModel row, Transaction transaction, Account currentAccount, ObservableCollection<Payee> payeeSource, ObservableCollection<Account> accountSource) : base(column, row, transaction)
+        public PayeeCellViewModel(
+            TransactionGridColumnViewModel<EntityBase> column,
+            TransactionGridRowViewModel row,
+            Transaction transaction,
+            Account currentAccount,
+            ObservableCollection<Payee> payeeSource,
+            ObservableCollection<Account> accountSource)
+            : base(column, row, transaction)
         {
             CurrentAccount = currentAccount;
             PayeeSource = payeeSource;
+            AccountSource = accountSource;
+        }
+
+        public PayeeCellViewModel(
+            TransactionGridColumnViewModel<EntityBase> column,
+            TransactionGridRowViewModel row,
+            Transaction transaction,
+            SubTransactionRowViewModel subTransactionRow,
+            SubTransaction subTransaction,
+            Account currentAccount,
+            ObservableCollection<Account> accountSource)
+            : base(column, row, transaction, subTransactionRow, subTransaction)
+        {
+            CurrentAccount = currentAccount;
             AccountSource = accountSource;
         }
 
@@ -27,7 +48,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
                 yield return new ResultCategoryViewModel("Transfer To/From Account",
                     accountResults.Select(a => new ResultItemViewModel(ConvertToDisplayText(a), a, ResultItemType.Account)));
 
-            if (payeeResults.Count > 0)
+            if (payeeResults != null && payeeResults.Count > 0)
                 yield return new ResultCategoryViewModel("Payee", payeeResults.Select(p => new ResultItemViewModel(ConvertToDisplayText(p), p, ResultItemType.Payee)));
         }
 
@@ -46,13 +67,17 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
                 return p.Name;
             }
 
-            return "ERROR";
+            throw new InvalidOperationException("Unrecognized entity in PayeeCellViewModel ConvertToDisplayText.");
         }
 
         protected override ObservableCollection<ResultCategoryViewModel> FilterResults()
         {
             var filteredAccounts = AccountSource.Where(a => a.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
-            var filteredPayees = PayeeSource.Where(p => p.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
+            List<Payee> filteredPayees = null;
+            if (this.CellType == ColumnType.Transaction)
+            {
+                filteredPayees = PayeeSource.Where(p => p.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
+            }
 
             return new ObservableCollection<ResultCategoryViewModel>(ConvertToResultCategories(filteredAccounts, filteredPayees));
 
@@ -60,8 +85,16 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         protected override EntityBase SearchTextSetValue(out bool shouldSetValue)
         {
-            shouldSetValue = true;
-            return new Payee() { Name = SearchText };
+            if (this.CellType == ColumnType.Transaction)
+            {
+                shouldSetValue = true;
+                return new Payee() { Name = SearchText };
+            }
+            else
+            {
+                shouldSetValue = false;
+                return null;
+            }
         }
     }
 }

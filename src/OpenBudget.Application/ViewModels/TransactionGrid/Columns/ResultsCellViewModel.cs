@@ -14,6 +14,17 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         public ResultsCellViewModel(TransactionGridColumnViewModel<EntityBase> column, TransactionGridRowViewModel row, Transaction transaction) : base(column, row, transaction)
         {
+            InitializeRelayCommands();
+        }
+
+        public ResultsCellViewModel(TransactionGridColumnViewModel<EntityBase> column, TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
+            : base(column, row, transaction, subTransactionRow, subTransaction)
+        {
+            InitializeRelayCommands();
+        }
+
+        private void InitializeRelayCommands()
+        {
             this.SelectResultItemCommand = new RelayCommand<ResultItemViewModel>(SelectResultItem);
         }
 

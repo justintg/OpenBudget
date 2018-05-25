@@ -71,7 +71,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 },
                 (subTransaction) =>
                 {
-
+                    subTransaction.Dispose();
                 });
         }
 

@@ -46,7 +46,7 @@ namespace OpenBudget.Application.Collections
 
         private void ResetCollection()
         {
-            foreach (var mapping in _mapping)
+            foreach (var mapping in _mapping.ToList())
             {
                 if (!_sourceCollection.Contains(mapping.Key))
                 {

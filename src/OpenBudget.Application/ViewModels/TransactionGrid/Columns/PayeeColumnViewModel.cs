@@ -29,6 +29,20 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             _currentAccount = currentAccount;
         }
 
+        public PayeeColumnViewModel(
+            Func<SubTransaction, EntityBase> getter,
+            Action<SubTransaction, EntityBase> setter,
+            string header,
+            string propertyName,
+            int width,
+            Account currentAccount,
+            ObservableCollection<Account> accountSource) :
+                base(getter, setter, header, propertyName, width)
+        {
+            _accountSource = accountSource;
+            _currentAccount = currentAccount;
+        }
+
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction)
         {
             return new PayeeCellViewModel(this, row, transaction, _currentAccount, _payeeSource, _accountSource);
@@ -36,7 +50,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
         {
-            throw new NotImplementedException();
+            return new PayeeCellViewModel(this, row, transaction, subTransactionRow, subTransaction, _currentAccount, _accountSource);
         }
     }
 }

@@ -27,6 +27,20 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             _incomeCategorySource = incomeCategorySource;
         }
 
+        public CategoryColumnViewModel(
+            Func<SubTransaction, EntityBase> getter,
+            Action<SubTransaction, EntityBase> setter,
+            string header,
+            string propertyName,
+            int width,
+            ObservableCollection<BudgetCategory> categorySource,
+            IncomeCategoryFinder incomeCategorySource)
+            : base(getter, setter, header, propertyName, width)
+        {
+            _categorySource = categorySource;
+            _incomeCategorySource = incomeCategorySource;
+        }
+
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction)
         {
             return new CategoryCellViewModel(this, row, transaction, _categorySource, _incomeCategorySource);
@@ -34,7 +48,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         public override TransactionGridCellViewModel CreateCell(TransactionGridRowViewModel row, Transaction transaction, SubTransactionRowViewModel subTransactionRow, SubTransaction subTransaction)
         {
-            throw new NotImplementedException();
+            return new CategoryCellViewModel(this, row, transaction, subTransactionRow, subTransaction, _categorySource, _incomeCategorySource);
         }
     }
 }

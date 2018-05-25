@@ -8,7 +8,7 @@ using System.Text;
 
 namespace OpenBudget.Application.ViewModels.TransactionGrid
 {
-    public class SubTransactionRowViewModel : ViewModelBase
+    public class SubTransactionRowViewModel : ViewModelBase, IDisposable
     {
         private Transaction _transaction;
         private TransactionGridRowViewModel _parentRow;
@@ -47,6 +47,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             get { return _cells; }
             set { _cells = value; RaisePropertyChanged(); }
+        }
+
+        public void Dispose()
+        {
+            foreach (var cell in Cells)
+            {
+                cell.Dispose();
+            }
         }
     }
 }
