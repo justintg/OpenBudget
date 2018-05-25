@@ -11,16 +11,18 @@ using OpenBudget.Model.Util;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    public interface ISubEntityCollection : IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent>
+    internal interface ISubEntityCollection : IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent>
     {
         IEnumerable<ModelEvent> GetChanges();
         void CancelCurrentChanges();
+        void DeleteChild(SubEntity childEntity);
     }
 
-    public class SubEntityCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, ISubEntityCollection where T : EntityBase
+    public class SubEntityCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, ISubEntityCollection where T : SubEntity
     {
         internal SubEntityCollection(EntityBase parent, Func<T> itemInitializer)
         {
+            _parent = parent;
             _itemIntializer = itemInitializer;
             _collection.CollectionChanged += (sender, e) =>
             {
@@ -31,7 +33,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
         private Dictionary<string, T> _identityMap = new Dictionary<string, T>();
         private ObservableCollection<T> _collection = new ObservableCollection<T>();
         private List<T> _pendingAdds = new List<T>();
+        private List<T> _pendingDeletes = new List<T>();
         private Func<T> _itemIntializer;
+        private EntityBase _parent;
 
         public T this[int index] => _collection[index];
 
@@ -50,13 +54,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _identityMap.Add(entity.EntityID, entity);
             _collection.Add(entity);
             _pendingAdds.Add(entity);
+            entity.Parent = _parent;
             return entity;
         }
 
         internal void Clear()
         {
-            _identityMap.Clear();
-            _collection.Clear();
+            foreach (var entity in _collection.ToList())
+            {
+                entity.Delete();
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_collection).GetEnumerator();
@@ -73,8 +80,17 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 }
             }
 
+            foreach (var entity in _pendingDeletes)
+            {
+                foreach (var change in entity.GetAndSaveChanges())
+                {
+                    yield return change;
+                }
+            }
+
             //At this point we assume changes are commited and clear pending changes
             _pendingAdds.Clear();
+            _pendingDeletes.Clear();
         }
 
         public virtual T GetEntity(string entityID)
@@ -108,15 +124,21 @@ namespace OpenBudget.Model.Infrastructure.Entities
             });
 
             T entity = (T)constructor.Invoke(new object[] { message });
-            //entity.AttachToModel(_model);
+            entity.AttachToModel(_parent.Model);
             _identityMap[entity.EntityID] = entity;
             _collection.Add(entity);
+            entity.Parent = _parent;
         }
 
         public void Handle(EntityUpdatedEvent message)
         {
             T entity = this.GetEntity(message.EntityID);
             entity.ReplayEvents(message.Yield());
+
+            if (message.Changes.ContainsKey(nameof(SubEntity.IsDeleted)) && entity.IsDeleted)
+            {
+                _collection.Remove(entity);
+            }
         }
 
         public void CancelCurrentChanges()
@@ -127,11 +149,34 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 _identityMap.Remove(pendingAdd.EntityID);
             }
 
+            foreach (var pendingDelete in _pendingDeletes)
+            {
+                _collection.Add(pendingDelete);
+            }
+
+            _pendingDeletes.Clear();
             _pendingAdds.Clear();
 
             foreach (var subEntity in _collection)
             {
                 subEntity.CancelCurrentChanges();
+            }
+        }
+
+        void ISubEntityCollection.DeleteChild(SubEntity childEntity)
+        {
+            T child = childEntity as T;
+            if (child == null) throw new InvalidOperationException();
+
+            if (_pendingAdds.Contains(child))
+            {
+                _pendingAdds.Remove(child);
+                _collection.Remove(child);
+            }
+            else
+            {
+                _pendingDeletes.Add(child);
+                _collection.Remove(child);
             }
         }
     }

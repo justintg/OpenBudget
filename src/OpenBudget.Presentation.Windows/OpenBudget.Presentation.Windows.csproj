@@ -104,6 +104,7 @@
     <Compile Include="Controls\TransactionGrid\TransactionGrid.cs" />
     <Compile Include="Converters\BooleanConverter.cs" />
     <Compile Include="Converters\MarginLeftConverter.cs" />
+    <Compile Include="Converters\SplitTransactionVisibilityConverter.cs" />
     <Compile Include="Services\WindowsBudgetLoader.cs" />
     <Compile Include="Services\WindowsNavigationService.cs" />
     <Compile Include="Services\WindowsServiceLocator.cs" />

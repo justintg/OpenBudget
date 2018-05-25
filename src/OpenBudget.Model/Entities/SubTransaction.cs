@@ -7,7 +7,7 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities
 {
-    public class SubTransaction : EntityBase
+    public class SubTransaction : SubEntity
     {
         public SubTransaction() : base(Guid.NewGuid().ToString())
         {

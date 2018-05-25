@@ -59,6 +59,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             if (e.PropertyName == nameof(Transaction.TransactionType))
             {
                 RaisePropertyChanged(nameof(IsSplitTransaction));
+                RaisePropertyChanged(nameof(ExpandSplitTransactions));
                 AddSubTransactionCommand.RaiseCanExecuteChanged();
             }
         }
@@ -140,6 +141,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             {
                 _isEditing = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ExpandSplitTransactions));
             }
         }
 
@@ -152,6 +154,24 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             {
                 _isAdding = value;
                 if (_isAdding && !IsEditing) IsEditing = true;
+                RaisePropertyChanged();
+            }
+        }
+
+        private bool _expandSplitTransactions;
+
+        public bool ExpandSplitTransactions
+        {
+            get
+            {
+                if (!IsSplitTransaction) return false;
+                if (IsEditing) return true;
+
+                return _expandSplitTransactions;
+            }
+            set
+            {
+                _expandSplitTransactions = value;
                 RaisePropertyChanged();
             }
         }

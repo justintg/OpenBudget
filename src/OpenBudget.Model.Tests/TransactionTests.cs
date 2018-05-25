@@ -38,6 +38,54 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void CanDeleteSubTransactionBeforeSave()
+        {
+            Account Account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction();
+            transaction.Amount = 100;
+            transaction.MakeSplitTransaction();
+            Account.Transactions.Add(transaction);
+
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 100;
+
+            var subTransaction2 = transaction.SubTransactions.Create();
+            subTransaction2.Amount = 100;
+
+            subTransaction.Delete();
+            Assert.That(transaction.SubTransactions.Count, Is.EqualTo(1));
+            Assert.That(transaction.SubTransactions, Has.No.Member(subTransaction));
+            Assert.That(transaction.SubTransactions, Contains.Item(subTransaction2));
+        }
+
+        [Test]
+        public void CanDeleteSubTransactionAfterSave()
+        {
+            Account Account = TestBudget.Budget.Accounts[0];
+            Transaction transaction = new Transaction();
+            transaction.Amount = 100;
+            transaction.MakeSplitTransaction();
+            Account.Transactions.Add(transaction);
+
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 50;
+
+            var subTransaction2 = transaction.SubTransactions.Create();
+            subTransaction2.Amount = 50;
+
+            TestBudget.BudgetModel.SaveChanges();
+
+            subTransaction.Delete();
+            subTransaction2.Amount = 100;
+
+            TestBudget.BudgetModel.SaveChanges();
+
+            Assert.That(transaction.SubTransactions.Count, Is.EqualTo(1));
+            Assert.That(transaction.SubTransactions, Has.No.Member(subTransaction));
+            Assert.That(transaction.SubTransactions, Contains.Item(subTransaction2));
+        }
+
+        [Test]
         public void CanCancelDeleteTransaction()
         {
             Account account = TestBudget.Budget.Accounts[0];
