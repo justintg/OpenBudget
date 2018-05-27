@@ -195,6 +195,10 @@ namespace OpenBudget.Model.Entities
 
         public void MakeSplitTransaction()
         {
+            if (Category != null)
+            {
+                Category = null;
+            }
             TransactionType = TransactionTypes.SplitTransaction;
         }
 

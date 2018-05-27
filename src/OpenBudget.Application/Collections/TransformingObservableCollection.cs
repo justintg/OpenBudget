@@ -203,13 +203,13 @@ namespace OpenBudget.Application.Collections
 
         public void Dispose()
         {
+            _collectionChanged.CollectionChanged -= SourceCollection_CollectionChanged;
             _transformedCollection.Clear();
             foreach (var transformed in _mapping.Values)
             {
                 _onRemovedAction(transformed);
             }
             _mapping.Clear();
-            _collectionChanged.CollectionChanged -= CollectionChanged;
             _collectionChanged = null;
             _sourceCollection = null;
             _transformedCollection = null;
