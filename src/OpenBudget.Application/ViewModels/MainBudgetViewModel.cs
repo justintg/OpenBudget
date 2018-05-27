@@ -39,7 +39,6 @@ namespace OpenBudget.Application.ViewModels
         private void InitialiseRelayCommands()
         {
             this.AddAccountCommand = new RelayCommand(this.AddAccount);
-            this.RenameAccountCommand = new RelayCommand(this.RenameAccount);
         }
 
         private ViewModelBase _currentScreen;
@@ -103,23 +102,6 @@ namespace OpenBudget.Application.ViewModels
         private void AddAccount()
         {
             _navigationService.NavigateTo<AddAccountViewModel>(true);
-        }
-
-        /// <summary>
-        /// Gets the command to rename the selected Account.
-        /// </summary>
-        public RelayCommand RenameAccountCommand { get; private set; }
-
-        private void RenameAccount()
-        {
-            if (this.SelectedAccount == null)
-            {
-                return;
-            }
-
-            // Read models wrap changes directly for us
-            this.SelectedAccount.Name = $"Renamed Account ({_renameCount++})";
-            this.BudgetModel.SaveChanges();
         }
     }
 }

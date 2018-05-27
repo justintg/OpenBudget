@@ -21,7 +21,6 @@
         <DockPanel>
 
             <Button DockPanel.Dock="Bottom" Content="Add Account" Command="{Binding AddAccountCommand}" />
-            <Button DockPanel.Dock="Bottom" Content="Rename Account" Command="{Binding RenameAccountCommand}" />
             <ListBox ItemsSource="{Binding BudgetModel.Budget.Accounts}" SelectedItem="{Binding SelectedAccount}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
