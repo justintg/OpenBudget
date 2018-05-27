@@ -7,6 +7,7 @@ using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace OpenBudget.Application.ViewModels
 {
@@ -30,16 +31,22 @@ namespace OpenBudget.Application.ViewModels
                     this.BudgetModel = _mainViewModel.BudgetModel;
                 }
             };
-            InitialiseRelayCommands();
+
+            _menu = new BudgetMenuViewModel(_mainViewModel, _navigationService, (screen) => { CurrentScreen = screen; });
         }
 
-        /// <summary>
-        /// Initialise all relay command properties
-        /// </summary>
-        private void InitialiseRelayCommands()
+        private BudgetMenuViewModel _menu;
+
+        public BudgetMenuViewModel Menu
         {
-            this.AddAccountCommand = new RelayCommand(this.AddAccount);
+            get { return _menu; }
+            private set
+            {
+                _menu = value;
+                RaisePropertyChanged();
+            }
         }
+
 
         private ViewModelBase _currentScreen;
 
@@ -55,8 +62,6 @@ namespace OpenBudget.Application.ViewModels
                 _currentScreen = value; RaisePropertyChanged();
             }
         }
-
-        private int _renameCount = 0;
 
         private Account _selectedAccount;
 
@@ -89,19 +94,6 @@ namespace OpenBudget.Application.ViewModels
                 CurrentScreen = null;
                 RaisePropertyChanged();
             }
-        }
-
-        /// <summary>
-        /// Gets the command to add an Account.
-        /// </summary>
-        public RelayCommand AddAccountCommand { get; private set; }
-
-        /// <summary>
-        /// Adds a new account.
-        /// </summary>
-        private void AddAccount()
-        {
-            _navigationService.NavigateTo<AddAccountViewModel>(true);
         }
     }
 }

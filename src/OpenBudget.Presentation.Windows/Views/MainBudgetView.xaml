@@ -18,20 +18,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <DockPanel>
-
-            <Button DockPanel.Dock="Bottom" Content="Add Account" Command="{Binding AddAccountCommand}" />
-            <ListBox ItemsSource="{Binding BudgetModel.Budget.Accounts}" SelectedItem="{Binding SelectedAccount}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Name}" />
-                            <TextBlock Text="{Binding Balance, StringFormat=C}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </DockPanel>
+        <local:BudgetMenuView DataContext="{Binding Menu}"/>
 
         <GridSplitter Width="4" Grid.Column="1" Grid.RowSpan="1" HorizontalAlignment="Stretch"/>
 

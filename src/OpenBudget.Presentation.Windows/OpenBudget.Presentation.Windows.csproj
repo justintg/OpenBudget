@@ -95,6 +95,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\PopUpAdorner.cs" />
+    <Compile Include="Controls\SelectableButton.cs" />
     <Compile Include="Controls\TransactionGrid\Columns\ResultItem.cs" />
     <Compile Include="Controls\TransactionGrid\TransactionGridHeader.cs" />
     <Compile Include="Controls\TransactionGrid\TransactionGridCell.cs" />
@@ -113,6 +114,9 @@
     <Compile Include="ViewModels\WindowsMainViewModel.cs" />
     <Compile Include="Views\AddAccountView.xaml.cs">
       <DependentUpon>AddAccountView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BudgetMenuView.xaml.cs">
+      <DependentUpon>BudgetMenuView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CreateBudgetView.xaml.cs">
       <DependentUpon>CreateBudgetView.xaml</DependentUpon>
@@ -136,6 +140,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\AddAccountView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BudgetMenuView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -30,6 +30,7 @@ namespace OpenBudget.Presentation.Windows.Services
             _container.Bind<ISettingsProvider>().To<WindowsSettingsProvider>().InSingletonScope();
             _container.Bind<INavigationService>().To<WindowsNavigationService>().InSingletonScope();
             _container.Bind<WindowsMainViewModel, MainViewModel>().To<WindowsMainViewModel>().InSingletonScope();
+            _container.Bind<MainBudgetViewModel>().To<MainBudgetViewModel>().InSingletonScope();
         }
 
         public TInterface GetInstance<TInterface>()
