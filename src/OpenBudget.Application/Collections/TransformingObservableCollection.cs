@@ -9,7 +9,7 @@ using System.Text;
 
 namespace OpenBudget.Application.Collections
 {
-    public class TransformingObservableCollection<TSource, TTransformed> : IList<TTransformed>, INotifyCollectionChanged, IDisposable
+    public class TransformingObservableCollection<TSource, TTransformed> : IList<TTransformed>, INotifyCollectionChanged, IDisposable where TTransformed : class
     {
         private IReadOnlyList<TSource> _sourceCollection;
         private INotifyCollectionChanged _collectionChanged;
@@ -71,10 +71,11 @@ namespace OpenBudget.Application.Collections
 
         private void ReorderCollection()
         {
-            if (_sortAction != null)
+            if (_comparison != null)
             {
-                _sortAction();
+                _transformedCollection.Sort(_comparison);
             }
+            else
             {
                 _transformedCollection.Clear();
                 foreach (var source in _sourceCollection)
@@ -84,36 +85,66 @@ namespace OpenBudget.Application.Collections
                     {
                         _transformedCollection.Add(transformed);
                     }
-                    else
-                    {
-                        throw new InvalidOperationException();
-                    }
                 }
             }
         }
 
-        private Action _sortAction;
+        private Comparison<TTransformed> _comparison = null;
+        private IComparer<TTransformed> _comparer = null;
+        private Predicate<TTransformed> _predicate = null;
 
         public void Sort<TKey>(Func<TTransformed, TKey> orderFunc)
         {
-            _sortAction = () =>
-            {
-                _transformedCollection = _transformedCollection.OrderBy(orderFunc).ToList();
-                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
-                CollectionChanged?.Invoke(this, args);
-            };
-            _sortAction();
+            IComparer<TKey> comparer = Comparer<TKey>.Default;
+            _comparison = (x, y) => comparer.Compare(orderFunc(x), orderFunc(y));
+            _comparer = Comparer<TTransformed>.Create(_comparison);
+
+            _transformedCollection.Sort(_comparison);
+            var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+            CollectionChanged?.Invoke(this, args);
         }
 
         public void SortDescending<TKey>(Func<TTransformed, TKey> orderFunc)
         {
-            _sortAction = () =>
+            IComparer<TKey> comparer = Comparer<TKey>.Default;
+            _comparison = (x, y) => -1 * comparer.Compare(orderFunc(x), orderFunc(y));
+
+            _transformedCollection.Sort(_comparison);
+            var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+            CollectionChanged?.Invoke(this, args);
+        }
+
+        public void Filter(Predicate<TTransformed> predicate)
+        {
+            _predicate = predicate;
+            _transformedCollection = null;
+            foreach (var source in _sourceCollection)
             {
-                _transformedCollection = _transformedCollection.OrderByDescending(orderFunc).ToList();
-                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
-                CollectionChanged?.Invoke(this, args);
-            };
-            _sortAction();
+                TTransformed transformed = default(TTransformed);
+                if (_mapping.TryGetValue(source, out transformed))
+                {
+                    if (!predicate(transformed))
+                    {
+                        _mapping.Remove(source);
+                        _onRemovedAction(transformed);
+                    }
+                }
+                else
+                {
+                    transformed = _onAddAction(source);
+                    if (predicate(transformed))
+                    {
+                        _mapping.Add(source, transformed);
+                    }
+                    else
+                    {
+                        _onRemovedAction(transformed);
+                    }
+                }
+            }
+
+            _transformedCollection = _mapping.Values.ToList();
+            ReorderCollection();
         }
 
         private void SourceCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -129,7 +160,11 @@ namespace OpenBudget.Application.Collections
             {
                 foreach (TSource source in e.NewItems)
                 {
-                    newItems.Add(AddSource(source));
+                    TTransformed newTransformed = AddSource(source);
+                    if (newTransformed != null)
+                    {
+                        newItems.Add(newTransformed);
+                    }
                 }
             }
 
@@ -149,8 +184,7 @@ namespace OpenBudget.Application.Collections
             }
             else if (newItems.Count > 0)
             {
-                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems);
-                CollectionChanged?.Invoke(this, args);
+                
             }
             else if (removedItems.Count == 1)
             {
@@ -166,8 +200,31 @@ namespace OpenBudget.Application.Collections
         private TTransformed AddSource(TSource source)
         {
             var transformed = _onAddAction(source);
+            if (_predicate != null && !_predicate(transformed))
+            {
+                _onRemovedAction(transformed);
+                return null;
+            }
+
             _mapping.Add(source, transformed);
-            _transformedCollection.Add(transformed);
+            if (_comparison != null)
+            {
+                int index = _transformedCollection.BinarySearch(transformed, _comparer);
+                if (index < 0)
+                    index = ~index;
+
+                _transformedCollection.Insert(index, transformed);
+                TTransformed[] newItems = new TTransformed[] { transformed };
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems.ToList(), index);
+                CollectionChanged?.Invoke(this, args);
+            }
+            else
+            {
+                _transformedCollection.Add(transformed);
+                TTransformed[] newItems = new TTransformed[] { transformed };
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems.ToList());
+            }
+
             return transformed;
         }
 
