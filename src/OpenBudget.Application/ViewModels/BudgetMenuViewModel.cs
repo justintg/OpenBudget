@@ -64,7 +64,14 @@ namespace OpenBudget.Application.ViewModels
 
             if (OnBudgetAccounts != null)
             {
+                OnBudgetAccounts.CollectionChanged -= OnBudgetAccounts_CollectionChanged;
                 OnBudgetAccounts.Dispose();
+            }
+
+            if (OffBudgetAccounts != null)
+            {
+                OffBudgetAccounts.CollectionChanged -= OffBudgetAccounts_CollectionChanged;
+                OffBudgetAccounts.Dispose();
             }
 
             OnBudgetAccounts = new TransformingObservableCollection<Account, BudgetMenuItemViewModel>(_budgetModel.Budget.Accounts,
@@ -72,7 +79,27 @@ namespace OpenBudget.Application.ViewModels
                 {
                     return new BudgetMenuItemViewModel(MenuItemTypes.Account, account.Name, account);
                 },
-                a => { });
+                a => { }, a => a.AccountType == AccountBudgetTypes.OnBudget, null);
+
+            OnBudgetAccounts.CollectionChanged += OnBudgetAccounts_CollectionChanged;
+
+            OffBudgetAccounts = new TransformingObservableCollection<Account, BudgetMenuItemViewModel>(_budgetModel.Budget.Accounts,
+                (account) =>
+                {
+                    return new BudgetMenuItemViewModel(MenuItemTypes.Account, account.Name, account);
+                },
+                a => { },
+                a => a.AccountType == AccountBudgetTypes.OffBudget, null);
+
+            OffBudgetAccounts.CollectionChanged += OffBudgetAccounts_CollectionChanged;
+        }
+
+        private void OnBudgetAccounts_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+        }
+
+        private void OffBudgetAccounts_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
         }
 
         /// <summary>
@@ -120,6 +147,14 @@ namespace OpenBudget.Application.ViewModels
         {
             get { return _onBudgetAccounts; }
             private set { _onBudgetAccounts = value; RaisePropertyChanged(); }
+        }
+
+        private TransformingObservableCollection<Account, BudgetMenuItemViewModel> _offBudgetAccounts;
+
+        public TransformingObservableCollection<Account, BudgetMenuItemViewModel> OffBudgetAccounts
+        {
+            get { return _offBudgetAccounts; }
+            private set { _offBudgetAccounts = value; RaisePropertyChanged(); }
         }
 
 

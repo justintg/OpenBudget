@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using OpenBudget.Model.Serialization;
 
 namespace OpenBudget.Model.EventStream
 {

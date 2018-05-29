@@ -4,6 +4,7 @@ using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,26 +47,43 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
+        private decimal _balance;
+        private bool _balanceCalculated = false;
+
         public decimal Balance
         {
             get
             {
-                return Transactions.Sum(t => t.Amount);
+                if (!_balanceCalculated) CalculateBalance();
+                return _balance;
             }
         }
 
-        private PropertyChangedMessageFilter<Transaction> _amountUpdatedFilter;
+        private void CalculateBalance()
+        {
+            _balanceCalculated = true;
+            _balance = Transactions.Sum(t => t.Amount);
+        }
+
+        private void BalanceChanged()
+        {
+            if (_balanceCalculated) CalculateBalance();
+            RaisePropertyChanged(nameof(Balance));
+        }
+
+        //private PropertyChangedMessageFilter<Transaction> _amountUpdatedFilter;
 
         internal override void AttachToModel(BudgetModel model)
         {
             base.AttachToModel(model);
 
-            _amountUpdatedFilter = new PropertyChangedMessageFilter<Transaction>(model, id => Transactions.Select(t => t.EntityID).Contains(id), nameof(Transaction.Amount), e => BalanceChanged());
-        }
+            model.MessageBus.EntityCreatedOrUpdated
+                .Where(e => e.EntityType == nameof(Transaction)
+                && Transactions.Select(t => t.EntityID).Contains(e.EntityID)
+                && e.Changes.ContainsKey(nameof(Transaction.Amount)))
+                .Subscribe(e => BalanceChanged());
 
-        private void BalanceChanged()
-        {
-            RaisePropertyChanged(nameof(Balance));
+            //_amountUpdatedFilter = new PropertyChangedMessageFilter<Transaction>(model, id => Transactions.Select(t => t.EntityID).Contains(id), nameof(Transaction.Amount), e => BalanceChanged());
         }
 
         public EntityCollection<Transaction> Transactions { get; private set; }

@@ -1,13 +1,13 @@
-﻿using OpenBudget.Model.Infrastructure;
+﻿using OpenBudget.Model.Event;
+using OpenBudget.Model.EventStream;
+using OpenBudget.Model.Infrastructure;
+using OpenBudget.Model.Serialization;
+using SQLite;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using OpenBudget.Model.Event;
-using SQLite;
-using OpenBudget.Model.Util;
-using System.Linq;
-using OpenBudget.Model.EventStream;
 using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace OpenBudget.Model.SQLite
 {

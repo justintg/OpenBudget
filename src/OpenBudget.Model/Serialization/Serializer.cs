@@ -1,16 +1,9 @@
-﻿using OpenBudget.Model.Entities;
-using OpenBudget.Model.Event;
-using OpenBudget.Model.Infrastructure;
-using OpenBudget.Model.Infrastructure.Entities;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
-namespace OpenBudget.Model.Util
+namespace OpenBudget.Model.Serialization
 {
     public class Serializer
     {
@@ -81,51 +74,5 @@ namespace OpenBudget.Model.Util
         }
 
         public JsonSerializer GetJsonSerializer() => _serializer;
-    }
-
-    public class EventTypeBinder : ISerializationBinder
-    {
-        private Dictionary<int, Type> eventMapping = new Dictionary<int, Type>
-        {
-            [0] = typeof(EntityCreatedEvent),
-            [1] = typeof(EntityUpdatedEvent),
-            [2] = typeof(EntityReference),
-            [3] = typeof(GroupedFieldChangeEvent),
-            [4] = typeof(ConflictResolutionEvent),
-            [50] = typeof(TypedFieldChange<string>),
-            [51] = typeof(TypedFieldChange<EntityReference>),
-            [52] = typeof(TypedFieldChange<decimal>),
-            [53] = typeof(TypedFieldChange<DateTime>),
-            [54] = typeof(TypedFieldChange<AccountBudgetTypes>),
-            [55] = typeof(TypedFieldChange<TransactionTypes>),
-            [56] = typeof(TypedFieldChange<bool>)
-        };
-
-        public void BindToName(Type serializedType, out string assemblyName, out string typeName)
-        {
-            var mapping = eventMapping.Where(kvp => kvp.Value == serializedType).Single();
-            assemblyName = null;
-            typeName = mapping.Key.ToString();
-        }
-
-        public Type BindToType(string assemblyName, string typeName)
-        {
-            int index = int.Parse(typeName);
-            return eventMapping[index];
-        }
-    }
-
-    public class CustomResolver : DefaultContractResolver
-    {
-        protected override JsonContract CreateContract(Type objectType)
-        {
-            // if type implements your interface - serialize it as object
-            if (typeof(VectorClock).IsAssignableFrom(objectType))
-            {
-                return base.CreateObjectContract(objectType);
-            }
-
-            return base.CreateContract(objectType);
-        }
     }
 }

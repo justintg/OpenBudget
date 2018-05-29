@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
+using OpenBudget.Model.Serialization;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {

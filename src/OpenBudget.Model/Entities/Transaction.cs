@@ -22,6 +22,13 @@ namespace OpenBudget.Model.Entities
         SplitOtherSide = 4
     }
 
+    public enum TransactionStatuses
+    {
+        Normal,
+        Cleared,
+        Reconciled
+    }
+
     public class Transaction : EntityBase
     {
         public Transaction()
@@ -170,6 +177,12 @@ namespace OpenBudget.Model.Entities
             set => SetEntityReference(value);
         }
 
+        public TransactionStatuses TransactionStatus
+        {
+            get => GetProperty<TransactionStatuses>();
+            set => SetProperty(value);
+        }
+
         public SubEntityCollection<SubTransaction> SubTransactions { get; private set; }
 
         private void MakeTransfer(Account account)
@@ -201,6 +214,8 @@ namespace OpenBudget.Model.Entities
             }
             TransactionType = TransactionTypes.SplitTransaction;
         }
+
+
 
         protected override void OnReplayChange(string field, object previousValue, FieldChange change)
         {
