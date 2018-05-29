@@ -38,7 +38,27 @@
                 <TextBlock Text="{Binding Label}" />
             </controls:SelectableButton>
 
+            <TextBlock Text="On-Budget Accounts" />
+
             <ItemsControl ItemsSource="{Binding OnBudgetAccounts}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:SelectableButton
+                                   IsSelected="{Binding IsSelected}"
+                                   Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
+                                   CommandParameter="{Binding}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
+                                <TextBlock Text="{Binding Payload.Name}" />
+                            </DockPanel>
+                        </controls:SelectableButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Off-Budget Accounts" />
+
+            <ItemsControl ItemsSource="{Binding OffBudgetAccounts}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <controls:SelectableButton
