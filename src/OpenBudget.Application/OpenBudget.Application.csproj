@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MvvmLightLibsStd10" Version="5.4.0.1-alpha" />
+    <PackageReference Include="MvvmLightLibsStd10" Version="5.4.1" />
   </ItemGroup>
 
   <ItemGroup>
