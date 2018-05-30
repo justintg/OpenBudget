@@ -18,6 +18,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -32,7 +33,10 @@
             <TextBox Text="{Binding InitialBalance}" Grid.Row="1" Grid.Column="1"/>
 
             <Label Content="Account Type" Grid.Row="2" />
-            <ComboBox ItemsSource="{Binding AccountTypes}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedAccountType}" Grid.Row="2" Grid.Column="1"/>
+            <ComboBox ItemsSource="{Binding AccountTypesList}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedAccountType}" Grid.Row="2" Grid.Column="1"/>
+
+            <Label Content="Budgeting Type" Grid.Row="3" />
+            <ComboBox ItemsSource="{Binding BudgetingTypesList}" DisplayMemberPath="Label" SelectedItem="{Binding SelectedBudgetingType}" Grid.Row="3" Grid.Column="1"/>
 
         </Grid>
     </DockPanel>

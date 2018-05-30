@@ -38,7 +38,11 @@
                 <TextBlock Text="{Binding Label}" />
             </controls:SelectableButton>
 
-            <TextBlock Text="On-Budget Accounts" />
+            <DockPanel>
+                <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" />
+                <TextBlock Text="On-Budget Accounts" />
+            </DockPanel>
+
 
             <ItemsControl ItemsSource="{Binding OnBudgetAccounts}">
                 <ItemsControl.ItemTemplate>
@@ -56,7 +60,10 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <TextBlock Text="Off-Budget Accounts" />
+            <DockPanel>
+                <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" />
+                <TextBlock Text="Off-Budget Accounts" />
+            </DockPanel>
 
             <ItemsControl ItemsSource="{Binding OffBudgetAccounts}">
                 <ItemsControl.ItemTemplate>

@@ -11,11 +11,11 @@ using System.Collections.ObjectModel;
 
 namespace OpenBudget.Application.ViewModels
 {
-    public class AccountTypeItem : ViewModelBase
+    public class BudgetingTypeItem : ViewModelBase
     {
-        private AccountBudgetTypes _value;
+        private BudgetingTypes _value;
 
-        public AccountBudgetTypes Value
+        public BudgetingTypes Value
         {
             get { return _value; }
             private set { _value = value; RaisePropertyChanged(); }
@@ -29,12 +29,48 @@ namespace OpenBudget.Application.ViewModels
             private set { _label = value; RaisePropertyChanged(); }
         }
 
-        public AccountTypeItem(AccountBudgetTypes value, string label)
+        public BudgetingTypeItem(BudgetingTypes value)
         {
             _value = value;
-            _label = label;
+            _label = LabelAttribute.GetLabel(value);
         }
     }
+
+    public class AccountTypeItem : ViewModelBase
+    {
+        private AccountTypes _value;
+
+        public AccountTypes Value
+        {
+            get { return _value; }
+            set { _value = value; RaisePropertyChanged(); }
+        }
+
+        private string _label;
+
+        public string Label
+        {
+            get { return _label; }
+            set { _label = value; RaisePropertyChanged(); }
+        }
+
+        private BudgetingTypes _defaultBudgetingType;
+
+        public BudgetingTypes DefaultBudgetingType
+        {
+            get { return _defaultBudgetingType; }
+            set { _defaultBudgetingType = value; RaisePropertyChanged(); }
+        }
+
+
+        public AccountTypeItem(AccountTypes value)
+        {
+            _value = value;
+            _label = LabelAttribute.GetLabel(value);
+            _defaultBudgetingType = DefaultBudgetingAttribute.GetDefaultBudgetingType(value);
+        }
+    }
+
     public class AddAccountViewModel : ClosableViewModel
     {
         private MainViewModel _mainViewModel;
@@ -54,13 +90,18 @@ namespace OpenBudget.Application.ViewModels
 
         private void InitializeAccountTypes()
         {
-            IEnumerable<AccountTypeItem> accountTypes = Enum.GetValues(typeof(AccountBudgetTypes))
-                .Cast<AccountBudgetTypes>()
-                .Where(v => v != AccountBudgetTypes.None)
-                .Select(v => new AccountTypeItem(v, LabelAttribute.GetLabel(v)));
+            IEnumerable<AccountTypeItem> accountTypes = Enum.GetValues(typeof(AccountTypes))
+                .Cast<AccountTypes>()
+                .Select(v => new AccountTypeItem(v));
 
-            _accountTypes = new ObservableCollection<AccountTypeItem>(accountTypes);
-            _selectedAccountType = _accountTypes[0];
+            IEnumerable<BudgetingTypeItem> budgetingTypes = Enum.GetValues(typeof(BudgetingTypes))
+                .Cast<BudgetingTypes>()
+                .Where(v => v != BudgetingTypes.None)
+                .Select(v => new BudgetingTypeItem(v));
+
+            AccountTypesList = new ObservableCollection<AccountTypeItem>(accountTypes);
+            BudgetingTypesList = new ObservableCollection<BudgetingTypeItem>(budgetingTypes);
+            SelectedAccountType = AccountTypesList[0];
         }
 
         private void InitializeRelayCommands()
@@ -77,12 +118,12 @@ namespace OpenBudget.Application.ViewModels
             set { _account = value; RaisePropertyChanged(); }
         }
 
-        private ObservableCollection<AccountTypeItem> _accountTypes;
+        private ObservableCollection<AccountTypeItem> _accountTypesList;
 
-        public ObservableCollection<AccountTypeItem> AccountTypes
+        public ObservableCollection<AccountTypeItem> AccountTypesList
         {
-            get { return _accountTypes; }
-            set { _accountTypes = value; RaisePropertyChanged(); }
+            get { return _accountTypesList; }
+            set { _accountTypesList = value; RaisePropertyChanged(); }
         }
 
         private AccountTypeItem _selectedAccountType;
@@ -90,7 +131,29 @@ namespace OpenBudget.Application.ViewModels
         public AccountTypeItem SelectedAccountType
         {
             get { return _selectedAccountType; }
-            set { _selectedAccountType = value; RaisePropertyChanged(); }
+            set
+            {
+                _selectedAccountType = value;
+                var defaultBudgetingType = BudgetingTypesList.Where(b => b.Value == _selectedAccountType.DefaultBudgetingType).Single();
+                SelectedBudgetingType = defaultBudgetingType;
+                RaisePropertyChanged();
+            }
+        }
+
+        private ObservableCollection<BudgetingTypeItem> _budgetingTypesList;
+
+        public ObservableCollection<BudgetingTypeItem> BudgetingTypesList
+        {
+            get { return _budgetingTypesList; }
+            set { _budgetingTypesList = value; RaisePropertyChanged(); }
+        }
+
+        private BudgetingTypeItem _selectedBudgetingType;
+
+        public BudgetingTypeItem SelectedBudgetingType
+        {
+            get { return _selectedBudgetingType; }
+            set { _selectedBudgetingType = value; RaisePropertyChanged(); }
         }
 
         private decimal _initialBalance;
@@ -120,6 +183,7 @@ namespace OpenBudget.Application.ViewModels
             }
 
             Account.AccountType = SelectedAccountType.Value;
+            Account.BudgetingType = SelectedBudgetingType.Value;
 
             budgetModel.Budget.Accounts.Add(_account);
             budgetModel.SaveChanges();

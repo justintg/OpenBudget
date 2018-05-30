@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -17,17 +18,19 @@ namespace OpenBudget.Application.Collections
         private List<TTransformed> _transformedCollection;
         Func<TSource, TTransformed> _onAddAction;
         Action<TTransformed> _onRemovedAction;
+        private bool _listenForChanges;
 
         public TransformingObservableCollection(
             IReadOnlyList<TSource> sourceCollection,
             Func<TSource, TTransformed> onAddAction,
             Action<TTransformed> onRemovedAction)
-            : this(sourceCollection, onAddAction, onRemovedAction, null, null)
+            : this(sourceCollection, onAddAction, onRemovedAction, null, null, false)
         {
         }
 
-        public TransformingObservableCollection(IReadOnlyList<TSource> sourceCollection, Func<TSource, TTransformed> onAddAction, Action<TTransformed> onRemovedAction, Predicate<TSource> predicate, Comparison<TTransformed> comparison)
+        public TransformingObservableCollection(IReadOnlyList<TSource> sourceCollection, Func<TSource, TTransformed> onAddAction, Action<TTransformed> onRemovedAction, Predicate<TSource> predicate, Comparison<TTransformed> comparison, bool listenForChanges)
         {
+            _listenForChanges = listenForChanges;
             _predicate = predicate;
             _comparison = comparison;
             if (_comparison != null)
@@ -47,6 +50,8 @@ namespace OpenBudget.Application.Collections
             _onRemovedAction = onRemovedAction;
             InitializeCollection();
         }
+
+        public event PropertyChangedEventHandler ItemPropertyChanged;
 
         private void InitializeCollection()
         {
@@ -227,7 +232,17 @@ namespace OpenBudget.Application.Collections
                 CollectionChanged?.Invoke(this, args);
             }
 
+            if (_listenForChanges && transformed is INotifyPropertyChanged propChanged)
+            {
+                propChanged.PropertyChanged += Item_PropertyChanged;
+            }
+
             return transformed;
+        }
+
+        private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ItemPropertyChanged?.Invoke(sender, e);
         }
 
         private TTransformed RemoveSource(TSource source)
@@ -236,6 +251,11 @@ namespace OpenBudget.Application.Collections
             if (!_mapping.TryGetValue(source, out transformed))
             {
                 throw new InvalidOperationException();
+            }
+
+            if (_listenForChanges && transformed is INotifyPropertyChanged propChanged)
+            {
+                propChanged.PropertyChanged -= Item_PropertyChanged;
             }
 
             TTransformed[] removedItems = new TTransformed[] { transformed };
@@ -273,6 +293,10 @@ namespace OpenBudget.Application.Collections
             _transformedCollection.Clear();
             foreach (var transformed in _mapping.Values)
             {
+                if (_listenForChanges && transformed is INotifyPropertyChanged propChanged)
+                {
+                    propChanged.PropertyChanged -= Item_PropertyChanged;
+                }
                 _onRemovedAction(transformed);
             }
             _mapping.Clear();
