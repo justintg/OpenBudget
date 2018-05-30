@@ -16,6 +16,11 @@ namespace OpenBudget.Model.Tests
     [TestFixture]
     public class SerializationTests
     {
+        public void Test()
+        {
+
+        }
+
         [Test]
         public void EventStreamCanRoundTripFields()
         {
