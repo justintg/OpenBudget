@@ -26,7 +26,7 @@ namespace OpenBudget.Model.Tests
         {
             EntityCreatedEvent evt = new EntityCreatedEvent(nameof(Account), Guid.NewGuid().ToString());
             evt.AddChange("Decimal", FieldChange.Create<decimal>(default(decimal), 100000M));
-            evt.AddChange("Enum", FieldChange.Create<AccountBudgetTypes>(default(AccountBudgetTypes), AccountBudgetTypes.OnBudget));
+            evt.AddChange("Enum", FieldChange.Create<BudgetingTypes>(default(BudgetingTypes), BudgetingTypes.OnBudget));
             evt.AddChange("String", FieldChange.Create<string>(default(string), "Test"));
             evt.AddChange("Date", FieldChange.Create<DateTime>(default(DateTime), DateTime.Now));
 
@@ -54,7 +54,7 @@ namespace OpenBudget.Model.Tests
              */
             EntityCreatedEvent evt = new EntityCreatedEvent(nameof(Account), Guid.NewGuid().ToString());
             evt.AddChange("Decimal", FieldChange.Create<decimal>(500M, 100000M));
-            evt.AddChange("Enum", FieldChange.Create<AccountBudgetTypes>(AccountBudgetTypes.OffBudget, AccountBudgetTypes.OnBudget));
+            evt.AddChange("Enum", FieldChange.Create<BudgetingTypes>(BudgetingTypes.OffBudget, BudgetingTypes.OnBudget));
             evt.AddChange("String", FieldChange.Create<string>(default(string), "Test"));
             evt.AddChange("Date", FieldChange.Create<DateTime>(default(DateTime), DateTime.Now));
 
@@ -62,7 +62,7 @@ namespace OpenBudget.Model.Tests
             EntityCreatedEvent roundTripEvent = EventStreamRoundTripEvent(evt);
 
             Assert.That(roundTripEvent.Changes["Decimal"].PreviousValue, Is.EqualTo(default(decimal)));
-            Assert.That(roundTripEvent.Changes["Enum"].PreviousValue, Is.EqualTo(default(AccountBudgetTypes)));
+            Assert.That(roundTripEvent.Changes["Enum"].PreviousValue, Is.EqualTo(default(BudgetingTypes)));
             Assert.That(roundTripEvent.Changes["String"].PreviousValue, Is.EqualTo(default(string)));
             Assert.That(roundTripEvent.Changes["Date"].PreviousValue, Is.EqualTo(default(DateTime)));
         }

@@ -10,13 +10,32 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Entities
 {
-    public enum AccountBudgetTypes
+    public enum BudgetingTypes
     {
         None = 0,
         [Label("On-Budget")]
         OnBudget = 1,
         [Label("Off-Budget")]
         OffBudget = 2
+    }
+
+    public enum AccountTypes
+    {
+        [Label("Checking")]
+        [DefaultBudgeting(BudgetingTypes.OnBudget)]
+        Checking,
+
+        [Label("Savings")]
+        [DefaultBudgeting(BudgetingTypes.OnBudget)]
+        Savings,
+
+        [Label("Credit Card")]
+        [DefaultBudgeting(BudgetingTypes.OnBudget)]
+        CreditCard,
+
+        [Label("Investment Account")]
+        [DefaultBudgeting(BudgetingTypes.OffBudget)]
+        Investment
     }
 
     public class Account : EntityBase
@@ -41,9 +60,15 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
-        public AccountBudgetTypes AccountType
+        public AccountTypes AccountType
         {
-            get { return GetProperty<AccountBudgetTypes>(); }
+            get { return GetProperty<AccountTypes>(); }
+            set { SetProperty(value); }
+        }
+
+        public BudgetingTypes BudgetingType
+        {
+            get { return GetProperty<BudgetingTypes>(); }
             set { SetProperty(value); }
         }
 
