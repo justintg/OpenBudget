@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
 using OpenBudget.Application.Collections;
 using OpenBudget.Application.PlatformServices;
+using OpenBudget.Application.ViewModels.BudgetEditor;
 using OpenBudget.Application.ViewModels.TransactionGrid;
 using OpenBudget.Model;
 using OpenBudget.Model.Entities;
@@ -39,6 +40,11 @@ namespace OpenBudget.Application.ViewModels
             InitializeRelayCommands();
 
             _budgetViewItem = new BudgetMenuItemViewModel(MenuItemTypes.BudgetView, "Budget", null);
+        }
+
+        public void SelectDefaultItem()
+        {
+            SelectMenuItemCommand.Execute(_budgetViewItem);
         }
 
         private void InitializeRelayCommands()
@@ -162,6 +168,8 @@ namespace OpenBudget.Application.ViewModels
             switch (menuItem.MenuItemType)
             {
                 case MenuItemTypes.BudgetView:
+                    var budgetEditor = new BudgetEditorViewModel();
+                    _showScreenCallback(budgetEditor);
                     break;
                 case MenuItemTypes.Account:
                     Account account = menuItem.Payload as Account;

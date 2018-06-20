@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels;assembly=OpenBudget.Application"
         xmlns:vmTrx="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application"
+        xmlns:vmBudget="clr-namespace:OpenBudget.Application.ViewModels.BudgetEditor;assembly=OpenBudget.Application"
         xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
         mc:Ignorable="d"
         Title="{Binding Header}" Height="600" Width="885.938">
@@ -23,6 +24,10 @@
 
         <DataTemplate DataType="{x:Type vmTrx:TransactionGridViewModel}" x:Shared="False">
             <local:TransactionGridView IsTabStop="False"/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vmBudget:BudgetEditorViewModel}" x:Shared="False">
+            <local:BudgetEditorView IsTabStop="False"/>
         </DataTemplate>
     </Window.Resources>
     <DockPanel>
