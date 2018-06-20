@@ -33,6 +33,11 @@ namespace OpenBudget.Application.ViewModels
             };
 
             _menu = new BudgetMenuViewModel(_mainViewModel, _navigationService, (screen) => { CurrentScreen = screen; });
+            if (this.BudgetModel != null)
+            {
+                _menu.SelectDefaultItem();
+            }
+
         }
 
         private BudgetMenuViewModel _menu;
@@ -93,6 +98,7 @@ namespace OpenBudget.Application.ViewModels
                 SelectedAccount = null;
                 CurrentScreen = null;
                 RaisePropertyChanged();
+                _menu?.SelectDefaultItem();
             }
         }
     }

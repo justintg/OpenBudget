@@ -97,6 +97,8 @@ namespace OpenBudget.Application.ViewModels
             if (budgetPath == null)
                 return;
 
+            InitializeDefaultCategories();
+
             BudgetModel budget = _budgetLoader.CreateNewBudget(budgetPath, Budget);
 
             var deviceSettings = _settingsProvider.Get<Device>();
@@ -107,6 +109,37 @@ namespace OpenBudget.Application.ViewModels
             _mainViewModel.MountBudget(budget);
             _budget.ErrorsChanged -= Budget_ErrorsChanged;
             _navigationService.NavigateTo<MainBudgetViewModel>();
+        }
+
+        private void InitializeDefaultCategories()
+        {
+            Budget.BudgetCategories.Add(CreateCategory("Monthly Bills", new string[]
+            {
+                "Mortgage",
+                "Electricity",
+                "Phone",
+                "Property Taxes"
+            }));
+
+            Budget.BudgetCategories.Add(CreateCategory("Everyday Expenses", new string[]
+            {
+                "Groceries",
+                "Household Goods",
+                "Clothing",
+                "Restaurants"
+            }));
+
+        }
+
+        private BudgetCategory CreateCategory(string name, string[] subCategories)
+        {
+            var category = new BudgetCategory() { Name = name };
+            foreach (string subCategoryName in subCategories)
+            {
+                var subCategory = new BudgetSubCategory() { Name = subCategoryName };
+                category.SubCategories.Add(subCategory);
+            }
+            return category;
         }
 
         public RelayCommand BackCommand { get; private set; }
