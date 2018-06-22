@@ -1,6 +1,7 @@
 ﻿using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OpenBudget.Model.Entities.Generators
@@ -18,6 +19,11 @@ namespace OpenBudget.Model.Entities.Generators
         {
             string entityId = _parent.EntityID.ToString() + $"/{date:yyyyMM}";
             return _model?.BudgetCategoryMonthGenerator.GetEntity(entityId);
+        }
+
+        public IEnumerable<BudgetCategoryMonth> GetAllMaterialized()
+        {
+            return _model?.BudgetCategoryMonthGenerator.GetAllMaterialized().Where(bc => bc.Parent == _parent);
         }
     }
 }

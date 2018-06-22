@@ -1,14 +1,11 @@
-﻿using OpenBudget.Application.ViewModels.TransactionGrid.Columns;
+﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using OpenBudget.Application.ViewModels.TransactionGrid.Columns;
 using OpenBudget.Model;
 using OpenBudget.Model.Entities;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
+using OpenBudget.Util.Collections;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using OpenBudget.Application.Collections;
 
 namespace OpenBudget.Application.ViewModels.TransactionGrid
 {

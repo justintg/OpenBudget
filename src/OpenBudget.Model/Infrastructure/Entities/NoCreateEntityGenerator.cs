@@ -31,6 +31,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected abstract bool IsValidID(string entityID);
 
+        public IEnumerable<T> GetAllMaterialized()
+        {
+            return _identityMap.Values;
+        }
+
         public override T GetEntity(string entityID)
         {
             T entity = base.GetEntity(entityID);

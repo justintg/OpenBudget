@@ -1,17 +1,14 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using GalaSoft.MvvmLight.Messaging;
-using OpenBudget.Application.Collections;
 using OpenBudget.Application.PlatformServices;
 using OpenBudget.Application.ViewModels.BudgetEditor;
 using OpenBudget.Application.ViewModels.TransactionGrid;
 using OpenBudget.Model;
 using OpenBudget.Model.Entities;
+using OpenBudget.Util.Collections;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 
 namespace OpenBudget.Application.ViewModels
 {
@@ -168,7 +165,7 @@ namespace OpenBudget.Application.ViewModels
             switch (menuItem.MenuItemType)
             {
                 case MenuItemTypes.BudgetView:
-                    var budgetEditor = new BudgetEditorViewModel();
+                    var budgetEditor = new BudgetEditorViewModel(BudgetModel);
                     _showScreenCallback(budgetEditor);
                     break;
                 case MenuItemTypes.Account:

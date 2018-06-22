@@ -25,9 +25,9 @@ namespace OpenBudget.Model.Entities
             get => GetProperty<DateTime>();
         }
 
-        public double AmountBudgeted
+        public decimal AmountBudgeted
         {
-            get => GetProperty<double>();
+            get => GetProperty<decimal>();
             set => SetProperty(value);
         }
     }

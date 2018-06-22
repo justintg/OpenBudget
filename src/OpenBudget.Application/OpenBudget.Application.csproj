@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenBudget.Model\OpenBudget.Model.csproj" />
+    <ProjectReference Include="..\OpenBudget.Util\OpenBudget.Util.csproj" />
   </ItemGroup>
 
 </Project>

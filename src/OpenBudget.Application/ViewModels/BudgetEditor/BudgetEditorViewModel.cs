@@ -1,7 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
-using OpenBudget.Application.Collections;
 using OpenBudget.Model;
 using OpenBudget.Model.Entities;
+using OpenBudget.Util.Collections;
 using System;
 using System.Collections.Generic;
 using System.Text;
