@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BudgetSetup.cs" />
+    <Compile Include="BudgetViewTests.cs" />
     <Compile Include="EntityBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveLoadTests.cs" />
@@ -89,6 +90,10 @@
     <ProjectReference Include="..\OpenBudget.Model\OpenBudget.Model.csproj">
       <Project>{16d74f94-f741-4ce4-9d8f-8dd343ee29bb}</Project>
       <Name>OpenBudget.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OpenBudget.Util\OpenBudget.Util.csproj">
+      <Project>{fb5179e0-f9ed-429d-a2e1-d1411279b508}</Project>
+      <Name>OpenBudget.Util</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

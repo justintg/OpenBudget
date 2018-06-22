@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 
-namespace OpenBudget.Application.Collections
+namespace OpenBudget.Util.Collections
 {
     public class TransformingObservableCollection<TSource, TTransformed> : IList<TTransformed>, INotifyCollectionChanged, IDisposable where TTransformed : class
     {
@@ -213,7 +210,7 @@ namespace OpenBudget.Application.Collections
             var transformed = _onAddAction(source);
 
             _mapping.Add(source, transformed);
-            if (_comparison != null)
+            if (_comparer != null)
             {
                 int index = _transformedCollection.BinarySearch(transformed, _comparer);
                 if (index < 0)
@@ -347,4 +344,5 @@ namespace OpenBudget.Application.Collections
             throw new NotImplementedException();
         }
     }
+
 }
