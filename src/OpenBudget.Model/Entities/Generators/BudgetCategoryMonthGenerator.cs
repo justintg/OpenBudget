@@ -7,9 +7,9 @@ using System.Text.RegularExpressions;
 
 namespace OpenBudget.Model.Entities.Generators
 {
-    internal class BudgetCategoryMonthGenerator : NoCreateEntityGenerator<BudgetCategoryMonth>
+    internal class CategoryMonthGenerator : NoCreateEntityGenerator<CategoryMonth>
     {
-        public BudgetCategoryMonthGenerator(BudgetModel model) : base(model)
+        public CategoryMonthGenerator(BudgetModel model) : base(model)
         {
         }
 
@@ -27,9 +27,9 @@ namespace OpenBudget.Model.Entities.Generators
             return false;
         }
 
-        protected override BudgetCategoryMonth MaterializeEntity(string entityID)
+        protected override CategoryMonth MaterializeEntity(string entityID)
         {
-            return new BudgetCategoryMonth(entityID);
+            return new CategoryMonth(entityID);
         }
     }
 }

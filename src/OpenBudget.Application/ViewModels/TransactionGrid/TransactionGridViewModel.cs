@@ -29,7 +29,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             ObservableCollection<TransactionGridColumnViewModel> columns = new ObservableCollection<TransactionGridColumnViewModel>();
             columns.Add(new DateColumnViewModel(t => t.TransactionDate, (t, val) => { t.TransactionDate = val; }, "Date", nameof(Transaction.TransactionDate), 100));
             columns.Add(new PayeeColumnViewModel(t => t.PayeeOrAccount, (t, val) => { t.PayeeOrAccount = val; }, "Payee", nameof(Transaction.Payee), 200, _account, _model.Budget.Payees, _model.Budget.Accounts));
-            columns.Add(new CategoryColumnViewModel((Transaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(Transaction.Category), 200, _model.Budget.BudgetCategories, _model.Budget.IncomeCategories));
+            columns.Add(new CategoryColumnViewModel((Transaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(Transaction.Category), 200, _model.Budget.MasterCategories, _model.Budget.IncomeCategories));
             columns.Add(new StringColumnViewModel((Transaction t) => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(Transaction.Memo), 300));
             columns.Add(new DecimalColumnViewModel((Transaction t) =>
             {
@@ -54,7 +54,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
             subTransactionColumns.Add(new CommandColumnViewModel("Delete", 10, (st) => st.DeleteSubTransactionCommand));
             subTransactionColumns.Add(new PayeeColumnViewModel((SubTransaction t) => t.TransferAccount, (t, val) => { t.TransferAccount = val as Account; }, "Payee", nameof(SubTransaction.TransferAccount), 200, _account, _model.Budget.Accounts));
-            subTransactionColumns.Add(new CategoryColumnViewModel((SubTransaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(SubTransaction.Category), 200, _model.Budget.BudgetCategories, _model.Budget.IncomeCategories));
+            subTransactionColumns.Add(new CategoryColumnViewModel((SubTransaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(SubTransaction.Category), 200, _model.Budget.MasterCategories, _model.Budget.IncomeCategories));
             subTransactionColumns.Add(new StringColumnViewModel((SubTransaction t) => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(SubTransaction.Memo), 300));
             subTransactionColumns.Add(new DecimalColumnViewModel((SubTransaction t) =>
             {

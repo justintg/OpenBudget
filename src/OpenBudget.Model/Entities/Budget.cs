@@ -16,7 +16,7 @@ namespace OpenBudget.Model.Entities
         public Budget()
             : base(Guid.NewGuid().ToString())
         {
-            BudgetCategories = RegisterChildEntityCollection(new EntityCollection<BudgetCategory>(this));
+            MasterCategories = RegisterChildEntityCollection(new EntityCollection<MasterCategory>(this));
             IncomeCategories = new IncomeCategoryFinder();
             Payees = RegisterChildEntityCollection(new EntityCollection<Payee>(this));
             Accounts = RegisterChildEntityCollection(new EntityCollection<Account>(this));
@@ -27,7 +27,7 @@ namespace OpenBudget.Model.Entities
         internal Budget(EntityCreatedEvent evt)
             : base(evt)
         {
-            BudgetCategories = RegisterChildEntityCollection(new EntityCollection<BudgetCategory>(this));
+            MasterCategories = RegisterChildEntityCollection(new EntityCollection<MasterCategory>(this));
             IncomeCategories = new IncomeCategoryFinder();
             Payees = RegisterChildEntityCollection(new EntityCollection<Payee>(this));
             Accounts = RegisterChildEntityCollection(new EntityCollection<Account>(this));
@@ -73,7 +73,7 @@ namespace OpenBudget.Model.Entities
         }
 
         public EntityCollection<Account> Accounts { get; private set; }
-        public EntityCollection<BudgetCategory> BudgetCategories { get; private set; }
+        public EntityCollection<MasterCategory> MasterCategories { get; private set; }
         public EntityCollection<Payee> Payees { get; private set; }
 
         public IncomeCategoryFinder IncomeCategories { get; private set; }

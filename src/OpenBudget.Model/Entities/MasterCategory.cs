@@ -7,18 +7,18 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities
 {
-    public class BudgetCategory : EntityBase
+    public class MasterCategory : EntityBase
     {
-        public BudgetCategory()
+        public MasterCategory()
             : base(Guid.NewGuid().ToString())
         {
-            SubCategories = RegisterChildEntityCollection(new EntityCollection<BudgetSubCategory>(this));
+            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this));
         }
 
-        internal BudgetCategory(EntityCreatedEvent evt)
+        internal MasterCategory(EntityCreatedEvent evt)
             : base(evt)
         {
-            SubCategories = RegisterChildEntityCollection(new EntityCollection<BudgetSubCategory>(this));
+            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this));
         }
 
         public string Name
@@ -27,6 +27,6 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
-        public EntityCollection<BudgetSubCategory> SubCategories { get; private set; }
+        public EntityCollection<Category> Categories { get; private set; }
     }
 }

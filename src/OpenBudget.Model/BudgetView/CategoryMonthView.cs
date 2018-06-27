@@ -1,21 +1,27 @@
 ﻿using OpenBudget.Model.Entities;
+using OpenBudget.Model.Event;
+using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 
 namespace OpenBudget.Model.BudgetView
 {
-    public class BudgetSubCategoryMonthView : PropertyChangedBase, IDisposable
+    public class CategoryMonthView : PropertyChangedBase, IDisposable
     {
         private BudgetModel _model;
-        private BudgetSubCategory _subCategory;
+        private Category _subCategory;
         private DateTime _firstDayOfMonth;
         private DateTime _lastDayOfMonth;
-        private BudgetCategoryMonth _categoryMonth;
+        private CategoryMonth _categoryMonth;
 
-        public BudgetSubCategoryMonthView(BudgetSubCategory subCategory, DateTime date)
+        private HashSet<string> _categoryTransactions = new HashSet<string>();
+        private IDisposable _eventSubscription;
+
+        public CategoryMonthView(Category subCategory, DateTime date)
         {
             if (subCategory == null) throw new ArgumentNullException(nameof(subCategory));
 
@@ -26,11 +32,73 @@ namespace OpenBudget.Model.BudgetView
             _categoryMonth = _subCategory.CategoryMonths.GetCategoryMonth(_firstDayOfMonth);
             _categoryMonth.PropertyChanged += CategoryMonth_PropertyChanged;
             CalculateValues();
+            InitializeEventListeners();
+        }
+
+        private void InitializeEventListeners()
+        {
+            _eventSubscription = _model.MessageBus.EventPublished
+                .Where(e => ShouldRecalculate(e)).Subscribe(e =>
+                {
+                    CalculateValues();
+                });
+        }
+
+        private bool ShouldRecalculate(ModelEvent evt)
+        {
+            if (evt.EntityType == nameof(Transaction))
+            {
+                if (evt is EntityCreatedEvent createEvent)
+                {
+                    FieldChange fieldChange = null;
+                    if (createEvent.Changes.TryGetValue(nameof(Transaction.Category), out fieldChange))
+                    {
+                        if (fieldChange.NewValue is EntityReference reference)
+                        {
+                            if (reference.EntityType == nameof(Category) && reference.EntityID == _subCategory.EntityID)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                else if (evt is EntityUpdatedEvent updateEvent)
+                {
+                    if (_categoryTransactions.Contains(evt.EntityID))
+                    {
+                        if (updateEvent.Changes.ContainsKey(nameof(Transaction.Amount)))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (updateEvent.Changes.ContainsKey(nameof(Transaction.Category)))
+                    {
+                        var fieldChange = updateEvent.Changes[nameof(Transaction.Category)];
+                        if (fieldChange.NewValue is EntityReference reference)
+                        {
+                            if (reference.EntityType == nameof(Category) && reference.EntityID == _subCategory.EntityID)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                else if (evt is GroupedFieldChangeEvent)
+                {
+
+                }
+            }
+            else if (evt.EntityType == nameof(CategoryMonth))
+            {
+
+            }
+
+            return false;
         }
 
         private void CategoryMonth_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(BudgetCategoryMonth.AmountBudgeted))
+            if (e.PropertyName == nameof(CategoryMonth.AmountBudgeted))
             {
                 RaisePropertyChanged(nameof(AmountBudgeted));
             }
@@ -62,7 +130,7 @@ namespace OpenBudget.Model.BudgetView
         public decimal TransactionsInMonth
         {
             get { return _transactionsInMonth; }
-            set { _transactionsInMonth = value; RaisePropertyChanged(); }
+            private set { _transactionsInMonth = value; RaisePropertyChanged(); }
         }
 
 
@@ -73,6 +141,8 @@ namespace OpenBudget.Model.BudgetView
             decimal previousMonthsBudgeted = 0m;
             decimal amountBudgeted = AmountBudgeted;
             decimal transactionsInMonth = 0m;
+
+            _categoryTransactions.Clear();
 
             foreach (var categoryMonth in _subCategory.CategoryMonths.GetAllMaterialized().Where(cm => cm.Month < _firstDayOfMonth.Date))
             {
@@ -86,6 +156,7 @@ namespace OpenBudget.Model.BudgetView
                 {
                     if (transaction.TransactionCategory != null && transaction.TransactionCategory.EntityID == _subCategory.EntityID)
                     {
+                        _categoryTransactions.Add(transaction.EntityID);
                         if (transaction.TransactionDate.Date < _firstDayOfMonth)
                         {
                             beginningBalance += transaction.Amount;
@@ -126,6 +197,7 @@ namespace OpenBudget.Model.BudgetView
         public void Dispose()
         {
             _categoryMonth.PropertyChanged -= CategoryMonth_PropertyChanged;
+            _eventSubscription?.Dispose();
         }
     }
 }

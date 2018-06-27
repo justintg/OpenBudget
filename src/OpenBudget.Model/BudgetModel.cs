@@ -28,11 +28,11 @@ namespace OpenBudget.Model
         internal EntityGenerator<Account> AccountGenerator { get; private set; }
         internal EntityGenerator<Transaction> TransactionGenerator { get; private set; }
         internal EntityGenerator<SubTransaction> SubTransactionGenerator { get; private set; }
-        internal EntityGenerator<BudgetCategory> BudgetCategoryGenerator { get; private set; }
-        internal EntityGenerator<BudgetSubCategory> BudgetSubCategoryGenerator { get; private set; }
+        internal EntityGenerator<MasterCategory> BudgetCategoryGenerator { get; private set; }
+        internal EntityGenerator<Category> BudgetSubCategoryGenerator { get; private set; }
         internal EntityGenerator<Payee> PayeeGenerator { get; private set; }
         internal IncomeCategoryGenerator IncomeCategoryGenerator { get; private set; }
-        internal BudgetCategoryMonthGenerator BudgetCategoryMonthGenerator { get; private set; }
+        internal CategoryMonthGenerator BudgetCategoryMonthGenerator { get; private set; }
 
         private Dictionary<Type, object> _generators = new Dictionary<Type, object>();
 
@@ -84,11 +84,11 @@ namespace OpenBudget.Model
             AccountGenerator = RegisterGenerator(new EntityGenerator<Account>(this));
             TransactionGenerator = RegisterGenerator(new EntityGenerator<Transaction>(this));
             SubTransactionGenerator = RegisterGenerator(new EntityGenerator<SubTransaction>(this));
-            BudgetCategoryGenerator = RegisterGenerator(new EntityGenerator<BudgetCategory>(this));
-            BudgetSubCategoryGenerator = RegisterGenerator(new EntityGenerator<BudgetSubCategory>(this));
+            BudgetCategoryGenerator = RegisterGenerator(new EntityGenerator<MasterCategory>(this));
+            BudgetSubCategoryGenerator = RegisterGenerator(new EntityGenerator<Category>(this));
             PayeeGenerator = RegisterGenerator(new EntityGenerator<Payee>(this));
             IncomeCategoryGenerator = (IncomeCategoryGenerator)RegisterGenerator(new IncomeCategoryGenerator(this));
-            BudgetCategoryMonthGenerator = (BudgetCategoryMonthGenerator)RegisterGenerator(new BudgetCategoryMonthGenerator(this));
+            BudgetCategoryMonthGenerator = (CategoryMonthGenerator)RegisterGenerator(new CategoryMonthGenerator(this));
 
             if (createBudget)
             {
