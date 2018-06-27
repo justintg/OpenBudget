@@ -4,6 +4,7 @@
     xmlns:local="clr-namespace:OpenBudget.Presentation.Windows"
     xmlns:columns="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns"
     xmlns:trxGrid="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid"
+    xmlns:budEdit="clr-namespace:OpenBudget.Presentation.Windows.Controls.BudgetEditor"
     xmlns:vmTrx="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/OpenBudget;component/Themes/Converters.xaml" />
@@ -312,6 +313,35 @@
                     <Border Background="{TemplateBinding Background}">
                         <ContentPresenter />
                     </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type budEdit:BudgetEditor}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type budEdit:BudgetEditor}">
+                    <ItemsControl x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{Binding MasterCategory.Name}" FontWeight="Bold"/>
+                                    <ItemsControl Grid.Row="2" ItemsSource="{Binding Categories}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Category.Name}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

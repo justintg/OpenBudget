@@ -6,22 +6,22 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities.Generators
 {
-    public class BudgetCategoryMonthFinder : EntityFinder
+    public class CategoryMonthFinder : EntityFinder
     {
-        private BudgetSubCategory _parent;
+        private Category _parent;
 
-        internal BudgetCategoryMonthFinder(BudgetSubCategory parent)
+        internal CategoryMonthFinder(Category parent)
         {
             _parent = parent;
         }
 
-        public BudgetCategoryMonth GetCategoryMonth(DateTime date)
+        public CategoryMonth GetCategoryMonth(DateTime date)
         {
             string entityId = _parent.EntityID.ToString() + $"/{date:yyyyMM}";
             return _model?.BudgetCategoryMonthGenerator.GetEntity(entityId);
         }
 
-        public IEnumerable<BudgetCategoryMonth> GetAllMaterialized()
+        public IEnumerable<CategoryMonth> GetAllMaterialized()
         {
             return _model?.BudgetCategoryMonthGenerator.GetAllMaterialized().Where(bc => bc.Parent == _parent);
         }

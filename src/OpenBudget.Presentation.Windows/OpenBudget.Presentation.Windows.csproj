@@ -99,6 +99,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\BudgetEditor\BudgetEditor.cs" />
     <Compile Include="Controls\PopUpAdorner.cs" />
     <Compile Include="Controls\SelectableButton.cs" />
     <Compile Include="Controls\TransactionGrid\Columns\ResultItem.cs" />

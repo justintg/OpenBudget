@@ -35,9 +35,9 @@ namespace OpenBudget.Model.Entities
             set => SetEntityReference(value);
         }
 
-        public BudgetSubCategory TransactionCategory
+        public Category TransactionCategory
         {
-            get { return ResolveEntityReference<BudgetSubCategory>(nameof(Category)); }
+            get { return ResolveEntityReference<Category>(nameof(Category)); }
             set { Category = value; }
         }
 
@@ -52,7 +52,7 @@ namespace OpenBudget.Model.Entities
             get { return ResolveEntityReference<EntityBase>(); }
             set
             {
-                IEnumerable<Type> ValidTypes = (new Type[] { typeof(IncomeCategory), typeof(BudgetSubCategory) });
+                IEnumerable<Type> ValidTypes = (new Type[] { typeof(IncomeCategory), typeof(Category) });
                 if (value != null && !ValidTypes.Contains(value.GetType()))
                     throw new InvalidOperationException("You must assign either a IncomeCategory or BudgetSubCategory to the Category Property!");
 

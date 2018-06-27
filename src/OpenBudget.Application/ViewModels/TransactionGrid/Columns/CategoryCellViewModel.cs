@@ -11,14 +11,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 {
     public class CategoryCellViewModel : ResultsCellViewModel
     {
-        private ObservableCollection<BudgetCategory> _categorySource;
+        private ObservableCollection<MasterCategory> _categorySource;
         private IncomeCategoryFinder _incomeCategorySource;
 
         public CategoryCellViewModel(
             TransactionGridColumnViewModel<EntityBase> column,
             TransactionGridRowViewModel row,
             Transaction transaction,
-            ObservableCollection<BudgetCategory> categorySource,
+            ObservableCollection<MasterCategory> categorySource,
             IncomeCategoryFinder incomeCategorySource)
             : base(column, row, transaction)
         {
@@ -31,7 +31,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             TransactionGridRowViewModel row, Transaction transaction,
             SubTransactionRowViewModel subTransactionRow,
             SubTransaction subTransaction,
-            ObservableCollection<BudgetCategory> categorySource,
+            ObservableCollection<MasterCategory> categorySource,
             IncomeCategoryFinder incomeCategorySource)
             : base(column, row, transaction, subTransactionRow, subTransaction)
         {
@@ -47,7 +47,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             {
                 return "Split Transaction";
             }
-            else if (value is BudgetSubCategory cat)
+            else if (value is Category cat)
             {
                 return cat.Name;
             }

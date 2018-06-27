@@ -8,18 +8,18 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities
 {
-    public class BudgetSubCategory : EntityBase
+    public class Category : EntityBase
     {
-        public BudgetSubCategory()
+        public Category()
             : base(Guid.NewGuid().ToString())
         {
-            CategoryMonths = new BudgetCategoryMonthFinder(this);
+            CategoryMonths = new CategoryMonthFinder(this);
         }
 
-        internal BudgetSubCategory(EntityCreatedEvent evt)
+        internal Category(EntityCreatedEvent evt)
             : base(evt)
         {
-            CategoryMonths = new BudgetCategoryMonthFinder(this);
+            CategoryMonths = new CategoryMonthFinder(this);
         }
 
         public string Name
@@ -28,7 +28,7 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
-        public BudgetCategoryMonthFinder CategoryMonths { get; private set; }
+        public CategoryMonthFinder CategoryMonths { get; private set; }
 
         internal override void AttachToModel(BudgetModel model)
         {

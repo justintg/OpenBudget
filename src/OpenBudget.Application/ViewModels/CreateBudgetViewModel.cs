@@ -113,7 +113,7 @@ namespace OpenBudget.Application.ViewModels
 
         private void InitializeDefaultCategories()
         {
-            Budget.BudgetCategories.Add(CreateCategory("Monthly Bills", new string[]
+            Budget.MasterCategories.Add(CreateCategory("Monthly Bills", new string[]
             {
                 "Mortgage",
                 "Electricity",
@@ -121,7 +121,7 @@ namespace OpenBudget.Application.ViewModels
                 "Property Taxes"
             }));
 
-            Budget.BudgetCategories.Add(CreateCategory("Everyday Expenses", new string[]
+            Budget.MasterCategories.Add(CreateCategory("Everyday Expenses", new string[]
             {
                 "Groceries",
                 "Household Goods",
@@ -131,13 +131,13 @@ namespace OpenBudget.Application.ViewModels
 
         }
 
-        private BudgetCategory CreateCategory(string name, string[] subCategories)
+        private MasterCategory CreateCategory(string name, string[] subCategories)
         {
-            var category = new BudgetCategory() { Name = name };
+            var category = new MasterCategory() { Name = name };
             foreach (string subCategoryName in subCategories)
             {
-                var subCategory = new BudgetSubCategory() { Name = subCategoryName };
-                category.SubCategories.Add(subCategory);
+                var subCategory = new Category() { Name = subCategoryName };
+                category.Categories.Add(subCategory);
             }
             return category;
         }

@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace OpenBudget.Model.Entities
 {
-    public class BudgetCategoryMonth : NoCreateEntity
+    public class CategoryMonth : NoCreateEntity
     {
-        internal BudgetCategoryMonth(string entityId) : base(entityId)
+        internal CategoryMonth(string entityId) : base(entityId)
         {
             string regexPattern = @"^(.*)\/([0-9]{4})(0[1-9]|1[0-2])$";
             var match = Regex.Match(entityId, regexPattern);
@@ -16,7 +16,7 @@ namespace OpenBudget.Model.Entities
             int year = int.Parse(match.Groups[2].Value);
             int month = int.Parse(match.Groups[3].Value);
 
-            _entityData["Parent"] = new EntityReference(nameof(BudgetSubCategory), id);
+            _entityData["Parent"] = new EntityReference(nameof(Category), id);
             _entityData["Month"] = new DateTime(year, month, 1);
         }
 
