@@ -10,16 +10,16 @@ namespace OpenBudget.Model.BudgetView
     public class BudgetMonthView : PropertyChangedBase, IDisposable
     {
         private BudgetModel _model;
-        private DateTime _date;
+        public DateTime Date { get; private set; }
 
         public BudgetMonthView(BudgetModel model, DateTime date)
         {
             _model = model;
-            _date = date.FirstDayOfMonth();
+            Date = date.FirstDayOfMonth();
 
             _masterCategories = new TransformingObservableCollection<MasterCategory, MasterCategoryMonthView>(
                 _model.Budget.MasterCategories,
-                mc => { return new MasterCategoryMonthView(mc, _date); },
+                mc => { return new MasterCategoryMonthView(mc, Date); },
                 mcv => { mcv.Dispose(); });
         }
 

@@ -2,10 +2,12 @@
 using OpenBudget.Model;
 using OpenBudget.Model.BudgetView;
 using OpenBudget.Model.Entities;
+using OpenBudget.Model.Util;
 using OpenBudget.Util.Collections;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace OpenBudget.Application.ViewModels.BudgetEditor
 {
@@ -20,8 +22,34 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             InitializeMonthViews();
             _masterCategories = new TransformingObservableCollection<MasterCategory, MasterCategoryRowViewModel>(
                 _budgetModel.Budget.MasterCategories,
-                (mc) => { return new MasterCategoryRowViewModel(mc); },
+                (mc) => { return new MasterCategoryRowViewModel(mc, this); },
                 mcvm => { mcvm.Dispose(); });
+        }
+
+        public void MakeNumberOfMonthsVisible(int number)
+        {
+            if (VisibleMonthViews.Count == number) return;
+            if (VisibleMonthViews.Count < number)
+            {
+                DateTime rightMostDate = VisibleMonthViews.Last().Date;
+                int monthsToAdd = number - VisibleMonthViews.Count;
+                for (int i = 0; i < monthsToAdd; i++)
+                {
+                    rightMostDate = rightMostDate.AddMonths(1);
+                    BudgetMonthView newView = new BudgetMonthView(_budgetModel, rightMostDate);
+                    VisibleMonthViews.Add(newView);
+                }
+            }
+            else if (VisibleMonthViews.Count > number)
+            {
+                int monthsToRemove = VisibleMonthViews.Count - number;
+                for (int i = VisibleMonthViews.Count - monthsToRemove; i < VisibleMonthViews.Count; i++)
+                {
+                    BudgetMonthView monthToRemove = VisibleMonthViews[i];
+                    VisibleMonthViews.Remove(monthToRemove);
+                    monthToRemove.Dispose();
+                }
+            }
         }
 
         private void InitializeMonthViews()

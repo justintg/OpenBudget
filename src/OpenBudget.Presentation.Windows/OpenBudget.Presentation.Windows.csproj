@@ -57,6 +57,7 @@
     <Reference Include="Ninject, Version=3.3.4.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <HintPath>..\packages\Ninject.3.3.4\lib\net45\Ninject.dll</HintPath>
     </Reference>
+    <Reference Include="OpenBudget.Util, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="SQLite-net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\sqlite-net-pcl.1.4.118\lib\netstandard1.1\SQLite-net.dll</HintPath>
     </Reference>
@@ -100,6 +101,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\BudgetEditor\BudgetEditor.cs" />
+    <Compile Include="Controls\BudgetEditor\CategoryMonthView.xaml.cs">
+      <DependentUpon>CategoryMonthView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\BudgetEditor\CategoryRow.cs" />
     <Compile Include="Controls\PopUpAdorner.cs" />
     <Compile Include="Controls\SelectableButton.cs" />
     <Compile Include="Controls\TransactionGrid\Columns\ResultItem.cs" />
@@ -136,6 +141,10 @@
     <Compile Include="Views\WelcomeView.xaml.cs">
       <DependentUpon>WelcomeView.xaml</DependentUpon>
     </Compile>
+    <Page Include="Controls\BudgetEditor\CategoryMonthView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\TransactionGrid\TransactionGridResources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -278,9 +278,13 @@ namespace OpenBudget.Util.Collections
 
         public int Count => _transformedCollection.Count;
 
-        public bool IsReadOnly => throw new NotImplementedException();
+        public bool IsReadOnly => true;
 
-        TTransformed IList<TTransformed>.this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        TTransformed IList<TTransformed>.this[int index]
+        {
+            get { return _transformedCollection[index]; }
+            set { throw new NotImplementedException(); }
+        }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 

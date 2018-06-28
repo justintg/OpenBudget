@@ -11,18 +11,18 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 {
     public class CategoryCellViewModel : ResultsCellViewModel
     {
-        private ObservableCollection<MasterCategory> _categorySource;
+        private ObservableCollection<MasterCategory> _masterCategorySource;
         private IncomeCategoryFinder _incomeCategorySource;
 
         public CategoryCellViewModel(
             TransactionGridColumnViewModel<EntityBase> column,
             TransactionGridRowViewModel row,
             Transaction transaction,
-            ObservableCollection<MasterCategory> categorySource,
+            ObservableCollection<MasterCategory> masterCategorySource,
             IncomeCategoryFinder incomeCategorySource)
             : base(column, row, transaction)
         {
-            _categorySource = categorySource;
+            _masterCategorySource = masterCategorySource;
             _incomeCategorySource = incomeCategorySource;
         }
 
@@ -31,11 +31,11 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             TransactionGridRowViewModel row, Transaction transaction,
             SubTransactionRowViewModel subTransactionRow,
             SubTransaction subTransaction,
-            ObservableCollection<MasterCategory> categorySource,
+            ObservableCollection<MasterCategory> masterCategorySource,
             IncomeCategoryFinder incomeCategorySource)
             : base(column, row, transaction, subTransactionRow, subTransaction)
         {
-            _categorySource = categorySource;
+            _masterCategorySource = masterCategorySource;
             _incomeCategorySource = incomeCategorySource;
         }
 
@@ -93,15 +93,43 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
             var income = GetFilteredIncomeCategory();
             if (income != null) yield return income;
+
+            foreach (ResultCategoryViewModel category in GetFilteredCategories())
+            {
+                yield return category;
+            }
+        }
+
+        private IEnumerable<ResultCategoryViewModel> GetFilteredCategories()
+        {
+            foreach (MasterCategory masterCategory in _masterCategorySource)
+            {
+                var matchingCategories = masterCategory.Categories.Where(c => c.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
+                if (matchingCategories.Count == 0) continue;
+
+                yield return new ResultCategoryViewModel(masterCategory.Name, matchingCategories.Select(cat => new ResultItemViewModel(cat.Name, cat, ResultItemType.Category)));
+            }
         }
 
         private ResultCategoryViewModel GetFilteredSplitCategory()
         {
-            return new ResultCategoryViewModel("Split", new ResultItemViewModel[] { new ResultItemViewModel("Split Transaction", null, ResultItemType.SplitCategory) });
+            if (SearchText.StartsWith("Split Transaction", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return new ResultCategoryViewModel("Split", new ResultItemViewModel[] { new ResultItemViewModel("Split Transaction", null, ResultItemType.SplitCategory) });
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private ResultCategoryViewModel GetFilteredIncomeCategory()
         {
+            if (!"Income".StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return null;
+            }
+
             var transactionDate = Transaction.TransactionDate == default(DateTime)
                 ? DateTime.Today
                 : Transaction.TransactionDate;

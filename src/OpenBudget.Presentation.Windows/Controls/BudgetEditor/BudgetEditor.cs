@@ -1,7 +1,10 @@
 ﻿using OpenBudget.Application.ViewModels.BudgetEditor;
+using OpenBudget.Presentation.Windows.Util;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 {
@@ -27,10 +30,102 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             set { SetValue(MasterCategoriesProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for MasterCategories.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MasterCategoriesProperty =
             DependencyProperty.Register("MasterCategories", typeof(IList<MasterCategoryRowViewModel>), typeof(BudgetEditor), new PropertyMetadata(null));
 
+        public double CategoryColumnWidth
+        {
+            get { return (double)GetValue(CategoryColumnWidthProperty); }
+            protected set { SetValue(CategoryColumnWidthPropertyKey, value); }
+        }
 
+        private static readonly DependencyPropertyKey CategoryColumnWidthPropertyKey =
+            DependencyProperty.RegisterReadOnly("CategoryColumnWidth", typeof(double), typeof(BudgetEditor), new PropertyMetadata(200.0));
+
+        public static readonly DependencyProperty CategoryColumnWidthProperty =
+            CategoryColumnWidthPropertyKey.DependencyProperty;
+
+        public double MonthColumnWidth
+        {
+            get { return (double)GetValue(MonthColumnWidthProperty); }
+            protected set { SetValue(MonthColumnWidthPropertyKey, value); }
+        }
+
+        private static readonly DependencyPropertyKey MonthColumnWidthPropertyKey =
+            DependencyProperty.RegisterReadOnly("MonthColumnWidth", typeof(double), typeof(BudgetEditor), new PropertyMetadata(0.0));
+
+        public static readonly DependencyProperty MonthColumnWidthProperty =
+            MonthColumnWidthPropertyKey.DependencyProperty;
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            base.OnRenderSizeChanged(sizeInfo);
+            double totalWidth = sizeInfo.NewSize.Width - CategoryColumnWidth;
+
+            const double minimumMonthWidth = 250;
+            int numberOfColumns = (int)(totalWidth / minimumMonthWidth);
+            if (numberOfColumns == 0) numberOfColumns++;
+
+            MonthColumnWidth = totalWidth / numberOfColumns;
+            if (this.DataContext is BudgetEditorViewModel viewModel)
+            {
+                viewModel.MakeNumberOfMonthsVisible(numberOfColumns);
+            }
+        }
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab)
+            {
+                TextBox textBox = e.OriginalSource as TextBox;
+                CategoryMonthView monthView = FindParent(textBox);
+                CategoryRow categoryRow = monthView.FindParent<CategoryRow>();
+                if (textBox != null && monthView != null && categoryRow != null)
+                {
+                    if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                    {
+                        TraversalRequest request = new TraversalRequest(FocusNavigationDirection.Up);
+                        (e.OriginalSource as UIElement)?.MoveFocus(request);
+                        e.Handled = true;
+                    }
+                    else
+                    {
+                        e.Handled = NavigateNextCategoryMonth(textBox, categoryRow, monthView);
+                    }
+                }
+            }
+            base.OnPreviewKeyDown(e);
+        }
+
+        private bool NavigateNextCategoryMonth(TextBox textBox, CategoryRow row, CategoryMonthView monthView)
+        {
+            if (!(this.DataContext is BudgetEditorViewModel editorViewModel)) return false;
+            if (!(row.DataContext is CategoryRowViewModel rowViewModel)) return false;
+            if (!(monthView.DataContext is CategoryMonthViewModel monthViewModel)) return false;
+
+            var lastRow = rowViewModel.MasterCategory.Categories[rowViewModel.MasterCategory.Categories.Count - 1];
+
+            if (rowViewModel == rowViewModel.MasterCategory.Categories.Last() && rowViewModel.MasterCategory == editorViewModel.MasterCategories.Last())
+            {
+                return false;
+            }
+            else
+            {
+                TraversalRequest request = new TraversalRequest(FocusNavigationDirection.Down);
+                textBox.MoveFocus(request);
+                return true;
+            }
+        }
+
+        private CategoryMonthView FindParent(TextBox textBox)
+        {
+            if (textBox == null) return null;
+            return textBox.FindParent<CategoryMonthView>();
+        }
+
+        protected override void OnPreviewKeyUp(KeyEventArgs e)
+        {
+            base.OnPreviewKeyUp(e);
+        }
     }
 }
