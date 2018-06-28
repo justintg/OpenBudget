@@ -27,6 +27,7 @@ namespace OpenBudget.Presentation.Windows.Util
 
         public static T FindParent<T>(this DependencyObject child) where T : DependencyObject
         {
+            if (child == null) return null;
             //get parent item
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);
 

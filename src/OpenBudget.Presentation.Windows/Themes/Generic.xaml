@@ -318,30 +318,78 @@
         </Setter>
     </Style>
 
+    <Style TargetType="{x:Type budEdit:CategoryRow}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type budEdit:CategoryRow}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{TemplateBinding CategoryName}" Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"/>
+                        <ItemsPresenter />
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <budEdit:CategoryMonthView />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type budEdit:BudgetEditor}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:BudgetEditor}">
-                    <ItemsControl x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="{Binding MasterCategory.Name}" FontWeight="Bold"/>
-                                    <ItemsControl Grid.Row="2" ItemsSource="{Binding Categories}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Category.Name}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <ItemsControl Grid.Row="0" Margin="{TemplateBinding CategoryColumnWidth, Converter={StaticResource MarginLeftConverter}}" ItemsSource="{Binding VisibleMonthViews}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"></StackPanel>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
+                                        <TextBlock Text="{Binding Date, StringFormat=MMMM yyyy}" HorizontalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl Grid.Row="1" x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding MasterCategory.Name}" FontWeight="Bold" Background="LightGray"/>
+                                        <ItemsControl Grid.Row="2" ItemsSource="{Binding Categories}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <budEdit:CategoryRow CategoryName="{Binding Category.Name}" ItemsSource="{Binding CategoryMonthViews}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

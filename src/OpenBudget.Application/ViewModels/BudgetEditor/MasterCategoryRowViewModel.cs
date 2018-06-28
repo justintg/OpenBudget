@@ -7,13 +7,16 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
 {
     public class MasterCategoryRowViewModel : ViewModelBase, IDisposable
     {
-        public MasterCategoryRowViewModel(MasterCategory masterCategory)
+        private BudgetEditorViewModel _budgetEditor;
+
+        public MasterCategoryRowViewModel(MasterCategory masterCategory, BudgetEditorViewModel budgetEditor)
         {
             _masterCategory = masterCategory;
+            _budgetEditor = budgetEditor;
             _categories = new TransformingObservableCollection<Category, CategoryRowViewModel>(
                 masterCategory.Categories,
-                c => { return new CategoryRowViewModel(c); },
-                cvm => { });
+                c => { return new CategoryRowViewModel(this, c, _budgetEditor); },
+                cvm => { cvm.Dispose(); });
         }
 
         private MasterCategory _masterCategory;

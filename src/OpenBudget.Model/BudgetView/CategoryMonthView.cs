@@ -12,11 +12,12 @@ namespace OpenBudget.Model.BudgetView
 {
     public class CategoryMonthView : PropertyChangedBase, IDisposable
     {
+        public Category Category { get; private set; }
+        public CategoryMonth CategoryMonth { get; private set; }
+
         private BudgetModel _model;
-        private Category _subCategory;
         private DateTime _firstDayOfMonth;
         private DateTime _lastDayOfMonth;
-        private CategoryMonth _categoryMonth;
 
         private HashSet<string> _categoryTransactions = new HashSet<string>();
         private IDisposable _eventSubscription;
@@ -25,12 +26,12 @@ namespace OpenBudget.Model.BudgetView
         {
             if (subCategory == null) throw new ArgumentNullException(nameof(subCategory));
 
-            _subCategory = subCategory;
-            _model = _subCategory.Model;
+            Category = subCategory;
+            _model = Category.Model;
             _firstDayOfMonth = date.FirstDayOfMonth().Date;
             _lastDayOfMonth = _firstDayOfMonth.LastDayOfMonth().Date;
-            _categoryMonth = _subCategory.CategoryMonths.GetCategoryMonth(_firstDayOfMonth);
-            _categoryMonth.PropertyChanged += CategoryMonth_PropertyChanged;
+            CategoryMonth = Category.CategoryMonths.GetCategoryMonth(_firstDayOfMonth);
+            CategoryMonth.PropertyChanged += CategoryMonth_PropertyChanged;
             CalculateValues();
             InitializeEventListeners();
         }
@@ -55,7 +56,7 @@ namespace OpenBudget.Model.BudgetView
                     {
                         if (fieldChange.NewValue is EntityReference reference)
                         {
-                            if (reference.EntityType == nameof(Category) && reference.EntityID == _subCategory.EntityID)
+                            if (reference.EntityType == nameof(Entities.Category) && reference.EntityID == Category.EntityID)
                             {
                                 return true;
                             }
@@ -76,7 +77,7 @@ namespace OpenBudget.Model.BudgetView
                         var fieldChange = updateEvent.Changes[nameof(Transaction.Category)];
                         if (fieldChange.NewValue is EntityReference reference)
                         {
-                            if (reference.EntityType == nameof(Category) && reference.EntityID == _subCategory.EntityID)
+                            if (reference.EntityType == nameof(Entities.Category) && reference.EntityID == Category.EntityID)
                             {
                                 return true;
                             }
@@ -88,7 +89,7 @@ namespace OpenBudget.Model.BudgetView
 
                 }
             }
-            else if (evt.EntityType == nameof(CategoryMonth))
+            else if (evt.EntityType == nameof(Entities.CategoryMonth))
             {
 
             }
@@ -98,9 +99,10 @@ namespace OpenBudget.Model.BudgetView
 
         private void CategoryMonth_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(CategoryMonth.AmountBudgeted))
+            if (e.PropertyName == nameof(Entities.CategoryMonth.AmountBudgeted))
             {
                 RaisePropertyChanged(nameof(AmountBudgeted));
+                CalculateValues();
             }
         }
 
@@ -122,7 +124,7 @@ namespace OpenBudget.Model.BudgetView
 
         public decimal AmountBudgeted
         {
-            get { return _categoryMonth.AmountBudgeted; }
+            get { return CategoryMonth.AmountBudgeted; }
         }
 
         private decimal _transactionsInMonth;
@@ -144,7 +146,7 @@ namespace OpenBudget.Model.BudgetView
 
             _categoryTransactions.Clear();
 
-            foreach (var categoryMonth in _subCategory.CategoryMonths.GetAllMaterialized().Where(cm => cm.Month < _firstDayOfMonth.Date))
+            foreach (var categoryMonth in Category.CategoryMonths.GetAllMaterialized().Where(cm => cm.Month < _firstDayOfMonth.Date))
             {
                 previousMonthsBudgeted += categoryMonth.AmountBudgeted;
             }
@@ -154,7 +156,7 @@ namespace OpenBudget.Model.BudgetView
                 if (transaction.TransactionDate.Date > _lastDayOfMonth) continue;
                 if (transaction.TransactionType == TransactionTypes.Normal)
                 {
-                    if (transaction.TransactionCategory != null && transaction.TransactionCategory.EntityID == _subCategory.EntityID)
+                    if (transaction.TransactionCategory != null && transaction.TransactionCategory.EntityID == Category.EntityID)
                     {
                         _categoryTransactions.Add(transaction.EntityID);
                         if (transaction.TransactionDate.Date < _firstDayOfMonth)
@@ -171,7 +173,7 @@ namespace OpenBudget.Model.BudgetView
                 {
                     foreach (var subTransaction in transaction.SubTransactions)
                     {
-                        if (subTransaction.TransactionCategory != null && transaction.TransactionCategory.EntityID == _subCategory.EntityID)
+                        if (subTransaction.TransactionCategory != null && transaction.TransactionCategory.EntityID == Category.EntityID)
                         {
                             if (transaction.TransactionDate.Date < _firstDayOfMonth)
                             {
@@ -196,7 +198,7 @@ namespace OpenBudget.Model.BudgetView
 
         public void Dispose()
         {
-            _categoryMonth.PropertyChanged -= CategoryMonth_PropertyChanged;
+            CategoryMonth.PropertyChanged -= CategoryMonth_PropertyChanged;
             _eventSubscription?.Dispose();
         }
     }
