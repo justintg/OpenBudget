@@ -15,11 +15,12 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
 
     public abstract class TransactionGridColumnViewModel : ViewModelBase
     {
-        public TransactionGridColumnViewModel(string header, string propertyName, int width)
+        public TransactionGridColumnViewModel(string header, string propertyName, double desiredWidth)
         {
             _propertyName = propertyName;
             _header = header;
-            _width = width;
+            _desiredWidth = desiredWidth;
+            _width = desiredWidth;
             _marginLeft = 0;
         }
 
@@ -39,21 +40,30 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             private set { _propertyName = value; RaisePropertyChanged(); }
         }
 
-        private int _marginLeft;
+        private double _marginLeft;
 
-        public int MarginLeft
+        public double MarginLeft
         {
             get { return _marginLeft; }
             set { _marginLeft = value; RaisePropertyChanged(); }
         }
 
-        private int _width;
+        private double _width;
 
-        public int Width
+        public double Width
         {
             get { return _width; }
             set { _width = value; RaisePropertyChanged(); }
         }
+
+        private double _desiredWidth;
+
+        public double DesiredWidth
+        {
+            get { return _desiredWidth; }
+            private set { _desiredWidth = value; RaisePropertyChanged(); }
+        }
+
 
         public abstract TransactionGridCellViewModel CreateCell(
             TransactionGridRowViewModel row,

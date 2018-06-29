@@ -15,9 +15,9 @@ namespace OpenBudget.Model.BudgetView
         public Category Category { get; private set; }
         public CategoryMonth CategoryMonth { get; private set; }
 
-        private BudgetModel _model;
-        private DateTime _firstDayOfMonth;
-        private DateTime _lastDayOfMonth;
+        private readonly BudgetModel _model;
+        private readonly DateTime _firstDayOfMonth;
+        private readonly DateTime _lastDayOfMonth;
 
         private HashSet<string> _categoryTransactions = new HashSet<string>();
         private IDisposable _eventSubscription;

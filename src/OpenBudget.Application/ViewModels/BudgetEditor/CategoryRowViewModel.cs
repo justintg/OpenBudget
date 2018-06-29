@@ -18,11 +18,12 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             MasterCategory = masterCategory;
             _category = category;
             _budgetEditor = budgetEditor;
-            _categoryMonthViews = new TransformingObservableCollection<BudgetMonthView, CategoryMonthViewModel>(
+            _categoryMonthViews = new TransformingObservableCollection<BudgetMonthViewModel, CategoryMonthViewModel>(
                 _budgetEditor.VisibleMonthViews, v =>
                 {
-                    MasterCategoryMonthView masterView = v.MasterCategories.Where(mcv => mcv.MasterCategory == category.Parent).Single();
-                    return new CategoryMonthViewModel(masterView.Categories.Where(c => c.Category == _category).Single());
+                    BudgetMonthView view = v.BudgetMonthView;
+                    MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory == category.Parent).Single();
+                    return new CategoryMonthViewModel(v, masterView.Categories.Where(c => c.Category == _category).Single());
                 },
                 cmv => { cmv.Dispose(); });
         }
@@ -35,9 +36,9 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             private set { _category = value; RaisePropertyChanged(); }
         }
 
-        private TransformingObservableCollection<BudgetMonthView, CategoryMonthViewModel> _categoryMonthViews;
+        private TransformingObservableCollection<BudgetMonthViewModel, CategoryMonthViewModel> _categoryMonthViews;
 
-        public TransformingObservableCollection<BudgetMonthView, CategoryMonthViewModel> CategoryMonthViews
+        public TransformingObservableCollection<BudgetMonthViewModel, CategoryMonthViewModel> CategoryMonthViews
         {
             get { return _categoryMonthViews; }
             set { _categoryMonthViews = value; RaisePropertyChanged(); }

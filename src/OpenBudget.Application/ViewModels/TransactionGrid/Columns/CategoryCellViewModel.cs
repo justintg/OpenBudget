@@ -85,6 +85,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         private IEnumerable<ResultCategoryViewModel> FilterInternal()
         {
+            if (string.IsNullOrWhiteSpace(SearchText)) yield break;
+
             if (this.CellType == ColumnType.Transaction)
             {
                 var split = GetFilteredSplitCategory();
@@ -113,7 +115,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 
         private ResultCategoryViewModel GetFilteredSplitCategory()
         {
-            if (SearchText.StartsWith("Split Transaction", StringComparison.CurrentCultureIgnoreCase))
+            if ("Split Transaction".StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase))
             {
                 return new ResultCategoryViewModel("Split", new ResultItemViewModel[] { new ResultItemViewModel("Split Transaction", null, ResultItemType.SplitCategory) });
             }

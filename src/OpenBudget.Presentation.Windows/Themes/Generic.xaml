@@ -85,7 +85,6 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -127,13 +126,6 @@
                                 x:Name="PART_VerticalScrollBar"
                                 Grid.Column="1"
                                 Grid.RowSpan="2"/>
-
-                            <ScrollBar
-                                x:Name="PART_HorizontalScrollBar"
-                                Grid.Column="0"
-                                Grid.Row="2"
-                                Orientation="Horizontal"
-                                />
                         </Grid>
 
                         <trxGrid:TransactionGridRow 
@@ -318,11 +310,11 @@
         </Setter>
     </Style>
 
-    <Style TargetType="{x:Type budEdit:CategoryRow}">
+    <Style TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type budEdit:CategoryRow}">
+                <ControlTemplate TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{TemplateBinding CategoryName}" Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"/>
                         <ItemsPresenter />
@@ -340,7 +332,15 @@
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <budEdit:CategoryMonthView />
+                    <budEdit:BudgetEditorCategoryMonth
+                        Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
+                        <budEdit:BudgetEditorCategoryMonth.Margin>
+                            <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
+                                <Binding />
+                                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
+                            </MultiBinding>
+                        </budEdit:BudgetEditorCategoryMonth.Margin>
+                    </budEdit:BudgetEditorCategoryMonth>
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -363,9 +363,27 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
-                                        <TextBlock Text="{Binding Date, StringFormat=MMMM yyyy}" HorizontalAlignment="Center"/>
-                                    </Grid>
+                                    <Border Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"
+                                            Background="Gray">
+                                        <Border.Margin>
+                                            <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
+                                                <Binding />
+                                                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
+                                            </MultiBinding>
+                                        </Border.Margin>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{Binding BudgetMonthView.Date, StringFormat=MMMM yyyy}" HorizontalAlignment="Center"/>
+                                            <TextBlock Grid.Row="1" Text="{Binding BudgetMonthView.IncomeThisMonth, StringFormat=C}" HorizontalAlignment="Center"/>
+                                            <TextBlock Grid.Row="2" Text="{Binding BudgetMonthView.BudgetedThisMonth, StringFormat=C}" HorizontalAlignment="Center"/>
+                                            <TextBlock Grid.Row="3" Text="{Binding BudgetMonthView.NotBudgetedPreviousMonth, StringFormat=C}" HorizontalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -381,7 +399,7 @@
                                         <ItemsControl Grid.Row="2" ItemsSource="{Binding Categories}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <budEdit:CategoryRow CategoryName="{Binding Category.Name}" ItemsSource="{Binding CategoryMonthViews}" />
+                                                    <budEdit:BudgetEditorCategoryRow CategoryName="{Binding Category.Name}" ItemsSource="{Binding CategoryMonthViews}" />
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
@@ -395,3 +413,5 @@
         </Setter>
     </Style>
 </ResourceDictionary>
+
+    

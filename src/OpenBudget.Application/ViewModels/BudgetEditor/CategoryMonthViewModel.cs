@@ -8,31 +8,33 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
 {
     public class CategoryMonthViewModel : ViewModelBase, IDisposable
     {
-        public CategoryMonthView MonthView { get; private set; }
+        public CategoryMonthView CategoryMonthView { get; private set; }
+        public BudgetMonthViewModel BudgetMonthViewModel { get; private set; }
 
-        public CategoryMonthViewModel(CategoryMonthView monthView)
+        public CategoryMonthViewModel(BudgetMonthViewModel budgetMonthViewModel, CategoryMonthView monthView)
         {
-            MonthView = monthView;
-            MonthView.PropertyChanged += MonthView_PropertyChanged;
+            BudgetMonthViewModel = budgetMonthViewModel;
+            CategoryMonthView = monthView;
+            CategoryMonthView.PropertyChanged += MonthView_PropertyChanged;
         }
 
         private void MonthView_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(CategoryMonthView.AmountBudgeted))
+            if (e.PropertyName == nameof(OpenBudget.Model.BudgetView.CategoryMonthView.AmountBudgeted))
             {
-                RaisePropertyChanged(nameof(AmountBudgeted));
+                base.RaisePropertyChanged(nameof(AmountBudgeted));
             }
         }
 
         public void Dispose()
         {
-            MonthView.PropertyChanged -= MonthView_PropertyChanged;
+            CategoryMonthView.PropertyChanged -= MonthView_PropertyChanged;
         }
 
         public decimal AmountBudgeted
         {
-            get { return MonthView.AmountBudgeted; }
-            set { MonthView.CategoryMonth.AmountBudgeted = value; MonthView.CategoryMonth.Model.SaveChanges(); }
+            get { return CategoryMonthView.AmountBudgeted; }
+            set { CategoryMonthView.CategoryMonth.AmountBudgeted = value; CategoryMonthView.CategoryMonth.Model.SaveChanges(); }
         }
 
     }

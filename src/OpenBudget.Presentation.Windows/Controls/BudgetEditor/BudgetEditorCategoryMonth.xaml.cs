@@ -18,9 +18,9 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
     /// <summary>
     /// Interaction logic for CategoryMonth.xaml
     /// </summary>
-    public partial class CategoryMonthView : UserControl
+    public partial class BudgetEditorCategoryMonth : UserControl
     {
-        public CategoryMonthView()
+        public BudgetEditorCategoryMonth()
         {
             InitializeComponent();
         }

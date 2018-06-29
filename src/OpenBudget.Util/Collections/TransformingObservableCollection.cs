@@ -89,8 +89,7 @@ namespace OpenBudget.Util.Collections
                 _transformedCollection.Clear();
                 foreach (var source in _sourceCollection)
                 {
-                    TTransformed transformed;
-                    if (_mapping.TryGetValue(source, out transformed))
+                    if (_mapping.TryGetValue(source, out TTransformed transformed))
                     {
                         _transformedCollection.Add(transformed);
                     }
@@ -105,9 +104,8 @@ namespace OpenBudget.Util.Collections
         public void Sort<TKey>(Func<TTransformed, TKey> orderFunc)
         {
             IComparer<TKey> comparer = Comparer<TKey>.Default;
-            Comparison<TTransformed> comparison = (x, y) => comparer.Compare(orderFunc(x), orderFunc(y));
 
-            Sort(comparison);
+            Sort((x, y) => comparer.Compare(orderFunc(x), orderFunc(y)));
         }
 
         public void SortDescending<TKey>(Func<TTransformed, TKey> orderFunc)
@@ -138,8 +136,7 @@ namespace OpenBudget.Util.Collections
             {
                 foreach (var source in _sourceCollection)
                 {
-                    TTransformed transformed = null;
-                    if (!_mapping.TryGetValue(source, out transformed))
+                    if (!_mapping.TryGetValue(source, out TTransformed transformed))
                     {
                         AddSource(source);
                     }
@@ -149,8 +146,7 @@ namespace OpenBudget.Util.Collections
             {
                 foreach (var source in _sourceCollection)
                 {
-                    TTransformed transformed = null;
-                    if (_mapping.TryGetValue(source, out transformed))
+                    if (_mapping.TryGetValue(source, out TTransformed transformed))
                     {
                         if (!_predicate(source))
                         {
