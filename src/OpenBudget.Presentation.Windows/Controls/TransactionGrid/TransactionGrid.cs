@@ -28,11 +28,9 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         }
 
         private ScrollBar _verticalScrollBar;
-        private ScrollBar _horizontalScrollBar;
         private ScrollViewer _contentScrollViewer;
         private ScrollViewer _headerScrollViewer;
         private ItemsControl _headerRow;
-        private StackPanel _headerPanel;
 
         public TransactionGrid()
         {
@@ -135,8 +133,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         {
             var grid = d as TransactionGrid;
 
-            var oldRow = e.OldValue as TransactionGridRow;
-            if (oldRow != null)
+            if (e.OldValue is TransactionGridRow oldRow)
             {
                 oldRow.IsSelected = false;
             }
@@ -166,12 +163,20 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             base.OnApplyTemplate();
 
             _verticalScrollBar = GetTemplateChild("PART_VerticalScrollBar") as ScrollBar;
-            _horizontalScrollBar = GetTemplateChild("PART_HorizontalScrollBar") as ScrollBar;
             _headerScrollViewer = GetTemplateChild("PART_HeaderScrollViewer") as ScrollViewer;
             _contentScrollViewer = GetTemplateChild("PART_ContentScrollViewer") as ScrollViewer;
             _headerRow = GetTemplateChild("PART_HeaderRow") as ItemsControl;
 
             BindScrollBarToContent();
+            _contentScrollViewer.SizeChanged += ContentScrollViewer_SizeChanged;
+        }
+
+        private void ContentScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (this.DataContext is TransactionGridViewModel viewModel)
+            {
+                viewModel.SetVisibleWidth(e.NewSize.Width);
+            }
         }
 
         private void ResetScrollValues()
@@ -191,15 +196,6 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         {
             _verticalScrollBar.SetBinding(ScrollBar.MaximumProperty, (new Binding("ScrollableHeight") { Source = _contentScrollViewer, Mode = BindingMode.OneWay }));
             _verticalScrollBar.SetBinding(ScrollBar.ViewportSizeProperty, (new Binding("ViewportHeight") { Source = _contentScrollViewer, Mode = BindingMode.OneWay }));
-
-            _horizontalScrollBar.SetBinding(ScrollBar.MaximumProperty, (new Binding("ScrollableWidth") { Source = _contentScrollViewer, Mode = BindingMode.OneWay }));
-            _horizontalScrollBar.SetBinding(ScrollBar.ViewportSizeProperty, (new Binding("ViewportWidth") { Source = _contentScrollViewer, Mode = BindingMode.OneWay }));
-
-            /*_headerRow.Loaded += (sender, e) =>
-            {
-                _headerPanel = _headerRow.GetChildOfType<StackPanel>();
-                //_horizontalScrollBar.SetBinding(ScrollBar.MaximumProperty, (new Binding("ActualWidth") { Source = _headerPanel, Mode = BindingMode.OneWay }));
-            };*/
 
             _verticalScrollBar.Scroll += (sender, e) =>
             {
@@ -228,17 +224,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
                 }
 
                 _verticalScrollBar.Value = e.VerticalOffset;
-                _horizontalScrollBar.Value = e.HorizontalOffset;
                 _headerScrollViewer.ScrollToHorizontalOffset(e.HorizontalOffset);
-
-                if (e.ViewportWidth > e.ExtentWidth)
-                {
-                    _horizontalScrollBar.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    _horizontalScrollBar.Visibility = Visibility.Visible;
-                }
 
                 if (e.ViewportHeight >= e.ExtentHeight)
                 {
@@ -248,12 +234,6 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
                 {
                     _verticalScrollBar.Visibility = Visibility.Visible;
                 }
-            };
-
-            _horizontalScrollBar.Scroll += (sender, e) =>
-            {
-                _contentScrollViewer.ScrollToHorizontalOffset(e.NewValue);
-                _headerScrollViewer.ScrollToHorizontalOffset(e.NewValue);
             };
 
             _contentScrollViewer.ScrollToHome();

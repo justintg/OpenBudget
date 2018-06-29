@@ -5,11 +5,11 @@ using System.Windows.Controls;
 
 namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 {
-    public class CategoryRow : ItemsControl
+    public class BudgetEditorCategoryRow : ItemsControl
     {
-        static CategoryRow()
+        static BudgetEditorCategoryRow()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(CategoryRow), new FrameworkPropertyMetadata(typeof(CategoryRow)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(BudgetEditorCategoryRow), new FrameworkPropertyMetadata(typeof(BudgetEditorCategoryRow)));
         }
 
         public string CategoryName
@@ -20,6 +20,6 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         // Using a DependencyProperty as the backing store for CategoryName.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CategoryNameProperty =
-            DependencyProperty.Register("CategoryName", typeof(string), typeof(CategoryRow), new PropertyMetadata(null));
+            DependencyProperty.Register("CategoryName", typeof(string), typeof(BudgetEditorCategoryRow), new PropertyMetadata(null));
     }
 }

@@ -101,10 +101,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\BudgetEditor\BudgetEditor.cs" />
-    <Compile Include="Controls\BudgetEditor\CategoryMonthView.xaml.cs">
-      <DependentUpon>CategoryMonthView.xaml</DependentUpon>
+    <Compile Include="Controls\BudgetEditor\BudgetEditorCategoryMonth.xaml.cs">
+      <DependentUpon>BudgetEditorCategoryMonth.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\BudgetEditor\CategoryRow.cs" />
+    <Compile Include="Controls\BudgetEditor\BudgetEditorCategoryRow.cs" />
     <Compile Include="Controls\PopUpAdorner.cs" />
     <Compile Include="Controls\SelectableButton.cs" />
     <Compile Include="Controls\TransactionGrid\Columns\ResultItem.cs" />
@@ -115,6 +115,7 @@
     <Compile Include="Controls\TransactionGrid\Columns\ResultsColumn.cs" />
     <Compile Include="Controls\TransactionGrid\TransactionGrid.cs" />
     <Compile Include="Converters\BooleanConverter.cs" />
+    <Compile Include="Converters\BudgetEditorMonthMarginConverter.cs" />
     <Compile Include="Converters\MarginLeftConverter.cs" />
     <Compile Include="Converters\SplitTransactionVisibilityConverter.cs" />
     <Compile Include="Services\WindowsBudgetLoader.cs" />
@@ -141,7 +142,7 @@
     <Compile Include="Views\WelcomeView.xaml.cs">
       <DependentUpon>WelcomeView.xaml</DependentUpon>
     </Compile>
-    <Page Include="Controls\BudgetEditor\CategoryMonthView.xaml">
+    <Page Include="Controls\BudgetEditor\BudgetEditorCategoryMonth.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

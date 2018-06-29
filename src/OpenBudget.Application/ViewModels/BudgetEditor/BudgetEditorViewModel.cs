@@ -14,7 +14,7 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
     public class BudgetEditorViewModel : ViewModelBase, IDisposable
     {
         private BudgetModel _budgetModel;
-        private BudgetMonthView _selectedMonth;
+        private BudgetMonthViewModel _selectedMonth;
 
         public BudgetEditorViewModel(BudgetModel budgetModel)
         {
@@ -31,12 +31,12 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             if (VisibleMonthViews.Count == number) return;
             if (VisibleMonthViews.Count < number)
             {
-                DateTime rightMostDate = VisibleMonthViews.Last().Date;
+                DateTime rightMostDate = VisibleMonthViews.Last().BudgetMonthView.Date;
                 int monthsToAdd = number - VisibleMonthViews.Count;
                 for (int i = 0; i < monthsToAdd; i++)
                 {
                     rightMostDate = rightMostDate.AddMonths(1);
-                    BudgetMonthView newView = new BudgetMonthView(_budgetModel, rightMostDate);
+                    BudgetMonthViewModel newView = new BudgetMonthViewModel(new BudgetMonthView(_budgetModel, rightMostDate));
                     VisibleMonthViews.Add(newView);
                 }
             }
@@ -45,19 +45,38 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 int monthsToRemove = VisibleMonthViews.Count - number;
                 for (int i = VisibleMonthViews.Count - monthsToRemove; i < VisibleMonthViews.Count; i++)
                 {
-                    BudgetMonthView monthToRemove = VisibleMonthViews[i];
+                    BudgetMonthViewModel monthToRemove = VisibleMonthViews[i];
                     VisibleMonthViews.Remove(monthToRemove);
                     monthToRemove.Dispose();
                 }
             }
+            SetFirstVisibleMonthProperty();
         }
 
         private void InitializeMonthViews()
         {
-            VisibleMonthViews = new ObservableCollection<BudgetMonthView>();
+            VisibleMonthViews = new ObservableCollection<BudgetMonthViewModel>();
 
-            _selectedMonth = new BudgetMonthView(_budgetModel, DateTime.Today);
+            _selectedMonth = new BudgetMonthViewModel(new BudgetMonthView(_budgetModel, DateTime.Today));
             VisibleMonthViews.Add(_selectedMonth);
+            SetFirstVisibleMonthProperty();
+        }
+
+        private void SetFirstVisibleMonthProperty()
+        {
+            int count = 0;
+            foreach (var visibleMonthView in VisibleMonthViews)
+            {
+                if (count == 0 && !visibleMonthView.IsFirstVisibleMonth)
+                {
+                    visibleMonthView.IsFirstVisibleMonth = true;
+                }
+                else if (count > 0 && visibleMonthView.IsFirstVisibleMonth)
+                {
+                    visibleMonthView.IsFirstVisibleMonth = false;
+                }
+                count++;
+            }
         }
 
         private TransformingObservableCollection<MasterCategory, MasterCategoryRowViewModel> _masterCategories;
@@ -68,9 +87,9 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             private set { _masterCategories = value; RaisePropertyChanged(); }
         }
 
-        private ObservableCollection<BudgetMonthView> _visibleMonthViews;
+        private ObservableCollection<BudgetMonthViewModel> _visibleMonthViews;
 
-        public ObservableCollection<BudgetMonthView> VisibleMonthViews
+        public ObservableCollection<BudgetMonthViewModel> VisibleMonthViews
         {
             get { return _visibleMonthViews; }
             set { _visibleMonthViews = value; RaisePropertyChanged(); }
@@ -81,6 +100,10 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         public void Dispose()
         {
             _masterCategories.Dispose();
+            foreach (var view in VisibleMonthViews)
+            {
+                view.Dispose();
+            }
         }
     }
 }
