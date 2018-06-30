@@ -173,7 +173,7 @@ namespace OpenBudget.Model.BudgetView
                 {
                     foreach (var subTransaction in transaction.SubTransactions)
                     {
-                        if (subTransaction.TransactionCategory != null && transaction.TransactionCategory.EntityID == Category.EntityID)
+                        if (subTransaction.TransactionCategory != null && subTransaction.TransactionCategory.EntityID == Category.EntityID)
                         {
                             if (transaction.TransactionDate.Date < _firstDayOfMonth)
                             {
