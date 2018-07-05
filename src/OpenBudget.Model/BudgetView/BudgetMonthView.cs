@@ -71,12 +71,9 @@ namespace OpenBudget.Model.BudgetView
             private set { _budgetedThisMonth = value; RaisePropertyChanged(); }
         }
 
-        private decimal _availableToBudget;
-
         public decimal AvailableToBudget
         {
-            get { return _availableToBudget; }
-            private set { _availableToBudget = value; RaisePropertyChanged(); }
+            get { return NotBudgetedPreviousMonth + OverspentPreviousMonth + IncomeThisMonth - BudgetedThisMonth; }
         }
 
         private void CalculateValues()
@@ -134,6 +131,7 @@ namespace OpenBudget.Model.BudgetView
             IncomeThisMonth = incomeThisMonth;
             BudgetedThisMonth = budgetedThisMonth;
             NotBudgetedPreviousMonth = incomePreviousMonths - budgetedPreviousMonths;
+            RaisePropertyChanged(nameof(AvailableToBudget));
         }
 
         public void Dispose()
