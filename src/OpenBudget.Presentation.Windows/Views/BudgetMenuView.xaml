@@ -7,15 +7,16 @@
              xmlns:controls="clr-namespace:OpenBudget.Presentation.Windows.Controls"
              xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels;assembly=OpenBudget.Application"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData vm:BudgetMenuViewModel}">
+             d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData vm:BudgetMenuViewModel}"
+             Background="{StaticResource WindowTitleColorBrush}">
     <UserControl.Resources>
         <Style TargetType="controls:SelectableButton">
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Blue" />
+                    <Setter Property="Background" Value="{StaticResource HighlightBrush}" />
                 </Trigger>
             </Style.Triggers>
-            <Setter Property="Background" Value="Gray" />
+            <Setter Property="Background" Value="{StaticResource WindowTitleColorBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="controls:SelectableButton">
@@ -38,48 +39,55 @@
                 <TextBlock Text="{Binding Label}" />
             </controls:SelectableButton>
 
-            <DockPanel>
-                <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" />
-                <TextBlock Text="On-Budget Accounts" />
-            </DockPanel>
+            <Border Background="{StaticResource WindowTitleColorBrush}" BorderThickness="0 1" BorderBrush="Black">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold" />
+                        <TextBlock Text="On-Budget Accounts" FontWeight="Bold" />
+                    </DockPanel>
 
-
-            <ItemsControl ItemsSource="{Binding OnBudgetAccounts}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <controls:SelectableButton
+                    <ItemsControl ItemsSource="{Binding OnBudgetAccounts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:SelectableButton
                                    IsSelected="{Binding IsSelected}"
                                    Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
                                    CommandParameter="{Binding}">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
-                                <TextBlock Text="{Binding Payload.Name}" />
-                            </DockPanel>
-                        </controls:SelectableButton>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
+                                        <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
+                                    </DockPanel>
+                                </controls:SelectableButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
 
-            <DockPanel>
-                <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" />
-                <TextBlock Text="Off-Budget Accounts" />
-            </DockPanel>
+            <Border Background="{StaticResource WindowTitleColorBrush}" BorderThickness="0 1" BorderBrush="Black">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold"/>
+                        <TextBlock Text="Off-Budget Accounts" FontWeight="Bold"/>
+                    </DockPanel>
 
-            <ItemsControl ItemsSource="{Binding OffBudgetAccounts}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <controls:SelectableButton
+                    <ItemsControl ItemsSource="{Binding OffBudgetAccounts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:SelectableButton
                                    IsSelected="{Binding IsSelected}"
                                    Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
                                    CommandParameter="{Binding}">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
-                                <TextBlock Text="{Binding Payload.Name}" />
-                            </DockPanel>
-                        </controls:SelectableButton>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
+                                        <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
+                                    </DockPanel>
+                                </controls:SelectableButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </DockPanel>
 </UserControl>
