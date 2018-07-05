@@ -363,27 +363,14 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"
-                                            Background="Gray">
-                                        <Border.Margin>
+                                    <budEdit:BudgetEditorMonthHeader Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
+                                        <budEdit:BudgetEditorMonthHeader.Margin>
                                             <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
                                                 <Binding />
                                                 <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
                                             </MultiBinding>
-                                        </Border.Margin>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding BudgetMonthView.Date, StringFormat=MMMM yyyy}" HorizontalAlignment="Center"/>
-                                            <TextBlock Grid.Row="1" Text="{Binding BudgetMonthView.IncomeThisMonth, StringFormat=C}" HorizontalAlignment="Center"/>
-                                            <TextBlock Grid.Row="2" Text="{Binding BudgetMonthView.BudgetedThisMonth, StringFormat=C}" HorizontalAlignment="Center"/>
-                                            <TextBlock Grid.Row="3" Text="{Binding BudgetMonthView.NotBudgetedPreviousMonth, StringFormat=C}" HorizontalAlignment="Center"/>
-                                        </Grid>
-                                    </Border>
+                                        </budEdit:BudgetEditorMonthHeader.Margin>
+                                    </budEdit:BudgetEditorMonthHeader>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
