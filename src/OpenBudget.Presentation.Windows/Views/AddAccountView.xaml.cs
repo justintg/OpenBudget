@@ -17,7 +17,7 @@ namespace OpenBudget.Presentation.Windows.Views
     /// <summary>
     /// Interaction logic for AddAccountView.xaml
     /// </summary>
-    public partial class AddAccountView : Window
+    public partial class AddAccountView : UserControl
     {
         public AddAccountView()
         {

@@ -37,7 +37,7 @@
             this.mainViewModel = serviceLocator.GetInstance<MainViewModel>();
             IDialogService windowService = serviceLocator.GetInstance<IDialogService>();
 
-            this.mainWindow = (Window)windowService.ShowWindow(this.mainViewModel);
+            this.mainWindow = (Window)windowService.ShowDialog(this.mainViewModel);
             this.mainWindow.Closed += this.MainWindow_Closed;
 
             this.MainWindow = mainWindow;
