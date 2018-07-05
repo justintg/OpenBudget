@@ -78,6 +78,7 @@ namespace OpenBudget.Application.ViewModels
 
         public AddAccountViewModel(MainViewModel mainViewModel, INavigationService navigationService)
         {
+            Header = "Add Account";
             _mainViewModel = mainViewModel;
             _navigationService = navigationService;
 

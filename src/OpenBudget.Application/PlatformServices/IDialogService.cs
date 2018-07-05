@@ -12,8 +12,8 @@ namespace OpenBudget.Application.PlatformServices
         /// </summary>
         /// <typeparam name="T">The type of the ViewModel, it must subclass <see cref="ClosableViewModel"/></typeparam>
         /// <param name="viewModel">The ViewModel to open a window for.</param>
-        /// <returns>The Window that was created.</returns>
-        object ShowWindow<T>(T viewModel) where T : ClosableViewModel;
+        /// <returns>The view object that was created.</returns>
+        object ShowDialog<T>(T viewModel) where T : ClosableViewModel;
 
         /// <summary>
         /// Show's a message to the user.

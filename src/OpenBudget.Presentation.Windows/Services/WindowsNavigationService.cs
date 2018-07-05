@@ -30,7 +30,7 @@ namespace OpenBudget.Presentation.Windows.Services
         public void NavigateBack()
         {
             var backViewModel = _backStack.Pop();
-            if (WindowsDialogService.RegisteredTypes.Contains(backViewModel.GetType()))
+            if (WindowsDialogService.GetRegisteredTypes().Contains(backViewModel.GetType()))
             {
                 backViewModel.CloseCommand.Execute(null);
             }
@@ -51,13 +51,13 @@ namespace OpenBudget.Presentation.Windows.Services
                 _backStack.Clear();
             }
 
-            if (WindowsDialogService.RegisteredTypes.Contains(typeof(T)))
+            if (WindowsDialogService.GetRegisteredTypes().Contains(typeof(T)))
             {
                 if (storeBack)
                 {
                     _backStack.Push(viewModel);
                 }
-                _dialogService.ShowWindow(viewModel);
+                _dialogService.ShowDialog(viewModel);
             }
             else
             {

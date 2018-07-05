@@ -1,11 +1,15 @@
 ﻿namespace OpenBudget.Presentation.Windows.Services
 {
+    using MahApps.Metro.Controls;
+    using MahApps.Metro.Controls.Dialogs;
     using OpenBudget.Application.PlatformServices;
     using OpenBudget.Application.ViewModels;
     using OpenBudget.Presentation.Windows.Views;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Windows;
+    using System.Windows.Controls;
 
     /// <summary>
     /// The WPF implementation of the <see cref="System.Windows.IWindowService"/>.
@@ -15,7 +19,7 @@
         static WindowsDialogService()
         {
             RegisterWindow<MainViewModel, MainWindow>();
-            RegisterWindow<AddAccountViewModel, AddAccountView>();
+            RegisterDialog<AddAccountViewModel, AddAccountView>();
         }
 
         /// <summary>
@@ -23,10 +27,15 @@
         /// </summary>
         private static Dictionary<Type, Type> registeredWindows = new Dictionary<Type, Type>();
 
+        private static Dictionary<Type, Type> registedDialogs = new Dictionary<Type, Type>();
+
         /// <summary>
         /// A Set of ViewModel types that have been registered as windows.
         /// </summary>
-        public static HashSet<Type> RegisteredTypes => new HashSet<Type>(registeredWindows.Keys);
+        public static HashSet<Type> GetRegisteredTypes()
+        {
+            return new HashSet<Type>(registeredWindows.Keys.Concat(registedDialogs.Keys));
+        }
 
         /// <summary>
         /// Registers a type of ViewModel to be shown in a Type of Window.
@@ -41,6 +50,16 @@
             }
 
             registeredWindows.Add(typeof(TViewModel), typeof(TWindow));
+        }
+
+        public static void RegisterDialog<TViewModel, TView>() where TViewModel : ClosableViewModel where TView : Control
+        {
+            if (registedDialogs.ContainsKey(typeof(TViewModel)))
+            {
+                throw new Exception("This ViewModel has already been registered");
+            }
+
+            registedDialogs.Add(typeof(TViewModel), typeof(TView));
         }
 
         public void ShowError(string message)
@@ -63,7 +82,49 @@
         /// <typeparam name="T">The type of the ViewModel, must subclass <see cref="ClosableViewModel"/></typeparam>
         /// <param name="viewModel">The viewModel to show a window for.</param>
         /// <returns>The <see cref="Window"/> that is created to show the ViewModel.</returns>
-        public object ShowWindow<T>(T viewModel) where T : ClosableViewModel
+        public object ShowDialog<T>(T viewModel) where T : ClosableViewModel
+        {
+            if (registeredWindows.ContainsKey(typeof(T)))
+            {
+                return ShowDialogWindowImpl(viewModel);
+            }
+            else if (registedDialogs.ContainsKey(typeof(T)))
+            {
+                return ShowDialogMetroDialogImpl(viewModel);
+            }
+
+            throw new InvalidOperationException("The ViewModel passed to ShowDialog is not recognized, you must register the ViewModel type");
+        }
+
+        private object ShowDialogMetroDialogImpl<T>(T viewModel) where T : ClosableViewModel
+        {
+            Type windowType = registedDialogs[typeof(T)];
+            Control dialogContent = (Control)Activator.CreateInstance(windowType);
+            dialogContent.DataContext = viewModel;
+
+            MetroWindow mainWindow = App.Current.MainWindow as MetroWindow;
+            if (mainWindow == null) throw new InvalidOperationException("The MainWindow must be a MetroWindow");
+
+            CustomDialog dialog = new CustomDialog();
+            dialog.Content = dialogContent;
+            dialog.Title = viewModel.Header;
+
+            mainWindow.ShowMetroDialogAsync(dialog);
+
+            EventHandler closeHandler = null;
+
+            closeHandler = (sender, e) =>
+            {
+                mainWindow.HideMetroDialogAsync(dialog);
+                viewModel.RequestClose -= closeHandler;
+            };
+
+            viewModel.RequestClose += closeHandler;
+
+            return dialog;
+        }
+
+        private object ShowDialogWindowImpl<T>(T viewModel) where T : ClosableViewModel
         {
             if (!registeredWindows.ContainsKey(typeof(T)))
             {

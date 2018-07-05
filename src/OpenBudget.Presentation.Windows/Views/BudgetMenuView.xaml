@@ -64,7 +64,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Background="{StaticResource WindowTitleColorBrush}" BorderThickness="0 1" BorderBrush="Black">
+            <Border Background="{StaticResource WindowTitleColorBrush}" BorderThickness="0 0 0 1" BorderBrush="Black">
                 <StackPanel>
                     <DockPanel>
                         <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold"/>
