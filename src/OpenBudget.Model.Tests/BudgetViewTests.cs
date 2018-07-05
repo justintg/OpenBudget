@@ -60,6 +60,12 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void BudgetMonth_ValuesAreCorrect_OnInit()
+        {
+            BudgetMonthView view = new BudgetMonthView(TestBudget.BudgetModel, DateTime.Today);
+        }
+
+        [Test]
         public void CategoryMonth_ValuesAreCorrect_OnInit()
         {
             CategoryMonthView view = new CategoryMonthView(_mortgage, DateTime.Today);

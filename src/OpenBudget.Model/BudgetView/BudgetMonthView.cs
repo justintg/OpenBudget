@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Entities;
+﻿using OpenBudget.Model.BudgetView.Calculator;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.Util;
 using OpenBudget.Util.Collections;
 using System;
@@ -86,6 +87,9 @@ namespace OpenBudget.Model.BudgetView
             decimal notBudgetedPreviousMonth = 0m;
             decimal spentPreviousMonth = 0m;
             decimal spentOtherMonths = 0m;
+
+            BudgetViewCalculator calculator = new BudgetViewCalculator(_model);
+            var results = calculator.Calculate();
 
             foreach (var transaction in _model.Budget.Accounts.SelectMany(a => a.Transactions))
             {
