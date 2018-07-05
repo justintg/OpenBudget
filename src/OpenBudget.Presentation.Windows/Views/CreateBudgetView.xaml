@@ -9,32 +9,36 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignInstance vm:CreateBudgetViewModel}">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Border Background="{StaticResource AccentColorBrush2}" CornerRadius="10" Padding="10" Width="500" Height="500" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-        <StackPanel Orientation="Horizontal">
-            <Label Content="Budget Name" />
-            <TextBox Text="{Binding Budget.Name, UpdateSourceTrigger=PropertyChanged}" Width="150" />
-        </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <Label Content="Currency" />
-            <ComboBox ItemsSource="{Binding CurrencyList}" SelectedItem="{Binding SelectedCurrency}" DisplayMemberPath="DisplayName" />
-        </StackPanel>
+                <Label Content="Budget Name" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="2" Text="{Binding Budget.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0 3 0 0" />
 
-        <StackPanel Orientation="Horizontal" Grid.Row="2">
-            <Label Content="Format" />
-            <ComboBox ItemsSource="{Binding SelectedCurrency.Cultures}" SelectedItem="{Binding SelectedCurrencyCulture}" DisplayMemberPath="DisplayName" />
-        </StackPanel>
+                <Label Grid.Row="1" Content="Currency" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding CurrencyList}" SelectedItem="{Binding SelectedCurrency}" DisplayMemberPath="DisplayName" Margin="0 3 0 0"/>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="3">
-            <Button Content="Go Back" Command="{Binding BackCommand}" />
-            <Button Content="Create" Command="{Binding CreateBudgetCommand}" />
-        </StackPanel>
+                <Label Grid.Row="2" Content="Format" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="2" Grid.Column="2" ItemsSource="{Binding SelectedCurrency.Cultures}" SelectedItem="{Binding SelectedCurrencyCulture}" DisplayMemberPath="DisplayName" Margin="0 3 0 0"/>
+
+
+                <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0 3 0 0">
+                    <Button Content="Go Back" Command="{Binding BackCommand}" Margin="0 0 3 0"/>
+                    <Button Content="Create" Command="{Binding CreateBudgetCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

@@ -31,10 +31,13 @@
             <local:BudgetEditorView IsTabStop="False"/>
         </DataTemplate>
     </Controls:MetroWindow.Resources>
+    <Controls:MetroWindow.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewBudgetCommand}" />
+    </Controls:MetroWindow.InputBindings>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_New Budget" Command="{Binding NewBudgetCommand}" />
+                <MenuItem Header="_New Budget" Command="{Binding NewBudgetCommand}" InputGestureText="Ctrl+N"/>
                 <MenuItem Header="_Open Budget" Command="{Binding OpenBudgetCommand}" />
                 <MenuItem Header="E_xit" Command="{Binding CloseCommand}" InputGestureText="Alt+F4" />
             </MenuItem>
