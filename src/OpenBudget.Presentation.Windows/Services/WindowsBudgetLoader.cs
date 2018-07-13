@@ -1,17 +1,13 @@
-﻿using OpenBudget.Application.PlatformServices;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenBudget.Model;
-using OpenBudget.Model.Infrastructure;
-using OpenBudget.Model.SQLite;
-using System.IO;
-using OpenBudget.Application.Settings;
-using OpenBudget.Model.Entities;
+﻿using Microsoft.Win32;
 using OpenBudget.Application.Model;
-using Microsoft.Win32;
+using OpenBudget.Application.PlatformServices;
+using OpenBudget.Application.Settings;
+using OpenBudget.Model;
+using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Entities;
+using OpenBudget.Model.SQLite;
+using System;
+using System.IO;
 
 namespace OpenBudget.Presentation.Windows.Services
 {

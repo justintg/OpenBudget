@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenBudget.Model.Infrastructure
+namespace OpenBudget.Model.Infrastructure.Entities
 {
     public interface IIdentityMap
     {

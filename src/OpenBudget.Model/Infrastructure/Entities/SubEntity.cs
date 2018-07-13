@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using OpenBudget.Model.Event;
+using OpenBudget.Model.Events;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {

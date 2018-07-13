@@ -1,14 +1,11 @@
-﻿using OpenBudget.Model.Event;
+﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Entities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OpenBudget.Model.Infrastructure
+namespace OpenBudget.Model.Infrastructure.Messaging
 {
     public class BudgetMessageBus : Messenger<ModelEvent>
     {

@@ -1,13 +1,13 @@
-﻿using OpenBudget.Model.Event;
+﻿using OpenBudget.Model.Events;
+using OpenBudget.Model.Infrastructure.Messaging;
+using OpenBudget.Model.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
-using System.Collections;
 using System.Collections.Specialized;
-using System.Reflection;
 using System.Linq;
-using OpenBudget.Model.Util;
+using System.Reflection;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {

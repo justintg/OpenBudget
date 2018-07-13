@@ -1,12 +1,8 @@
-﻿using OpenBudget.Model.Entities;
-using OpenBudget.Model.Event;
+﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace OpenBudget.Model.Infrastructure
+namespace OpenBudget.Model.Infrastructure.Messaging
 {
     public class PropertyChangedMessageFilter<T> : IHandler<EntityUpdatedEvent>, IHandler<EntityCreatedEvent> where T : EntityBase
     {

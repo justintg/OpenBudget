@@ -1,10 +1,6 @@
-﻿using OpenBudget.Model.Infrastructure;
-using System;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Events;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenBudget.Model.Event;
 
 namespace OpenBudget.Model.Tests
 {

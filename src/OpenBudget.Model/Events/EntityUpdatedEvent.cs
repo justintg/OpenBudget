@@ -5,12 +5,13 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenBudget.Model.Event
+namespace OpenBudget.Model.Events
 {
     [DataContract]
-    public class EntityCreatedEvent : FieldChangeEvent
+    public class EntityUpdatedEvent : FieldChangeEvent
     {
-        public EntityCreatedEvent(string entityName, string entityId)
+
+        public EntityUpdatedEvent(string entityName, string entityId)
             : base(entityName, entityId)
         {
         }

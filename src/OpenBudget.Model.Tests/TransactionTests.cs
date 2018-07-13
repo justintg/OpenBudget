@@ -1,5 +1,5 @@
 ﻿using OpenBudget.Model.Entities;
-using OpenBudget.Model.Event;
+using OpenBudget.Model.Events;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
