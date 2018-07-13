@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Events;
+using OpenBudget.Model.BudgetStore;
 
 namespace OpenBudget.Model.Tests
 {
     public class TestBudget
     {
+        public MemoryBudgetStore BudgetStore;
         public TestEventStore EventStore;
         public BudgetModel BudgetModel;
         public Guid DeviceID;
@@ -20,7 +22,7 @@ namespace OpenBudget.Model.Tests
 
         public void ReloadBudget()
         {
-            BudgetModel = BudgetModel.Load(DeviceID, EventStore);
+            BudgetModel = BudgetModel.Load(DeviceID, BudgetStore);
             Budget = BudgetModel.Budget;
         }
 
@@ -38,7 +40,8 @@ namespace OpenBudget.Model.Tests
             testBudget.DeviceID = Guid.NewGuid();
 
             testBudget.EventStore = new TestEventStore();
-            testBudget.BudgetModel = BudgetModel.CreateNew(testBudget.DeviceID, testBudget.EventStore, InitializeBudget());
+            testBudget.BudgetStore = new MemoryBudgetStore(testBudget.EventStore);
+            testBudget.BudgetModel = BudgetModel.CreateNew(testBudget.DeviceID, testBudget.BudgetStore, InitializeBudget());
             testBudget.BudgetModel.SaveChanges();
 
             testBudget.EventStore.TestEvents.Clear();
