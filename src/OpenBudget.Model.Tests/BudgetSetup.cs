@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Entities;
-using OpenBudget.Model.Event;
+using OpenBudget.Model.Events;
 
 namespace OpenBudget.Model.Tests
 {

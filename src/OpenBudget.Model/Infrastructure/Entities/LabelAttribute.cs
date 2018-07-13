@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OpenBudget.Model.Infrastructure
+namespace OpenBudget.Model.Infrastructure.Entities
 {
     [AttributeUsage(AttributeTargets.Field)]
     public class LabelAttribute : Attribute

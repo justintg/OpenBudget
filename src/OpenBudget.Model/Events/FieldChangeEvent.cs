@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace OpenBudget.Model.Event
+namespace OpenBudget.Model.Events
 {
     [DataContract]
     public abstract class FieldChangeEvent : ModelEvent

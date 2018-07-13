@@ -1,5 +1,5 @@
 ﻿using OpenBudget.Model.Entities.Generators;
-using OpenBudget.Model.Event;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 using System;

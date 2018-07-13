@@ -1,9 +1,6 @@
-﻿using OpenBudget.Model.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 
-namespace OpenBudget.Model.Infrastructure
+namespace OpenBudget.Model.Infrastructure.Messaging
 {
     public class MessageHandler<T> : IHandler<T>
     {

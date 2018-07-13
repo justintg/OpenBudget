@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace OpenBudget.Model.Event
+namespace OpenBudget.Model.Events
 {
     /// <summary>
     /// The GroupedFieldChangeEvent holds a group of events that must be kept together in order

@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Event;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.EventStream;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Serialization;

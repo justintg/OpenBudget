@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace OpenBudget.Model.Event
+namespace OpenBudget.Model.Events
 {
     [DataContract]
     public class ConflictResolutionEvent : ModelEvent

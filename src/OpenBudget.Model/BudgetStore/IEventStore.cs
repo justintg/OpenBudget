@@ -1,10 +1,10 @@
-﻿using OpenBudget.Model.Event;
+﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.EventStream;
+using OpenBudget.Model.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace OpenBudget.Model.Infrastructure
+namespace OpenBudget.Model.BudgetStore
 {
     public interface IEventStore
     {

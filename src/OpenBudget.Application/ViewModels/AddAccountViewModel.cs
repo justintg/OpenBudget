@@ -1,13 +1,12 @@
-﻿using OpenBudget.Application.PlatformServices;
-using OpenBudget.Model.Entities;
+﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using OpenBudget.Application.PlatformServices;
+using OpenBudget.Model.Entities;
+using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using OpenBudget.Model.Infrastructure;
-using System.Linq;
-using GalaSoft.MvvmLight;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace OpenBudget.Application.ViewModels
 {

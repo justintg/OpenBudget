@@ -1,17 +1,17 @@
-﻿using OpenBudget.Model.Entities;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.Entities.Generators;
-using OpenBudget.Model.Event;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.EventStream;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
+using OpenBudget.Model.Infrastructure.Messaging;
 using OpenBudget.Model.Synchronization;
 using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("OpenBudget.Model.Tests")]
 

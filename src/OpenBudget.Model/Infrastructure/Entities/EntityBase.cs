@@ -1,4 +1,4 @@
-﻿using OpenBudget.Model.Event;
+﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Util;
 using System;

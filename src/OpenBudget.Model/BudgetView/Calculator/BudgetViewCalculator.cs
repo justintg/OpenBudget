@@ -59,7 +59,7 @@ namespace OpenBudget.Model.BudgetView.Calculator
             return results.ToDictionary(r => r.Key, r => r.Value.Values.OrderBy(rcm => rcm.Month).ToList());
         }
 
-        private static void AddTransactionsInMonth(TransactionDictionary groupedTransactions, CategoryResultsDictionary results)
+        private void AddTransactionsInMonth(TransactionDictionary groupedTransactions, CategoryResultsDictionary results)
         {
             foreach (var categoryMonth in groupedTransactions.Where(cat => cat.Key.EntityType == nameof(Category)))
             {
