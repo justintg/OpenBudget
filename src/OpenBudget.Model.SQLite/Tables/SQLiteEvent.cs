@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenBudget.Model.SQLite
+namespace OpenBudget.Model.SQLite.Tables
 {
     public class SQLiteEvent
     {

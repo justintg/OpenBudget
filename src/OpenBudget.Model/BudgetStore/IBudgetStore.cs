@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace OpenBudget.Model.BudgetStore
+{
+    public interface IBudgetStore
+    {
+        IEventStore EventStore { get; }
+
+        TExtension TryGetExtension<TExtension>() where TExtension : class;
+    }
+}

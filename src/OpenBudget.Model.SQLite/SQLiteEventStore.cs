@@ -3,6 +3,7 @@ using OpenBudget.Model.Events;
 using OpenBudget.Model.EventStream;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Serialization;
+using OpenBudget.Model.SQLite.Tables;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -14,51 +15,12 @@ namespace OpenBudget.Model.SQLite
 {
     public class SQLiteEventStore : IEventStore
     {
-        #region Validation
-
-        public static bool EnsureValidEventStore(string path)
-        {
-            if (!File.Exists(path))
-                throw new InvalidEventStoreException($"The file {path} does not exist.");
-
-            try
-            {
-                using (SQLiteConnection db = new SQLiteConnection(path))
-                {
-                    EnsureIsSQLiteDatabase(db);
-                    EnsureTableExists(db, nameof(SQLiteEvent));
-                    EnsureTableExists(db, nameof(Info));
-                }
-            }
-            catch (Exception)
-            {
-                throw new InvalidEventStoreException($"The file {path} is not a Budget or is corrupt.");
-            }
-
-            return true;
-        }
-
-        private static void EnsureIsSQLiteDatabase(SQLiteConnection db)
-        {
-            db.ExecuteScalar<int>(@"select count(*) from sqlite_master");
-        }
-
-        private static void EnsureTableExists(SQLiteConnection db, string TableName)
-        {
-            int tableCount = db.ExecuteScalar<int>(@"select count(*) from sqlite_master where type = 'table' and name = ?", TableName);
-            if (tableCount != 1)
-                throw new InvalidEventStoreException();
-        }
-        #endregion
-
         Serializer _serializer = new Serializer();
         SQLiteConnection _db;
 
-        public SQLiteEventStore(Guid deviceId, string _dbPath)
+        internal SQLiteEventStore(SQLiteConnection connection)
         {
-            _db = new SQLiteConnection(_dbPath);
-            _db.CreateTable<SQLiteEvent>();
-            _db.CreateTable<Info>();
+            _db = connection;
         }
 
         public IEnumerable<ModelEvent> GetEvents()

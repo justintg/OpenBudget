@@ -35,8 +35,8 @@ namespace OpenBudget.Presentation.Windows.Services
             {
                 File.Delete(budgetPath);
             }
-            IEventStore eventStore = new SQLiteEventStore(deviceId, budgetPath);
-            var budgetModel = BudgetModel.CreateNew(deviceId, eventStore);
+            IBudgetStore budgetStore = new SQLiteBudgetStore(deviceId, budgetPath);
+            var budgetModel = BudgetModel.CreateNew(deviceId, budgetStore);
 
             return budgetModel;
         }
@@ -51,8 +51,8 @@ namespace OpenBudget.Presentation.Windows.Services
             {
                 File.Delete(budgetPath);
             }
-            IEventStore eventStore = new SQLiteEventStore(deviceId, budgetPath);
-            var budgetModel = BudgetModel.CreateNew(deviceId, eventStore, initialBudget);
+            IBudgetStore budgetStore = new SQLiteBudgetStore(deviceId, budgetPath);
+            var budgetModel = BudgetModel.CreateNew(deviceId, budgetStore, initialBudget);
             budgetModel.SaveChanges();
 
             return budgetModel;
@@ -106,8 +106,8 @@ namespace OpenBudget.Presentation.Windows.Services
                 throw new FileNotFoundException(budgetPath);
             }
 
-            IEventStore eventStore = new SQLiteEventStore(deviceId, budgetPath);
-            var budgetModel = BudgetModel.Load(deviceId, eventStore);
+            IBudgetStore budgetStore = new SQLiteBudgetStore(deviceId, budgetPath);
+            var budgetModel = BudgetModel.Load(deviceId, budgetStore);
             return budgetModel;
         }
 
@@ -115,9 +115,9 @@ namespace OpenBudget.Presentation.Windows.Services
         {
             try
             {
-                SQLiteEventStore.EnsureValidEventStore(budgetPath);
+                SQLiteBudgetStore.EnsureValidEventStore(budgetPath);
             }
-            catch (InvalidEventStoreException e)
+            catch (InvalidBudgetStoreException e)
             {
                 return new ValidBudgetCheck(false, e.Message);
             }

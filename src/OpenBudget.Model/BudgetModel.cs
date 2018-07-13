@@ -24,6 +24,7 @@ namespace OpenBudget.Model
         internal BudgetMessageBus InternalMessageBus { get; private set; }
         public BudgetMessageBus MessageBus { get; private set; }
         public IEventStore EventStore { get; private set; }
+        public IBudgetStore BudgetStore { get; private set; }
         internal EntityGenerator<Budget> BudgetGenerator { get; private set; }
         internal EntityGenerator<Account> AccountGenerator { get; private set; }
         internal EntityGenerator<Transaction> TransactionGenerator { get; private set; }
@@ -60,12 +61,12 @@ namespace OpenBudget.Model
             return this.FindEntity(reference.EntityType, reference.EntityID);
         }
 
-        protected BudgetModel(Guid deviceId, IEventStore eventStore) : this(deviceId, eventStore, true)
+        protected BudgetModel(Guid deviceId, IBudgetStore budgetStore) : this(deviceId, budgetStore, true)
         {
 
         }
 
-        protected BudgetModel(Guid deviceId, IEventStore eventStore, Budget initialBudget) : this(deviceId, eventStore, false)
+        protected BudgetModel(Guid deviceId, IBudgetStore budgetStore, Budget initialBudget) : this(deviceId, budgetStore, false)
         {
             if (initialBudget == null) throw new ArgumentNullException(nameof(initialBudget));
 
@@ -73,10 +74,11 @@ namespace OpenBudget.Model
             initialBudget.AttachToModel(this);
         }
 
-        protected BudgetModel(Guid deviceId, IEventStore eventStore, bool createBudget)
+        protected BudgetModel(Guid deviceId, IBudgetStore budgetStore, bool createBudget)
         {
             DeviceID = deviceId;
-            EventStore = eventStore;
+            BudgetStore = budgetStore;
+            EventStore = BudgetStore.EventStore;
             InternalMessageBus = new BudgetMessageBus();
             MessageBus = new BudgetMessageBus();
 
@@ -109,10 +111,10 @@ namespace OpenBudget.Model
             generator.EnsureIdentityTracked(entity);
         }
 
-        public static BudgetModel OpenExistingOnNewDevice(Guid deviceId, ISynchronizationService syncService, IEventStore eventStore)
+        public static BudgetModel OpenExistingOnNewDevice(Guid deviceId, ISynchronizationService syncService, IBudgetStore budgetStore)
         {
             //var budgetId = events.Single(e => e.EntityType == "Budget" && e is EntityCreatedEvent).EntityID;
-            BudgetModel model = new BudgetModel(deviceId, eventStore, false);
+            BudgetModel model = new BudgetModel(deviceId, budgetStore, false);
             model.setSynchronizationService(syncService);
             model.Sync();
 
@@ -121,13 +123,10 @@ namespace OpenBudget.Model
             return model;
         }
 
-        public static BudgetModel Load(Guid deviceId, IEventStore eventStore)
+        public static BudgetModel Load(Guid deviceId, IBudgetStore budgetStore)
         {
-            var events = eventStore.GetEvents();
-            var budgetId = events.Single(e => e.EntityType == "Budget" && e is EntityCreatedEvent).EntityID;
-            BudgetModel model = new BudgetModel(deviceId, eventStore, false);
-            model.EventStore = eventStore;
-            foreach (var evt in events)
+            BudgetModel model = new BudgetModel(deviceId, budgetStore, false);
+            foreach (var evt in model.EventStore.GetEvents())
             {
                 model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
             }
@@ -136,16 +135,16 @@ namespace OpenBudget.Model
             return model;
         }
 
-        public static BudgetModel CreateNew(Guid deviceId, IEventStore eventStore)
+        public static BudgetModel CreateNew(Guid deviceId, IBudgetStore budgetStore)
         {
-            return new BudgetModel(deviceId, eventStore);
+            return new BudgetModel(deviceId, budgetStore);
         }
 
-        public static BudgetModel CreateNew(Guid deviceId, IEventStore eventStore, Budget initialBudget)
+        public static BudgetModel CreateNew(Guid deviceId, IBudgetStore budgetStore, Budget initialBudget)
         {
             if (initialBudget == null) throw new ArgumentNullException(nameof(initialBudget));
 
-            return new BudgetModel(deviceId, eventStore, initialBudget);
+            return new BudgetModel(deviceId, budgetStore, initialBudget);
         }
 
         public void Sync()
