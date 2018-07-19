@@ -4,12 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TransactionDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Calculator.BudgetViewCalculatorCategoryMonth, decimal>;
-using CategoryResultsDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Calculator.BudgetViewCalculatorCategory, System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Calculator.BudgetViewCalculatorCategoryMonth, OpenBudget.Model.BudgetView.Calculator.BudgetViewCalculatorCategoryMonthResult>>;
+using TransactionDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Calculator.CategoryMonthKey, decimal>;
+using CategoryResultsDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Calculator.CategoryMonthKey, OpenBudget.Model.BudgetStore.Model.BudgetViewCategoryMonth>;
+using OpenBudget.Model.BudgetStore.Model;
 
 namespace OpenBudget.Model.BudgetView.Calculator
 {
-    internal class BudgetViewCalculator
+    public class BudgetViewCalculator
     {
         private BudgetModel _model;
 
@@ -20,17 +21,116 @@ namespace OpenBudget.Model.BudgetView.Calculator
 
         public BudgetViewCalculatorResult Calculate()
         {
-            Dictionary<BudgetViewCalculatorCategoryMonth, decimal> groupedTransactions = GroupTransactions();
-            var results = CalculateCategoryResults(groupedTransactions);
+            //Iterate transactions and group their balances into categories
+            Dictionary<CategoryMonthKey, decimal> groupedTransactions = GroupTransactions();
 
-            return null;
+            CategoryResultsDictionary resultDictionary = InitializeResults(groupedTransactions);
+            Dictionary<CategoryKey, List<BudgetViewCategoryMonth>> categoryResultsOrdered = SortResultsByDate(resultDictionary);
+            Dictionary<DateTime, List<BudgetViewCategoryMonth>> categoryResultsByMonth = GroupResultsByMonth(resultDictionary);
+            CalculateCategoryBalances(categoryResultsOrdered);
+
+            Dictionary<DateTime, BudgetViewMonth> months = InitializeMonths(categoryResultsByMonth, groupedTransactions);
+            List<BudgetViewMonth> monthsOrdered = months.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value).ToList();
+            CalculateMonthBalances(monthsOrdered);
+
+
+            return new BudgetViewCalculatorResult()
+            {
+                CategoryMonths = resultDictionary,
+                CategoryMonthsOrdered = categoryResultsOrdered,
+                CategoryMonthsByMonth = categoryResultsByMonth,
+                Months = months,
+                MonthsByDate = monthsOrdered
+            };
         }
 
-        private Dictionary<BudgetViewCalculatorCategory, List<BudgetViewCalculatorCategoryMonthResult>>
-            CalculateCategoryResults(Dictionary<BudgetViewCalculatorCategoryMonth, decimal> groupedTransactions)
+        private void CalculateMonthBalances(List<BudgetViewMonth> monthsOrdered)
         {
-            Dictionary<BudgetViewCalculatorCategory, List<BudgetViewCalculatorCategoryMonthResult>> results = InitializeResults(groupedTransactions);
-            foreach (var category in results)
+            BudgetViewMonth previousMonth = null;
+            foreach (var currentMonth in monthsOrdered)
+            {
+                if (previousMonth != null)
+                {
+                    bool isLastMonth = currentMonth.Month.AddMonths(-1).FirstDayOfMonth() == previousMonth.Month;
+                    currentMonth.OverUnderBudgetedPreviousMonth = previousMonth.AvailableToBudget;
+                    if (!isLastMonth)
+                    {
+                        currentMonth.OverUnderBudgetedPreviousMonth -= previousMonth.OverspentPreviousMonth;
+                    }
+                }
+
+                currentMonth.AvailableToBudget = currentMonth.Income - currentMonth.Budgeted - currentMonth.OverspentPreviousMonth + currentMonth.OverUnderBudgetedPreviousMonth;
+
+                previousMonth = currentMonth;
+            }
+        }
+
+        private Dictionary<DateTime, BudgetViewMonth> InitializeMonths(Dictionary<DateTime, List<BudgetViewCategoryMonth>> categoriesByMonth, TransactionDictionary groupedTransactions)
+        {
+            Dictionary<DateTime, BudgetViewMonth> months = groupedTransactions.Where(kvp => kvp.Key.EntityType == nameof(IncomeCategory)).ToDictionary(kvp => kvp.Key.FirstDayOfMonth, kvp => new BudgetViewMonth(kvp.Key.FirstDayOfMonth) { Income = kvp.Value });
+
+            foreach (var category in categoriesByMonth)
+            {
+                BudgetViewMonth month = null;
+                BudgetViewMonth nextMonth = null;
+                DateTime nextMonthDate = category.Key.AddMonths(1).FirstDayOfMonth();
+                months.TryGetValue(nextMonthDate, out nextMonth);
+
+                if (!months.TryGetValue(category.Key, out month))
+                {
+                    month = new BudgetViewMonth(category.Key);
+                    months[category.Key] = month;
+                }
+
+                foreach (var categoryMonth in category.Value)
+                {
+                    month.Budgeted += categoryMonth.AmountBudgeted;
+                    if (categoryMonth.EndBalance < 0M)
+                    {
+                        if (nextMonth == null)
+                        {
+                            nextMonth = new BudgetViewMonth(nextMonthDate);
+                            months[nextMonthDate] = nextMonth;
+                        }
+                        nextMonth.OverspentPreviousMonth += categoryMonth.EndBalance;
+                    }
+                }
+            }
+
+            return months;
+        }
+
+        private Dictionary<DateTime, List<BudgetViewCategoryMonth>> GroupResultsByMonth(CategoryResultsDictionary resultDictionary)
+        {
+            Dictionary<DateTime, List<BudgetViewCategoryMonth>> categoryResultsByMonth = new Dictionary<DateTime, List<BudgetViewCategoryMonth>>();
+            var groups = resultDictionary.GroupBy(kvp => kvp.Key.FirstDayOfMonth);
+
+            foreach (var group in groups)
+            {
+                categoryResultsByMonth[group.Key] = group.Select(g => g.Value).ToList();
+            }
+
+            return categoryResultsByMonth;
+        }
+
+        private Dictionary<CategoryKey, List<BudgetViewCategoryMonth>>
+            SortResultsByDate(CategoryResultsDictionary resultDictionary)
+        {
+            Dictionary<CategoryKey, List<BudgetViewCategoryMonth>> categoryResultsOrdered = new Dictionary<CategoryKey, List<BudgetViewCategoryMonth>>();
+
+            var groups = resultDictionary.GroupBy(kvp => new CategoryKey(kvp.Key));
+            foreach (var group in groups)
+            {
+                categoryResultsOrdered[group.Key] = group.Select(g => g.Value).OrderBy(cm => cm.Month).ToList();
+            }
+
+
+            return categoryResultsOrdered;
+        }
+
+        private void CalculateCategoryBalances(Dictionary<CategoryKey, List<BudgetViewCategoryMonth>> categoryResultsByDate)
+        {
+            foreach (var category in categoryResultsByDate)
             {
                 int count = 0;
                 foreach (var result in category.Value)
@@ -46,36 +146,19 @@ namespace OpenBudget.Model.BudgetView.Calculator
                     count++;
                 }
             }
-
-            return results;
         }
 
-        private Dictionary<BudgetViewCalculatorCategory, List<BudgetViewCalculatorCategoryMonthResult>> InitializeResults(TransactionDictionary groupedTransactions)
+        private CategoryResultsDictionary InitializeResults(TransactionDictionary groupedTransactions)
         {
-            CategoryResultsDictionary results = new CategoryResultsDictionary();
-            AddTransactionsInMonth(groupedTransactions, results);
+            CategoryResultsDictionary results = AddTransactionsInMonth(groupedTransactions);
             AddAmountsBudgeted(results);
-
-            return results.ToDictionary(r => r.Key, r => r.Value.Values.OrderBy(rcm => rcm.Month).ToList());
+            return results;
+            //return results.ToDictionary(r => r.Key, r => r.Value.Values.OrderBy(rcm => rcm.Month).ToList());
         }
 
-        private void AddTransactionsInMonth(TransactionDictionary groupedTransactions, CategoryResultsDictionary results)
+        private CategoryResultsDictionary AddTransactionsInMonth(TransactionDictionary groupedTransactions)
         {
-            foreach (var categoryMonth in groupedTransactions.Where(cat => cat.Key.EntityType == nameof(Category)))
-            {
-                BudgetViewCalculatorCategory category = new BudgetViewCalculatorCategory(categoryMonth.Key);
-                Dictionary<BudgetViewCalculatorCategoryMonth, BudgetViewCalculatorCategoryMonthResult> resultDict = null;
-                if (results.TryGetValue(category, out resultDict))
-                {
-                    resultDict.Add(categoryMonth.Key, new BudgetViewCalculatorCategoryMonthResult(categoryMonth.Key.EntityID, categoryMonth.Key.FirstDayOfMonth) { TransactionsInMonth = categoryMonth.Value });
-                }
-                else
-                {
-                    resultDict = new Dictionary<BudgetViewCalculatorCategoryMonth, BudgetViewCalculatorCategoryMonthResult>();
-                    resultDict.Add(categoryMonth.Key, new BudgetViewCalculatorCategoryMonthResult(categoryMonth.Key.EntityID, categoryMonth.Key.FirstDayOfMonth) { TransactionsInMonth = categoryMonth.Value });
-                    results[category] = resultDict;
-                }
-            }
+            return groupedTransactions.ToDictionary(td => td.Key, td => new BudgetViewCategoryMonth(td.Key.EntityID, td.Key.FirstDayOfMonth) { TransactionsInMonth = td.Value });
         }
 
         private void AddAmountsBudgeted(CategoryResultsDictionary results)
@@ -84,62 +167,38 @@ namespace OpenBudget.Model.BudgetView.Calculator
             {
                 if (categoryMonth.AmountBudgeted == 0M) continue;
 
-                BudgetViewCalculatorCategoryMonth monthKey = new BudgetViewCalculatorCategoryMonth(categoryMonth.Parent as Category, categoryMonth.Month);
-                BudgetViewCalculatorCategory categoryKey = new BudgetViewCalculatorCategory(monthKey);
-                BudgetViewCalculatorCategoryMonthResult monthResult = null;
+                CategoryMonthKey monthKey = new CategoryMonthKey(categoryMonth.Parent as Category, categoryMonth.Month);
+                BudgetViewCategoryMonth monthResult = null;
 
-                Dictionary<BudgetViewCalculatorCategoryMonth, BudgetViewCalculatorCategoryMonthResult> resultDict = null;
-                if (results.TryGetValue(categoryKey, out resultDict))
+                BudgetViewCategoryMonth monthValues = null;
+                if (results.TryGetValue(monthKey, out monthValues))
                 {
-                    if (resultDict.TryGetValue(monthKey, out monthResult))
-                    {
-                        monthResult.AmountBudgeted = categoryMonth.AmountBudgeted;
-                    }
-                    else
-                    {
-                        monthResult = new BudgetViewCalculatorCategoryMonthResult(monthKey.EntityID, monthKey.FirstDayOfMonth) { AmountBudgeted = categoryMonth.AmountBudgeted };
-                        resultDict[monthKey] = monthResult;
-                    }
+                    monthValues.AmountBudgeted = categoryMonth.AmountBudgeted;
                 }
                 else
                 {
-                    resultDict = new Dictionary<BudgetViewCalculatorCategoryMonth, BudgetViewCalculatorCategoryMonthResult>();
-                    monthResult = new BudgetViewCalculatorCategoryMonthResult(monthKey.EntityID, monthKey.FirstDayOfMonth) { AmountBudgeted = categoryMonth.AmountBudgeted };
-                    resultDict[monthKey] = monthResult;
-                    results[categoryKey] = resultDict;
+                    monthResult = new BudgetViewCategoryMonth(monthKey.EntityID, monthKey.FirstDayOfMonth) { AmountBudgeted = categoryMonth.AmountBudgeted };
+                    results[monthKey] = monthResult;
                 }
-            }
-        }
-
-        private void SortResultLists(Dictionary<BudgetViewCalculatorCategory, List<BudgetViewCalculatorCategoryMonthResult>> results)
-        {
-            Comparison<BudgetViewCalculatorCategoryMonthResult> comparision = (x, y) =>
-            {
-                return x.Month.CompareTo(y.Month);
-            };
-
-            foreach (var result in results)
-            {
-                result.Value.Sort(comparision);
             }
         }
 
         private TransactionDictionary GroupTransactions()
         {
-            var groupedTransactions = new Dictionary<BudgetViewCalculatorCategoryMonth, decimal>();
+            var groupedTransactions = new Dictionary<CategoryMonthKey, decimal>();
 
             foreach (var transaction in _model.Budget.Accounts.SelectMany(a => a.Transactions))
             {
                 if (transaction.TransactionType == TransactionTypes.Normal)
                 {
-                    BudgetViewCalculatorCategoryMonth category = null;
+                    CategoryMonthKey category = null;
                     if (transaction.TransactionCategory != null)
                     {
-                        category = new BudgetViewCalculatorCategoryMonth(transaction.TransactionCategory, transaction.TransactionDate);
+                        category = new CategoryMonthKey(transaction.TransactionCategory, transaction.TransactionDate);
                     }
                     else if (transaction.IncomeCategory != null)
                     {
-                        category = new BudgetViewCalculatorCategoryMonth(transaction.IncomeCategory);
+                        category = new CategoryMonthKey(transaction.IncomeCategory);
                     }
 
                     if (groupedTransactions.ContainsKey(category))

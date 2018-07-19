@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenBudget.Model.BudgetView.Calculator
+namespace OpenBudget.Model.BudgetStore.Model
 {
-    internal class BudgetViewCalculatorCategoryMonthResult
+    public class BudgetViewCategoryMonth
     {
         public string CategoryID;
         public DateTime Month;
@@ -13,7 +13,7 @@ namespace OpenBudget.Model.BudgetView.Calculator
         public decimal AmountBudgeted = 0M;
         public decimal EndBalance = 0M;
 
-        public BudgetViewCalculatorCategoryMonthResult(string categoryID, DateTime month)
+        public BudgetViewCategoryMonth(string categoryID, DateTime month)
         {
             this.CategoryID = categoryID;
             this.Month = month;

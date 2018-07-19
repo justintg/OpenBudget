@@ -48,6 +48,13 @@ namespace OpenBudget.Model.Tests
             _previousMonth.AmountBudgeted = 150;
             _checking = TestBudget.Budget.Accounts.Single(a => a.Name == "Checking");
 
+            _checking.Transactions.Add(new Transaction()
+            {
+                IncomeCategory = TestBudget.Budget.IncomeCategories.GetIncomeCategory(DateTime.Today.FirstDayOfMonth().AddMonths(-1)),
+                TransactionDate = DateTime.Today.FirstDayOfMonth().AddMonths(-1),
+                Amount = 300
+            });
+
             AddTransaction(-100, -1);
 
             _thisMonth = _mortgage.CategoryMonths.GetCategoryMonth(DateTime.Today.FirstDayOfMonth());
