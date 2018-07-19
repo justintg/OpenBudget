@@ -1,13 +1,16 @@
-﻿using System;
+﻿using OpenBudget.Model.BudgetStore.Model;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace OpenBudget.Model.BudgetView.Calculator
 {
-    internal class BudgetViewCalculatorResult
+    public class BudgetViewCalculatorResult
     {
-        public Dictionary<BudgetViewCalculatorCategoryMonth, BudgetViewCalculatorCategoryMonthResult> CategoryResults { get; private set; }
-        public Dictionary<DateTime, BudgetViewCalculatorMonthResult> MonthResults { get; private set; }
-
+        public Dictionary<CategoryMonthKey, BudgetViewCategoryMonth> CategoryMonths { get; set; }
+        public Dictionary<CategoryKey, List<BudgetViewCategoryMonth>> CategoryMonthsOrdered { get; set; }
+        public Dictionary<DateTime, List<BudgetViewCategoryMonth>> CategoryMonthsByMonth { get; set; }
+        public Dictionary<DateTime, BudgetViewMonth> Months { get; set; }
+        public List<BudgetViewMonth> MonthsByDate { get; set; }
     }
 }

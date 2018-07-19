@@ -25,6 +25,7 @@ namespace OpenBudget.Model
         public BudgetMessageBus MessageBus { get; private set; }
         public IEventStore EventStore { get; private set; }
         public IBudgetStore BudgetStore { get; private set; }
+        internal IBudgetViewCache BudgetViewCache { get; private set; }
         internal EntityGenerator<Budget> BudgetGenerator { get; private set; }
         internal EntityGenerator<Account> AccountGenerator { get; private set; }
         internal EntityGenerator<Transaction> TransactionGenerator { get; private set; }
@@ -82,6 +83,19 @@ namespace OpenBudget.Model
             InternalMessageBus = new BudgetMessageBus();
             MessageBus = new BudgetMessageBus();
 
+            InitializeGenerators();
+
+            if (createBudget)
+            {
+                Budget = new Budget();
+                Budget.AttachToModel(this);
+            }
+
+            InitializeBudgetViewCache();
+        }
+
+        private void InitializeGenerators()
+        {
             BudgetGenerator = RegisterGenerator(new EntityGenerator<Budget>(this));
             AccountGenerator = RegisterGenerator(new EntityGenerator<Account>(this));
             TransactionGenerator = RegisterGenerator(new EntityGenerator<Transaction>(this));
@@ -91,12 +105,22 @@ namespace OpenBudget.Model
             PayeeGenerator = RegisterGenerator(new EntityGenerator<Payee>(this));
             IncomeCategoryGenerator = (IncomeCategoryGenerator)RegisterGenerator(new IncomeCategoryGenerator(this));
             BudgetCategoryMonthGenerator = (CategoryMonthGenerator)RegisterGenerator(new CategoryMonthGenerator(this));
+        }
 
-            if (createBudget)
+        private void InitializeBudgetViewCache()
+        {
+            IBudgetViewCacheFactory cacheFactory = this.BudgetStore.TryGetExtension<IBudgetViewCacheFactory>();
+            IBudgetViewCache cache = null;
+            if (cacheFactory != null)
             {
-                Budget = new Budget();
-                Budget.AttachToModel(this);
+                cache = cacheFactory.CreateCache(this);
             }
+            else
+            {
+                cache = new MemoryBudgetViewCache(this);
+            }
+
+            this.BudgetViewCache = cache;
         }
 
         public void setSynchronizationService(ISynchronizationService syncService)
