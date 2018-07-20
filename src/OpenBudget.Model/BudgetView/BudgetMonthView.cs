@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.BudgetView.Calculator;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.BudgetView.Calculator;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Util;
 using OpenBudget.Util.Collections;
@@ -16,6 +17,7 @@ namespace OpenBudget.Model.BudgetView
         public DateTime Date { get; private set; }
 
         private DateTime _lastDayOfMonth;
+        private IBudgetViewCache _cache;
 
         public BudgetMonthView(BudgetModel model, DateTime date)
         {
@@ -29,7 +31,14 @@ namespace OpenBudget.Model.BudgetView
                 mc => { return new MasterCategoryMonthView(mc, Date); },
                 mcv => { mcv.Dispose(); });
 
-            CalculateValues();
+            _cache = _model.BudgetViewCache;
+            _cache.CacheUpdated += Cache_CacheUpdated;
+            RefreshValues();
+        }
+
+        private void Cache_CacheUpdated(object sender, EventArgs e)
+        {
+            RefreshValues();
         }
 
         private TransformingObservableCollection<MasterCategory, MasterCategoryMonthView> _masterCategories;
@@ -72,75 +81,52 @@ namespace OpenBudget.Model.BudgetView
             private set { _budgetedThisMonth = value; RaisePropertyChanged(); }
         }
 
+        private decimal _availableToBudget;
+
         public decimal AvailableToBudget
         {
-            get { return NotBudgetedPreviousMonth + OverspentPreviousMonth + IncomeThisMonth - BudgetedThisMonth; }
+            get { return _availableToBudget; }
+            private set { _availableToBudget = value; RaisePropertyChanged(); }
         }
 
-        private void CalculateValues()
+        private void RefreshValues()
         {
-            DateTime previousMonthStart = Date.AddMonths(-1).FirstDayOfMonth();
-            decimal incomeThisMonth = 0M;
-            decimal incomePreviousMonths = 0M;
-            decimal budgetedThisMonth = 0M;
-            decimal budgetedPreviousMonths = 0m;
-            decimal notBudgetedPreviousMonth = 0m;
-            decimal spentPreviousMonth = 0m;
-            decimal spentOtherMonths = 0m;
+            bool exactMatch;
+            var budgetViewMonth = _cache.GetLastBudgetViewMonth(this.Date, out exactMatch);
 
-            BudgetViewCalculator calculator = new BudgetViewCalculator(_model);
-            var results = calculator.Calculate();
-
-            foreach (var transaction in _model.Budget.Accounts.SelectMany(a => a.Transactions))
+            if (exactMatch)
             {
-                if (transaction.TransactionType == TransactionTypes.Normal)
+                IncomeThisMonth = budgetViewMonth.Income;
+                BudgetedThisMonth = budgetViewMonth.Budgeted;
+                NotBudgetedPreviousMonth = budgetViewMonth.OverUnderBudgetedPreviousMonth;
+                OverspentPreviousMonth = budgetViewMonth.OverspentPreviousMonth;
+                AvailableToBudget = budgetViewMonth.AvailableToBudget;
+            }
+            else
+            {
+                if (budgetViewMonth != null)
                 {
-                    if (transaction.IncomeCategory != null)
-                    {
-                        if (transaction.IncomeCategory == _incomeCategory)
-                        {
-                            incomeThisMonth += transaction.Amount;
-                        }
-                        else if (transaction.IncomeCategory.Month < Date)
-                        {
-                            incomePreviousMonths += transaction.Amount;
-                        }
-                    }
-                    else if (transaction.TransactionCategory != null)
-                    {
-                        if (transaction.TransactionDate < Date && transaction.TransactionDate >= previousMonthStart)
-                        {
-                            spentPreviousMonth += transaction.Amount;
-                        }
-                        else if (transaction.TransactionDate < previousMonthStart)
-                        {
-                            spentOtherMonths += transaction.Amount;
-                        }
-                    }
+                    IncomeThisMonth = 0M;
+                    BudgetedThisMonth = 0M;
+                    OverspentPreviousMonth = 0M;
+                    NotBudgetedPreviousMonth = budgetViewMonth.AvailableToBudget;
+                    AvailableToBudget = budgetViewMonth.AvailableToBudget;
+                }
+                else
+                {
+                    IncomeThisMonth = 0M;
+                    BudgetedThisMonth = 0M;
+                    OverspentPreviousMonth = 0M;
+                    NotBudgetedPreviousMonth = 0M;
+                    AvailableToBudget = 0M;
                 }
             }
-
-            foreach (CategoryMonth categoryMonth in _model.Budget.MasterCategories.SelectMany(c => c.Categories).SelectMany(c => c.CategoryMonths.GetAllMaterialized()))
-            {
-                if (categoryMonth.Month == Date)
-                {
-                    budgetedThisMonth += categoryMonth.AmountBudgeted;
-                }
-                else if (categoryMonth.Month < Date)
-                {
-                    budgetedPreviousMonths += categoryMonth.AmountBudgeted;
-                }
-            }
-
-            IncomeThisMonth = incomeThisMonth;
-            BudgetedThisMonth = budgetedThisMonth;
-            NotBudgetedPreviousMonth = incomePreviousMonths - budgetedPreviousMonths;
-            RaisePropertyChanged(nameof(AvailableToBudget));
         }
 
         public void Dispose()
         {
             _masterCategories?.Dispose();
+            _cache.CacheUpdated -= Cache_CacheUpdated;
         }
     }
 }
