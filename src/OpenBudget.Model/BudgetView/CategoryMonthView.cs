@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Entities;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Util;
@@ -19,8 +20,7 @@ namespace OpenBudget.Model.BudgetView
         private readonly DateTime _firstDayOfMonth;
         private readonly DateTime _lastDayOfMonth;
 
-        private HashSet<string> _categoryTransactions = new HashSet<string>();
-        private IDisposable _eventSubscription;
+        private readonly IBudgetViewCache _cache;
 
         public CategoryMonthView(Category subCategory, DateTime date)
         {
@@ -30,71 +30,17 @@ namespace OpenBudget.Model.BudgetView
             _model = Category.Model;
             _firstDayOfMonth = date.FirstDayOfMonth().Date;
             _lastDayOfMonth = _firstDayOfMonth.LastDayOfMonth().Date;
+            _cache = _model.BudgetViewCache;
             CategoryMonth = Category.CategoryMonths.GetCategoryMonth(_firstDayOfMonth);
             CategoryMonth.PropertyChanged += CategoryMonth_PropertyChanged;
-            CalculateValues();
-            InitializeEventListeners();
+
+            RefreshValues();
+            _cache.CacheUpdated += Cache_CacheUpdated;
         }
 
-        private void InitializeEventListeners()
+        private void Cache_CacheUpdated(object sender, EventArgs e)
         {
-            _eventSubscription = _model.MessageBus.EventPublished
-                .Where(e => ShouldRecalculate(e)).Subscribe(e =>
-                {
-                    CalculateValues();
-                });
-        }
-
-        private bool ShouldRecalculate(ModelEvent evt)
-        {
-            if (evt.EntityType == nameof(Transaction))
-            {
-                if (evt is EntityCreatedEvent createEvent)
-                {
-                    FieldChange fieldChange = null;
-                    if (createEvent.Changes.TryGetValue(nameof(Transaction.Category), out fieldChange))
-                    {
-                        if (fieldChange.NewValue is EntityReference reference)
-                        {
-                            if (reference.EntityType == nameof(Entities.Category) && reference.EntityID == Category.EntityID)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                else if (evt is EntityUpdatedEvent updateEvent)
-                {
-                    if (_categoryTransactions.Contains(evt.EntityID))
-                    {
-                        if (updateEvent.Changes.ContainsKey(nameof(Transaction.Amount)))
-                        {
-                            return true;
-                        }
-                    }
-                    else if (updateEvent.Changes.ContainsKey(nameof(Transaction.Category)))
-                    {
-                        var fieldChange = updateEvent.Changes[nameof(Transaction.Category)];
-                        if (fieldChange.NewValue is EntityReference reference)
-                        {
-                            if (reference.EntityType == nameof(Entities.Category) && reference.EntityID == Category.EntityID)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                else if (evt is GroupedFieldChangeEvent)
-                {
-
-                }
-            }
-            else if (evt.EntityType == nameof(Entities.CategoryMonth))
-            {
-
-            }
-
-            return false;
+            RefreshValues();
         }
 
         private void CategoryMonth_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -102,7 +48,7 @@ namespace OpenBudget.Model.BudgetView
             if (e.PropertyName == nameof(Entities.CategoryMonth.AmountBudgeted))
             {
                 RaisePropertyChanged(nameof(AmountBudgeted));
-                CalculateValues();
+                RefreshValues();
             }
         }
 
@@ -136,70 +82,38 @@ namespace OpenBudget.Model.BudgetView
         }
 
 
-        private void CalculateValues()
+        private void RefreshValues()
         {
-            decimal beginningBalance = 0m;
-            decimal endBalance = 0m;
-            decimal previousMonthsBudgeted = 0m;
-            decimal amountBudgeted = AmountBudgeted;
-            decimal transactionsInMonth = 0m;
+            bool exactMatch;
+            var categoryMonth = _model.BudgetViewCache.GetLastCategoryMonth(Category.EntityID, _firstDayOfMonth, out exactMatch);
 
-            _categoryTransactions.Clear();
-
-            foreach (var categoryMonth in Category.CategoryMonths.GetAllMaterialized().Where(cm => cm.Month < _firstDayOfMonth.Date))
+            if (exactMatch)
             {
-                previousMonthsBudgeted += categoryMonth.AmountBudgeted;
+                BeginningBalance = categoryMonth.BeginningBalance;
+                TransactionsInMonth = categoryMonth.TransactionsInMonth;
+                EndBalance = categoryMonth.EndBalance;
             }
-
-            foreach (var transaction in _model.Budget.Accounts.SelectMany(a => a.Transactions))
+            else
             {
-                if (transaction.TransactionDate.Date > _lastDayOfMonth) continue;
-                if (transaction.TransactionType == TransactionTypes.Normal)
+                if (categoryMonth == null)
                 {
-                    if (transaction.TransactionCategory != null && transaction.TransactionCategory.EntityID == Category.EntityID)
-                    {
-                        _categoryTransactions.Add(transaction.EntityID);
-                        if (transaction.TransactionDate.Date < _firstDayOfMonth)
-                        {
-                            beginningBalance += transaction.Amount;
-                        }
-                        else
-                        {
-                            transactionsInMonth += transaction.Amount;
-                        }
-                    }
+                    BeginningBalance = 0M;
+                    TransactionsInMonth = 0M;
+                    EndBalance = 0M;
                 }
-                else if (transaction.TransactionType == TransactionTypes.SplitTransaction)
+                else
                 {
-                    foreach (var subTransaction in transaction.SubTransactions)
-                    {
-                        if (subTransaction.TransactionCategory != null && subTransaction.TransactionCategory.EntityID == Category.EntityID)
-                        {
-                            if (transaction.TransactionDate.Date < _firstDayOfMonth)
-                            {
-                                beginningBalance += subTransaction.Amount;
-                            }
-                            else
-                            {
-                                transactionsInMonth += subTransaction.Amount;
-                            }
-                        }
-                    }
+                    BeginningBalance = categoryMonth.EndBalance;
+                    TransactionsInMonth = 0M;
+                    EndBalance = categoryMonth.EndBalance;
                 }
             }
-
-            beginningBalance += previousMonthsBudgeted;
-            endBalance = beginningBalance + amountBudgeted + transactionsInMonth;
-
-            BeginningBalance = beginningBalance;
-            EndBalance = endBalance;
-            TransactionsInMonth = transactionsInMonth;
         }
 
         public void Dispose()
         {
             CategoryMonth.PropertyChanged -= CategoryMonth_PropertyChanged;
-            _eventSubscription?.Dispose();
+            _cache.CacheUpdated -= Cache_CacheUpdated;
         }
     }
 }

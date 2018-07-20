@@ -1,4 +1,5 @@
 ﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.BudgetView;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Entities.Generators;
 using OpenBudget.Model.Events;
@@ -36,8 +37,8 @@ namespace OpenBudget.Model
         internal IncomeCategoryGenerator IncomeCategoryGenerator { get; private set; }
         internal CategoryMonthGenerator BudgetCategoryMonthGenerator { get; private set; }
 
+        private BudgetViewListener _budgetViewListenter;
         private Dictionary<Type, object> _generators = new Dictionary<Type, object>();
-
         private ISynchronizationService _syncService;
 
         internal EntityGenerator<T> FindGenerator<T>() where T : EntityBase
@@ -121,6 +122,7 @@ namespace OpenBudget.Model
             }
 
             this.BudgetViewCache = cache;
+            _budgetViewListenter = new BudgetViewListener(this);
         }
 
         public void setSynchronizationService(ISynchronizationService syncService)
@@ -156,6 +158,7 @@ namespace OpenBudget.Model
             }
             model.Budget = (Budget)model.BudgetGenerator.GetAll().Single();
             model.Budget.AttachToModel(model);
+            model.BudgetViewCache.RecalculateCache();
             return model;
         }
 

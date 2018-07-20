@@ -200,6 +200,10 @@ namespace OpenBudget.Model.BudgetView.Calculator
                     {
                         category = new CategoryMonthKey(transaction.IncomeCategory);
                     }
+                    else
+                    {
+                        continue;
+                    }
 
                     if (groupedTransactions.ContainsKey(category))
                     {

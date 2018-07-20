@@ -12,6 +12,13 @@ namespace OpenBudget.Model.BudgetView.Calculator
         public string EntityID { get; private set; }
         public DateTime FirstDayOfMonth { get; private set; }
 
+        public CategoryMonthKey(string entityType, string entityId, DateTime date)
+        {
+            EntityType = entityType;
+            EntityID = entityId;
+            FirstDayOfMonth = date.FirstDayOfMonth();
+        }
+
         public CategoryMonthKey(Category category, DateTime date)
         {
             EntityType = nameof(Category);

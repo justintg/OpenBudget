@@ -12,8 +12,8 @@ namespace OpenBudget.Model.BudgetStore
 
         event EventHandler CacheUpdated;
 
-        BudgetViewMonth GetLastBudgetViewMonth(DateTime month);
+        BudgetViewMonth GetLastBudgetViewMonth(DateTime month, out bool exactMatch);
 
-        BudgetViewCategoryMonth GetLastCategoryMonth(string categoryId, DateTime month);
+        BudgetViewCategoryMonth GetLastCategoryMonth(string categoryId, DateTime month, out bool exactMatch);
     }
 }

@@ -22,6 +22,12 @@ namespace OpenBudget.Model.BudgetView.Calculator
             EntityID = categoryMonth.EntityID;
         }
 
+        public CategoryKey(string entityType, string entityId)
+        {
+            EntityType = entityType;
+            EntityID = entityId;
+        }
+
         public bool Equals(CategoryKey other)
         {
             if (other == null) return false;

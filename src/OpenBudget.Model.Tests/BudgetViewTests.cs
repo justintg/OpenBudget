@@ -69,7 +69,8 @@ namespace OpenBudget.Model.Tests
         [Test]
         public void BudgetMonth_ValuesAreCorrect_OnInit()
         {
-            BudgetMonthView view = new BudgetMonthView(TestBudget.BudgetModel, DateTime.Today);
+            //BudgetMonthView view = new BudgetMonthView(TestBudget.BudgetModel, DateTime.Today);
+            CategoryMonthView view = new CategoryMonthView(_mortgage, DateTime.Today.AddMonths(-2));
         }
 
         [Test]
@@ -86,7 +87,7 @@ namespace OpenBudget.Model.Tests
         public void CategoryMonthView_ValuesAreCorrect_After_PreviousMonthAmountChange()
         {
             CategoryMonthView view = new CategoryMonthView(_mortgage, DateTime.Today);
-            var transaction = _checking.Transactions[0];
+            var transaction = _checking.Transactions[1];
             transaction.Amount = -120;
             TestBudget.SaveChanges();
 
