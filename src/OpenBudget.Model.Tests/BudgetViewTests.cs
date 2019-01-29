@@ -155,6 +155,75 @@ namespace OpenBudget.Model.Tests
             Assert.That(view.EndBalance, Is.EqualTo(90));
         }
 
+        [Test]
+        public void CategoryMonthView_ValuesAreCorrect_After_AddSplitTransaction()
+        {
+            CategoryMonthView mortgageView = new CategoryMonthView(_mortgage, DateTime.Today);
+            Assert.That(mortgageView.BeginningBalance, Is.EqualTo(50));
+            Assert.That(mortgageView.EndBalance, Is.EqualTo(100));
+
+            CategoryMonthView electricityView = new CategoryMonthView(_electricity, DateTime.Today);
+            Assert.That(electricityView.BeginningBalance, Is.EqualTo(0));
+            Assert.That(electricityView.EndBalance, Is.EqualTo(0));
+
+            var transaction = new Transaction();
+            transaction.Amount = -100;
+            transaction.MakeSplitTransaction();
+            transaction.TransactionDate = DateTime.Today.FirstDayOfMonth();
+
+            var sub1 = transaction.SubTransactions.Create();
+            sub1.Category = _mortgage;
+            sub1.Amount = -50;
+
+            var sub2 = transaction.SubTransactions.Create();
+            sub2.Category = _electricity;
+            sub2.Amount = -50;
+
+            _checking.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            Assert.That(mortgageView.EndBalance, Is.EqualTo(50));
+            Assert.That(electricityView.EndBalance, Is.EqualTo(-50));
+        }
+
+        [Test]
+        public void CategoryMonthView_ValuesAreCorrect_After_UpdateSplitTransaction()
+        {
+            CategoryMonthView mortgageView = new CategoryMonthView(_mortgage, DateTime.Today);
+            Assert.That(mortgageView.BeginningBalance, Is.EqualTo(50));
+            Assert.That(mortgageView.EndBalance, Is.EqualTo(100));
+
+            CategoryMonthView electricityView = new CategoryMonthView(_electricity, DateTime.Today);
+            Assert.That(electricityView.BeginningBalance, Is.EqualTo(0));
+            Assert.That(electricityView.EndBalance, Is.EqualTo(0));
+
+            var transaction = new Transaction();
+            transaction.Amount = -100;
+            transaction.MakeSplitTransaction();
+            transaction.TransactionDate = DateTime.Today.FirstDayOfMonth();
+
+            var sub1 = transaction.SubTransactions.Create();
+            sub1.Category = _mortgage;
+            sub1.Amount = -50;
+
+            var sub2 = transaction.SubTransactions.Create();
+            sub2.Category = _electricity;
+            sub2.Amount = -50;
+
+            _checking.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            Assert.That(mortgageView.EndBalance, Is.EqualTo(50));
+            Assert.That(electricityView.EndBalance, Is.EqualTo(-50));
+
+            sub1.Amount = -25;
+            sub2.Amount = -75;
+            TestBudget.SaveChanges();
+
+            Assert.That(mortgageView.EndBalance, Is.EqualTo(75));
+            Assert.That(electricityView.EndBalance, Is.EqualTo(-75));
+        }
+
         [TearDown]
         public void TearDown()
         {

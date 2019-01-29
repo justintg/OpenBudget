@@ -191,19 +191,8 @@ namespace OpenBudget.Model.BudgetView.Calculator
             {
                 if (transaction.TransactionType == TransactionTypes.Normal)
                 {
-                    CategoryMonthKey category = null;
-                    if (transaction.TransactionCategory != null)
-                    {
-                        category = new CategoryMonthKey(transaction.TransactionCategory, transaction.TransactionDate);
-                    }
-                    else if (transaction.IncomeCategory != null)
-                    {
-                        category = new CategoryMonthKey(transaction.IncomeCategory);
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    CategoryMonthKey category = GetCategoryMonthKey(transaction);
+                    if (category == null) continue;
 
                     if (groupedTransactions.ContainsKey(category))
                     {
@@ -214,9 +203,56 @@ namespace OpenBudget.Model.BudgetView.Calculator
                         groupedTransactions[category] = transaction.Amount;
                     }
                 }
+                else if(transaction.TransactionType == TransactionTypes.SplitTransaction)
+                {
+                    foreach(var subTransaction in transaction.SubTransactions)
+                    {
+                        CategoryMonthKey category = GetCategoryMonthKey(transaction, subTransaction);
+                        if (category == null) continue;
+
+                        if (groupedTransactions.ContainsKey(category))
+                        {
+                            groupedTransactions[category] += subTransaction.Amount;
+                        }
+                        else
+                        {
+                            groupedTransactions[category] = subTransaction.Amount;
+                        }
+                    }
+                }
             }
 
             return groupedTransactions;
+        }
+
+        private CategoryMonthKey GetCategoryMonthKey(Transaction transaction)
+        {
+            CategoryMonthKey category = null;
+            if (transaction.TransactionCategory != null)
+            {
+                category = new CategoryMonthKey(transaction.TransactionCategory, transaction.TransactionDate);
+            }
+            else if (transaction.IncomeCategory != null)
+            {
+                category = new CategoryMonthKey(transaction.IncomeCategory);
+            }
+
+            return category;
+        }
+
+        private CategoryMonthKey GetCategoryMonthKey(Transaction transaction, SubTransaction subTransaction)
+        {
+            CategoryMonthKey category = null;
+            if (subTransaction.TransactionCategory != null)
+            {
+                category = new CategoryMonthKey(subTransaction.TransactionCategory, transaction.TransactionDate);
+            }
+            else if (subTransaction.IncomeCategory != null)
+            {
+                category = new CategoryMonthKey(subTransaction.IncomeCategory);
+            }
+
+            return category;
         }
     }
 
