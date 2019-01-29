@@ -41,9 +41,33 @@ namespace OpenBudget.Model.BudgetView
                         return true;
                     }
                 }
-                else if (evt is GroupedFieldChangeEvent)
+                else if (evt is GroupedFieldChangeEvent groupedEvent)
                 {
-
+                    foreach(var subEvent in groupedEvent.GroupedEvents)
+                    {
+                        if(ShouldRecalculate(subEvent))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            else if(evt.EntityType == nameof(SubTransaction))
+            {
+                if(evt is EntityCreatedEvent)
+                {
+                    return true;
+                }
+                else if(evt is EntityUpdatedEvent updateEvent)
+                {
+                    if (updateEvent.Changes.ContainsKey(nameof(SubTransaction.Amount)))
+                    {
+                        return true;
+                    }
+                    else if (updateEvent.Changes.ContainsKey(nameof(SubTransaction.Category)))
+                    {
+                        return true;
+                    }
                 }
             }
             else if (evt.EntityType == nameof(Entities.CategoryMonth))
