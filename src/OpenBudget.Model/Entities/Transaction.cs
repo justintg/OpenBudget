@@ -13,6 +13,19 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Entities
 {
+    public class TransactionSnapshot : EntitySnapshot
+    {
+        public EntityReference PayeeOrAccount { get; set; }
+        public TransactionTypes TransactionType { get; set; }
+        public decimal Amount { get; set; }
+        public string Memo { get; set; }
+        public DateTime TransactionDate { get; set; }
+        public EntityReference Category { get; set; }
+        public EntityReference OtherTransaction { get; set; }
+        public TransactionStatuses TransactionStatus { get; set; }
+
+    }
+
     public enum TransactionTypes
     {
         None = 0,
@@ -29,7 +42,7 @@ namespace OpenBudget.Model.Entities
         Reconciled
     }
 
-    public class Transaction : EntityBase
+    public class Transaction : EntityBase<TransactionSnapshot>
     {
         public Transaction()
             : base(Guid.NewGuid().ToString())

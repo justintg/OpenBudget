@@ -6,7 +6,13 @@ using System.Text.RegularExpressions;
 
 namespace OpenBudget.Model.Entities
 {
-    public class CategoryMonth : NoCreateEntity
+    public class CategoryMonthSnapshot : EntitySnapshot
+    {
+        public DateTime Month { get; set; }
+        public decimal AmountBudgeted { get; set; }
+    }
+
+    public class CategoryMonth : NoCreateEntity<CategoryMonthSnapshot>
     {
         internal CategoryMonth(string entityId) : base(entityId)
         {
@@ -16,8 +22,8 @@ namespace OpenBudget.Model.Entities
             int year = int.Parse(match.Groups[2].Value);
             int month = int.Parse(match.Groups[3].Value);
 
-            _entityData["Parent"] = new EntityReference(nameof(Category), id);
-            _entityData["Month"] = new DateTime(year, month, 1);
+            SetEntityData<EntityReference>(new EntityReference(nameof(Category), id), "Parent");
+            SetEntityData<DateTime>(new DateTime(year, month, 1), "Month");
         }
 
         public DateTime Month

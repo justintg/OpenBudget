@@ -16,6 +16,8 @@ namespace OpenBudget.Model.SQLite.Tables
         [Indexed(Name = "Entity_Lookup_Index")]
         public string EntityType { get; set; }
 
+        public Guid DeviceID { get; set; }
+
         public byte[] VectorClock { get; set; }
 
         public byte[] EventData { get; set; }

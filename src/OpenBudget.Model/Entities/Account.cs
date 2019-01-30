@@ -38,7 +38,14 @@ namespace OpenBudget.Model.Entities
         Investment
     }
 
-    public class Account : EntityBase
+    public class AccountSnapshot : EntitySnapshot
+    {
+        public string Name { get; set; }
+        public AccountTypes AccountType { get; set; }
+        public BudgetingTypes BudgetingType { get; set; }
+    }
+
+    public class Account : EntityBase<AccountSnapshot>
     {
         public Account()
             : base(Guid.NewGuid().ToString())

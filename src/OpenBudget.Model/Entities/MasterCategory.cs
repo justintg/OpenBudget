@@ -7,7 +7,12 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities
 {
-    public class MasterCategory : EntityBase
+    public class MasterCategorySnapshot : EntitySnapshot
+    {
+        public string Name { get; set; }
+    }
+
+    public class MasterCategory : EntityBase<MasterCategorySnapshot>
     {
         public MasterCategory()
             : base(Guid.NewGuid().ToString())
