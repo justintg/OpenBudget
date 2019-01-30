@@ -15,6 +15,56 @@ using OpenBudget.Model.Serialization;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
+    public abstract class EntityBase<TSnapshot> : EntityBase where TSnapshot : EntitySnapshot, new()
+    {
+        private static PropertyAccessorSet<TSnapshot> _snapshotProperties;
+
+        static EntityBase()
+        {
+            _snapshotProperties = new PropertyAccessorSet<TSnapshot>();
+        }
+
+        private TSnapshot _entityData = new TSnapshot();
+
+        protected EntityBase(string entityId) : base(entityId)
+        {
+        }
+
+        protected EntityBase(EntityCreatedEvent evt) : base(evt)
+        {
+        }
+
+        protected override T GetEntityData<T>(string property)
+        {
+            return _snapshotProperties.GetEntityData<T>(_entityData, property);
+        }
+
+        protected override void SetEntityData<T>(T value, string property)
+        {
+            _snapshotProperties.SetEntityData<T>(_entityData, value, property);
+        }
+
+        protected override IEnumerable<string> GetPropertyNames()
+        {
+            return _snapshotProperties.GetPropertyNames();
+        }
+
+        protected override void SetEntityDataObject(object value, string property)
+        {
+            _snapshotProperties.SetEntityDataObject(_entityData, value, property);
+        }
+
+        protected override object GetEntityDataObject(string property)
+        {
+            return _snapshotProperties.GetEntityDataObject(_entityData, property);
+        }
+
+        protected override void ClearEntityData()
+        {
+            _entityData = new TSnapshot();
+        }
+    }
+
     public abstract class EntityBase : INotifyPropertyChanged, INotifyPropertyChanging, IHasChanges, INotifyDataErrorInfo
     {
         public string EntityID
@@ -45,7 +95,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected EntityBase(string entityId)
         {
-            _entityData = new Dictionary<string, object>();
             _childEntities = new List<IEntityCollection>();
             _subEntities = new Dictionary<string, ISubEntityCollection>();
             CurrentEvent = new EntityCreatedEvent(this.GetType().Name, entityId);
@@ -56,7 +105,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected EntityBase(EntityCreatedEvent evt)
         {
-            _entityData = new Dictionary<string, object>();
             _childEntities = new List<IEntityCollection>();
             _subEntities = new Dictionary<string, ISubEntityCollection>();
             ReplayEvents(evt.Yield());
@@ -360,7 +408,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             notifyAllPropertiesChanging();
 
-            _entityData.Clear();
+            ClearEntityData();
             ReplayEvents(events);
 
             notifyAllPropertiesChanged();
@@ -368,23 +416,23 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected void notifyAllPropertiesChanging()
         {
-            foreach (var prop in _entityData)
+            foreach (var prop in GetPropertyNames())
             {
-                RaisePropertyChanging(prop.Key);
+                RaisePropertyChanging(prop);
             }
         }
 
         protected void notifyAllPropertiesChanged()
         {
-            foreach (var prop in _entityData)
+            foreach (var prop in GetPropertyNames())
             {
-                RaisePropertyChanged(prop.Key);
+                RaisePropertyChanged(prop);
             }
         }
 
         internal virtual void RebuildEntity(IEnumerable<ModelEvent> events)
         {
-            _entityData = new Dictionary<string, object>();
+            ClearEntityData();
             var fieldChangeEvents = events.Where(e => e is FieldChangeEvent).Select(e => (FieldChangeEvent)e);
             ReplayEvents(fieldChangeEvents);
         }
@@ -399,10 +447,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 foreach (var change in evt.Changes)
                 {
-                    object previousValue = null;
-                    _entityData.TryGetValue(change.Key, out previousValue);
+                    object previousValue = GetEntityDataObject(change.Key);
 
-                    _entityData[change.Key] = change.Value.NewValue;
+                    SetEntityDataObject(change.Value.NewValue, change.Key);
+
                     SerializedProperty serializedProperty = null;
                     if (_serializedProperties.TryGetValue(change.Key, out serializedProperty))
                     {
@@ -442,7 +490,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var changes = CurrentEvent.Changes;
             foreach (var change in changes)
             {
-                _entityData[change.Key] = change.Value.PreviousValue;
+                SetEntityDataObject(change.Value.PreviousValue, change.Key);
                 OnCancelChange(change.Key, change.Value);
             }
             notifyAllPropertiesChanged();
@@ -484,19 +532,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        protected Dictionary<string, object> _entityData = new Dictionary<string, object>();
+        protected abstract void SetEntityData<T>(T value, string property);
+        protected abstract T GetEntityData<T>(string property);
+        protected abstract IEnumerable<string> GetPropertyNames();
+        protected abstract void SetEntityDataObject(object value, string property);
+        protected abstract object GetEntityDataObject(string property);
+        protected abstract void ClearEntityData();
 
         protected T GetProperty<T>([CallerMemberName]string property = null)
         {
-            object value;
-            if (_entityData.TryGetValue(property, out value))
-            {
-                return (T)value;
-            }
-            else
-            {
-                return default(T);
-            }
+            return GetEntityData<T>(property);
         }
 
         protected void SetProperty<T>(T value, [CallerMemberName]string property = null)
@@ -505,7 +550,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             T oldValue = GetProperty<T>(property);
 
-            _entityData[property] = value;
+            SetEntityData<T>(value, property);
 
             T newValue = value;
 
@@ -813,3 +858,4 @@ namespace OpenBudget.Model.Infrastructure.Entities
         #endregion
     }
 }
+

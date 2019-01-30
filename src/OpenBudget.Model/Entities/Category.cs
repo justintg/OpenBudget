@@ -8,7 +8,12 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities
 {
-    public class Category : EntityBase
+    public class CategorySnapshot : EntitySnapshot
+    {
+        public string Name { get; set; }
+    }
+
+    public class Category : EntityBase<CategorySnapshot>
     {
         public Category()
             : base(Guid.NewGuid().ToString())

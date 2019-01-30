@@ -11,7 +11,14 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Entities
 {
-    public class Budget : EntityBase
+    public class BudgetSnapshot : EntitySnapshot
+    {
+        public string Name { get; set; }
+        public string Currency { get; set; }
+        public string CurrencyCulture { get; set; }
+    }
+
+    public class Budget : EntityBase<BudgetSnapshot>
     {
         public Budget()
             : base(Guid.NewGuid().ToString())

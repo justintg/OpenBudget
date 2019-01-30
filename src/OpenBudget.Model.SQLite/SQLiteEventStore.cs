@@ -3,7 +3,9 @@ using OpenBudget.Model.Events;
 using OpenBudget.Model.EventStream;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Serialization;
+using OpenBudget.Model.SQLite.Serialization;
 using OpenBudget.Model.SQLite.Tables;
+using OpenBudget.Model.Util;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ namespace OpenBudget.Model.SQLite
 {
     public class SQLiteEventStore : IEventStore
     {
-        Serializer _serializer = new Serializer();
+        Serializer _serializer = new Serializer(new SQLiteContractResolver());
         SQLiteConnection _db;
 
         internal SQLiteEventStore(SQLiteConnection connection)
@@ -28,7 +30,7 @@ namespace OpenBudget.Model.SQLite
             var evts = _db.Table<SQLiteEvent>().ToList();
             foreach (var evt in evts)
             {
-                yield return _serializer.DeserializeFromBytes<ModelEvent>(evt.EventData);
+                yield return ConvertToEvent(evt);
             }
         }
 
@@ -38,7 +40,7 @@ namespace OpenBudget.Model.SQLite
             if (vectorClock == null)
                 return null;
             else
-                return _serializer.DeserializeFromBytes<VectorClock>(vectorClock.Data);
+                return new VectorClock(vectorClock.Data);
         }
 
         public HashSet<Guid> GetStoredEventIDSet()
@@ -59,7 +61,7 @@ namespace OpenBudget.Model.SQLite
             var sqlEvents = GetManyEvents(unpublishedEvents);
             foreach (var sqlEvent in sqlEvents)
             {
-                yield return _serializer.DeserializeFromBytes<ModelEvent>(sqlEvent.EventData);
+                yield return ConvertToEvent(sqlEvent);
             }
         }
 
@@ -103,14 +105,40 @@ namespace OpenBudget.Model.SQLite
             var currentClock = _db.Table<Info>().Where(i => i.Key == "MaxVectorClock").SingleOrDefault();
             if (currentClock == null)
             {
-                var vcInfo = new Info() { Key = "MaxVectorClock", Data = _serializer.SerializeToBytes(vectorClock) };
+                var vcInfo = new Info() { Key = "MaxVectorClock", Data = vectorClock.ToByteArray() };
                 _db.Insert(vcInfo);
             }
             else
             {
-                currentClock.Data = _serializer.SerializeToBytes(vectorClock);
+                currentClock.Data = vectorClock.ToByteArray();
                 _db.Update(currentClock);
             }
+        }
+
+        private PropertyAccessorSet<ModelEvent> _modelEventProperties = new PropertyAccessorSet<ModelEvent>(true);
+
+        private ModelEvent ConvertToEvent(SQLiteEvent evt)
+        {
+            var modelEvent = _serializer.DeserializeFromBytes<ModelEvent>(evt.EventData);
+            _modelEventProperties.SetEntityData<Guid>(modelEvent, evt.EventID, nameof(ModelEvent.EventID));
+            _modelEventProperties.SetEntityData<string>(modelEvent, evt.EntityType, nameof(ModelEvent.EntityType));
+            _modelEventProperties.SetEntityData<string>(modelEvent, evt.EntityID, nameof(ModelEvent.EntityID));
+            _modelEventProperties.SetEntityData<VectorClock>(modelEvent, new VectorClock(evt.VectorClock), nameof(ModelEvent.EventVector));
+            _modelEventProperties.SetEntityData<Guid>(modelEvent, evt.DeviceID, nameof(ModelEvent.DeviceID));
+            return modelEvent;
+        }
+
+        private SQLiteEvent ConvertToStore(ModelEvent evt)
+        {
+            SQLiteEvent sqlEvent = new SQLiteEvent();
+            sqlEvent.EventID = evt.EventID;
+            sqlEvent.EntityType = evt.EntityType;
+            sqlEvent.EntityID = evt.EntityID;
+            sqlEvent.DeviceID = evt.DeviceID;
+            sqlEvent.VectorClock = evt.EventVector.ToByteArray();
+            sqlEvent.EventData = _serializer.SerializeToBytes(evt, typeof(ModelEvent));
+
+            return sqlEvent;
         }
 
         public void StoreEvents(IEnumerable<ModelEvent> events)
@@ -120,14 +148,7 @@ namespace OpenBudget.Model.SQLite
                 foreach (var evt in events)
                 {
 
-                    SQLiteEvent sqlEvent = new SQLiteEvent();
-
-                    sqlEvent.EventID = evt.EventID;
-                    sqlEvent.EntityType = evt.EntityType;
-                    sqlEvent.EntityID = evt.EntityID;
-                    sqlEvent.VectorClock = _serializer.SerializeToBytes(evt.EventVector);
-                    sqlEvent.EventData = _serializer.SerializeToBytes(evt, typeof(ModelEvent));
-
+                    SQLiteEvent sqlEvent = ConvertToStore(evt);
                     _db.Insert(sqlEvent);
                 }
             });
@@ -144,7 +165,7 @@ namespace OpenBudget.Model.SQLite
                 ", entityType, entityId).Single();
 
 
-            return _serializer.DeserializeFromBytes<VectorClock>(maxEvent.VectorClock);
+            return new VectorClock(maxEvent.VectorClock);
         }
 
         public IEnumerable<ModelEvent> GetEntityEvents(string entityType, string entityId)
@@ -158,7 +179,7 @@ namespace OpenBudget.Model.SQLite
 
             foreach (var evt in evts)
             {
-                yield return _serializer.DeserializeFromBytes<ModelEvent>(evt.EventData);
+                yield return ConvertToEvent(evt);
             }
         }
 
@@ -170,7 +191,7 @@ namespace OpenBudget.Model.SQLite
                 e =>
                 new EventVector(
                     e.EventID,
-                    _serializer.DeserializeFromBytes<VectorClock>(e.VectorClock)));
+                    new VectorClock(e.VectorClock)));
         }
 
         public void IgnoreEvents(IEnumerable<Guid> eventIds)

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
 using System.Text;
@@ -8,6 +9,19 @@ namespace OpenBudget.Model.Serialization
     public class Serializer
     {
         JsonSerializer _serializer;
+
+        public Serializer(IContractResolver contractResolver)
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Auto,
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+                ContractResolver = contractResolver,
+                SerializationBinder = new EventTypeBinder()
+            };
+
+            _serializer = JsonSerializer.CreateDefault(settings);
+        }
 
         public Serializer()
         {

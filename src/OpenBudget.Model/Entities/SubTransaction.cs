@@ -7,7 +7,15 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities
 {
-    public class SubTransaction : SubEntity
+    public class SubTransactionSnapshot : EntitySnapshot
+    {
+        public decimal Amount { get; set; }
+        public string Memo { get; set; }
+        public EntityReference TransferAccount { get; set; }
+        public EntityReference Category { get; set; }
+    }
+
+    public class SubTransaction : SubEntity<SubTransactionSnapshot>
     {
         public SubTransaction() : base(Guid.NewGuid().ToString())
         {

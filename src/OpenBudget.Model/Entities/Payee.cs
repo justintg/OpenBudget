@@ -7,7 +7,12 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities
 {
-    public class Payee : EntityBase
+    public class PayeeSnapshot : EntitySnapshot
+    {
+        public string Name { get; set; }
+    }
+
+    public class Payee : EntityBase<PayeeSnapshot>
     {
         public Payee()
             : base(Guid.NewGuid().ToString())
