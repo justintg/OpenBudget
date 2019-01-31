@@ -18,19 +18,22 @@ namespace OpenBudget.Application.ViewModels
         protected IBudgetLoader _budgetLoader;
         protected ISettingsProvider _settingsProvider;
         protected INavigationService _navigationService;
+        protected IDialogService _dialogService;
 
         public MainViewModel(
             IServiceLocator serviceLocator,
             IBudgetLoader budgetLoader,
             ISettingsProvider settingsProvider,
-            INavigationService navigationService)
+            INavigationService navigationService,
+            IDialogService dialogService)
         {
             this.Header = $"OpenBudget";
 
-            _serviceLocator = serviceLocator;
-            _budgetLoader = budgetLoader;
-            _settingsProvider = settingsProvider;
-            _navigationService = navigationService;
+            _serviceLocator = serviceLocator ?? throw new ArgumentNullException(nameof(serviceLocator));
+            _budgetLoader = budgetLoader ?? throw new ArgumentNullException(nameof(budgetLoader));
+            _settingsProvider = settingsProvider ?? throw new ArgumentNullException(nameof(settingsProvider));
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
             InitializeRelayCommands();
         }
@@ -101,8 +104,16 @@ namespace OpenBudget.Application.ViewModels
                 }
                 else
                 {
-                    MountBudget(_budgetLoader.LoadBudget(deviceSettings.LastBudget.BudgetPath));
-                    _navigationService.NavigateTo<MainBudgetViewModel>();
+                    try
+                    {
+                        MountBudget(_budgetLoader.LoadBudget(deviceSettings.LastBudget.BudgetPath));
+                        _navigationService.NavigateTo<MainBudgetViewModel>();
+                    }
+                    catch (Exception)
+                    {
+                        _dialogService.ShowError($"There was an error opening the budget {deviceSettings.LastBudget.BudgetPath}. It may be corrupt.");
+                        _navigationService.NavigateTo<WelcomeViewModel>();
+                    }
                 }
             }
             else

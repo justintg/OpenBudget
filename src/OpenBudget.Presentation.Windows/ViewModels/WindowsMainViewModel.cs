@@ -15,8 +15,9 @@ namespace OpenBudget.Presentation.Windows.ViewModels
             IServiceLocator serviceLocator,
             IBudgetLoader budgetLoader,
             ISettingsProvider settingsProvider,
-            INavigationService navigationService)
-            : base(serviceLocator, budgetLoader, settingsProvider, navigationService)
+            INavigationService navigationService,
+            IDialogService dialogService)
+            : base(serviceLocator, budgetLoader, settingsProvider, navigationService, dialogService)
         {
         }
 
