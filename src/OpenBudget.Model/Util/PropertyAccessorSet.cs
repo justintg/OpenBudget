@@ -9,11 +9,11 @@ namespace OpenBudget.Model.Util
 {
     public class PropertyAccessorSet<TClass>
     {
-        private static Dictionary<string, object> _setters = new Dictionary<string, object>();
-        private static Dictionary<string, object> _objectSetters = new Dictionary<string, object>();
-        private static Dictionary<string, object> _getters = new Dictionary<string, object>();
-        private static Dictionary<string, object> _objectGetters = new Dictionary<string, object>();
-        private static List<string> _propertyName = new List<string>();
+        private Dictionary<string, object> _setters = new Dictionary<string, object>();
+        private Dictionary<string, object> _objectSetters = new Dictionary<string, object>();
+        private Dictionary<string, object> _getters = new Dictionary<string, object>();
+        private Dictionary<string, object> _objectGetters = new Dictionary<string, object>();
+        private List<string> _propertyName = new List<string>();
 
         public PropertyAccessorSet(bool includePrivate = false)
         {
