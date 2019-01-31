@@ -83,15 +83,22 @@ namespace OpenBudget.Application.ViewModels
                 return;
             }
 
-            BudgetModel budget = _budgetLoader.LoadBudget(budgetPath);
-            BudgetStub stub = new BudgetStub() { BudgetName = budget.Budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };
+            try
+            {
+                BudgetModel budget = _budgetLoader.LoadBudget(budgetPath);
+                BudgetStub stub = new BudgetStub() { BudgetName = budget.Budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };
 
-            var deviceSettings = _settingsProvider.Get<Device>();
-            deviceSettings.AddRecentBudgetToTop(stub);
-            deviceSettings.Save();
+                var deviceSettings = _settingsProvider.Get<Device>();
+                deviceSettings.AddRecentBudgetToTop(stub);
+                deviceSettings.Save();
 
-            _mainViewModel.MountBudget(budget);
-            _navigationService.NavigateTo<MainBudgetViewModel>();
+                _mainViewModel.MountBudget(budget);
+                _navigationService.NavigateTo<MainBudgetViewModel>();
+            }
+            catch (Exception)
+            {
+                _dialogService.ShowError($"There was an error opening the budget {budgetPath}. It may be corrupt.");
+            }
         }
 
         public RelayCommand<BudgetStub> OpenRecentBudgetCommand { get; private set; }
@@ -107,14 +114,21 @@ namespace OpenBudget.Application.ViewModels
                 return;
             }
 
-            BudgetModel budget = _budgetLoader.LoadBudget(budgetStub.BudgetPath);
-            var deviceSettings = _settingsProvider.Get<Device>();
-            budgetStub.LastEdited = DateTime.Now;
-            deviceSettings.AddRecentBudgetToTop(budgetStub);
-            deviceSettings.Save();
+            try
+            {
+                BudgetModel budget = _budgetLoader.LoadBudget(budgetStub.BudgetPath);
+                var deviceSettings = _settingsProvider.Get<Device>();
+                budgetStub.LastEdited = DateTime.Now;
+                deviceSettings.AddRecentBudgetToTop(budgetStub);
+                deviceSettings.Save();
 
-            _mainViewModel.MountBudget(budget);
-            _navigationService.NavigateTo<MainBudgetViewModel>();
+                _mainViewModel.MountBudget(budget);
+                _navigationService.NavigateTo<MainBudgetViewModel>();
+            }
+            catch (Exception)
+            {
+                _dialogService.ShowError($"There was an error opening the budget {budgetStub.BudgetPath}. It may be corrupt.");
+            }
         }
 
         public RelayCommand BackCommand { get; private set; }
