@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenBudget.Model.BudgetView.Calculator
+namespace OpenBudget.Model.BudgetView.Model
 {
     public class CategoryKey : IEquatable<CategoryKey>
     {

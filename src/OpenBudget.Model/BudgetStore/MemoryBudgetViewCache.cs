@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using OpenBudget.Model.BudgetStore.Model;
-using OpenBudget.Model.BudgetView.Calculator;
+﻿using OpenBudget.Model.BudgetView.Calculator;
+using OpenBudget.Model.BudgetView.Model;
 using OpenBudget.Model.Entities;
 using OpenBudget.Util.Collections;
+using System;
+using System.Collections.Generic;
 
 namespace OpenBudget.Model.BudgetStore
 {

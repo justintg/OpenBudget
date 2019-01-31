@@ -67,10 +67,23 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
-        public void BudgetMonth_ValuesAreCorrect_OnInit()
+        public void BudgetMonthView_ValuesAreCorrect_OnInit()
         {
-            //BudgetMonthView view = new BudgetMonthView(TestBudget.BudgetModel, DateTime.Today);
-            CategoryMonthView view = new CategoryMonthView(_mortgage, DateTime.Today.AddMonths(-2));
+            BudgetMonthView view = new BudgetMonthView(TestBudget.BudgetModel, DateTime.Today.FirstDayOfMonth());
+            Assert.That(view.AvailableToBudget, Is.EqualTo(0));
+            Assert.That(view.NotBudgetedPreviousMonth, Is.EqualTo(150));
+            Assert.That(view.BudgetedThisMonth, Is.EqualTo(150));
+            Assert.That(view.AvailableToBudget, Is.EqualTo(0));
+            Assert.That(view.OverspentPreviousMonth, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BudgetMonthView_Overspending_Correct()
+        {
+            AddTransaction(-100, -1);
+            BudgetMonthView view = new BudgetMonthView(TestBudget.BudgetModel, DateTime.Today.FirstDayOfMonth());
+            Assert.That(view.OverspentPreviousMonth, Is.EqualTo(-50));
+            Assert.That(view.AvailableToBudget, Is.EqualTo(-50));
         }
 
         [Test]

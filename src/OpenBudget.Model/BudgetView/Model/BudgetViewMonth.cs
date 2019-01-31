@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OpenBudget.Model.BudgetStore.Model
+namespace OpenBudget.Model.BudgetView.Model
 {
     public class BudgetViewMonth
     {

@@ -1,12 +1,11 @@
-﻿using OpenBudget.Model.Entities;
+﻿using OpenBudget.Model.BudgetView.Model;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using TransactionDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Calculator.CategoryMonthKey, decimal>;
-using CategoryResultsDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Calculator.CategoryMonthKey, OpenBudget.Model.BudgetStore.Model.BudgetViewCategoryMonth>;
-using OpenBudget.Model.BudgetStore.Model;
+using CategoryResultsDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Model.CategoryMonthKey, OpenBudget.Model.BudgetView.Model.BudgetViewCategoryMonth>;
+using TransactionDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Model.CategoryMonthKey, decimal>;
 
 namespace OpenBudget.Model.BudgetView.Calculator
 {
@@ -59,7 +58,7 @@ namespace OpenBudget.Model.BudgetView.Calculator
                     }
                 }
 
-                currentMonth.AvailableToBudget = currentMonth.Income - currentMonth.Budgeted - currentMonth.OverspentPreviousMonth + currentMonth.OverUnderBudgetedPreviousMonth;
+                currentMonth.AvailableToBudget = currentMonth.Income - currentMonth.Budgeted + currentMonth.OverspentPreviousMonth + currentMonth.OverUnderBudgetedPreviousMonth;
 
                 previousMonth = currentMonth;
             }

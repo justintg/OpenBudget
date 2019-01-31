@@ -1,7 +1,6 @@
-﻿using OpenBudget.Model.BudgetStore.Model;
+﻿using OpenBudget.Model.BudgetView.Model;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace OpenBudget.Model.BudgetView.Calculator
 {
