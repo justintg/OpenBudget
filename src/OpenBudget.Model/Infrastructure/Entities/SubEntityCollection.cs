@@ -1,5 +1,6 @@
 ﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Messaging;
+using OpenBudget.Model.Infrastructure.UnitOfWork;
 using OpenBudget.Model.Util;
 using System;
 using System.Collections;
@@ -70,7 +71,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public IEnumerator<T> GetEnumerator() => _collection.GetEnumerator();
 
-        public IEnumerable<ModelEvent> GetChanges()
+        public IEnumerable<EventSavingCallback> GetChanges()
         {
             foreach (var entity in _collection)
             {
@@ -124,7 +125,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             });
 
             T entity = (T)constructor.Invoke(new object[] { message });
-            entity.AttachToModel(_parent.Model);
+            //entity.AttachToModel(_parent.Model);
             _identityMap[entity.EntityID] = entity;
             _collection.Add(entity);
             entity.Parent = _parent;
@@ -178,6 +179,26 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 _pendingDeletes.Add(child);
                 _collection.Remove(child);
             }
+        }
+
+        IEnumerable<ModelEvent> ISubEntityCollection.GetChanges()
+        {
+            throw new NotImplementedException();
+        }
+
+        void ISubEntityCollection.CancelCurrentChanges()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IHandler<EntityCreatedEvent>.Handle(EntityCreatedEvent message)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IHandler<EntityUpdatedEvent>.Handle(EntityUpdatedEvent message)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -9,18 +9,35 @@ using System.Reflection;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    internal class EntityGenerator<T> : IHandler<EntityUpdatedEvent>, IHandler<GroupedFieldChangeEvent> where T : EntityBase
+    internal class EntityDenormalizer<T> : IEntityDenormalizer, IHandler<EntityUpdatedEvent>, IHandler<GroupedFieldChangeEvent> where T : EntityBase
     {
         protected IMessenger<ModelEvent> _messenger;
         protected BudgetModel _model;
         protected Dictionary<string, List<WeakReference<T>>> _registrations;
 
-        public EntityGenerator(BudgetModel model)
+        public EntityDenormalizer(BudgetModel model)
         {
             _model = model;
             IMessenger<ModelEvent> messenger = model.InternalMessageBus;
             _messenger = messenger;
             RegisterForMessages();
+        }
+
+        void IEntityDenormalizer.RegisterForChanges(EntityBase entity)
+        {
+            this.RegisterForChanges(entity);
+        }
+
+        internal void RegisterForChanges(EntityBase entity)
+        {
+            if (entity is T entityTyped)
+            {
+                RegisterForChanges(entityTyped);
+            }
+            else
+            {
+                throw new InvalidOperationException("Entity is not the right type for this Denormalizer!");
+            }
         }
 
         internal void RegisterForChanges(T entity)

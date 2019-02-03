@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    internal abstract class NoCreateEntityGenerator<T> : EntityGenerator<T>, IHasChanges where T : NoCreateEntity
+    internal abstract class NoCreateEntityGenerator<T> : EntityDenormalizer<T>, IHasChanges where T : NoCreateEntity
     {
         public NoCreateEntityGenerator(BudgetModel model) : base(model)
         {
