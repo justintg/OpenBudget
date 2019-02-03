@@ -35,7 +35,7 @@ namespace OpenBudget.Model.Entities
 
         public CategoryMonthFinder CategoryMonths { get; private set; }
 
-        internal override void AttachToModel(BudgetModel model)
+        protected override void AttachToModel(BudgetModel model)
         {
             base.AttachToModel(model);
             CategoryMonths.AttachToModel(model);

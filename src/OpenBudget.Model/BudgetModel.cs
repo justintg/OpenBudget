@@ -7,6 +7,7 @@ using OpenBudget.Model.EventStream;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Infrastructure.Messaging;
+using OpenBudget.Model.Infrastructure.UnitOfWork;
 using OpenBudget.Model.Synchronization;
 using OpenBudget.Model.Util;
 using System;
@@ -20,42 +21,58 @@ namespace OpenBudget.Model
 {
     public class BudgetModel
     {
-        public Budget Budget { get; private set; }
         public Guid DeviceID { get; private set; }
         internal BudgetMessageBus InternalMessageBus { get; private set; }
         public BudgetMessageBus MessageBus { get; private set; }
         public IEventStore EventStore { get; private set; }
         public IBudgetStore BudgetStore { get; private set; }
         internal IBudgetViewCache BudgetViewCache { get; private set; }
-        internal EntityGenerator<Budget> BudgetGenerator { get; private set; }
-        internal EntityGenerator<Account> AccountGenerator { get; private set; }
-        internal EntityGenerator<Transaction> TransactionGenerator { get; private set; }
-        internal EntityGenerator<SubTransaction> SubTransactionGenerator { get; private set; }
-        internal EntityGenerator<MasterCategory> BudgetCategoryGenerator { get; private set; }
-        internal EntityGenerator<Category> BudgetSubCategoryGenerator { get; private set; }
-        internal EntityGenerator<Payee> PayeeGenerator { get; private set; }
+
+        internal EntityDenormalizer<Budget> BudgetGenerator { get; private set; }
+        internal EntityDenormalizer<Account> AccountGenerator { get; private set; }
+        internal EntityDenormalizer<Transaction> TransactionGenerator { get; private set; }
+        internal EntityDenormalizer<SubTransaction> SubTransactionGenerator { get; private set; }
+        internal EntityDenormalizer<MasterCategory> BudgetCategoryGenerator { get; private set; }
+        internal EntityDenormalizer<Category> BudgetSubCategoryGenerator { get; private set; }
+        internal EntityDenormalizer<Payee> PayeeGenerator { get; private set; }
         internal IncomeCategoryGenerator IncomeCategoryGenerator { get; private set; }
         internal CategoryMonthGenerator BudgetCategoryMonthGenerator { get; private set; }
 
-        private BudgetViewListener _budgetViewListenter;
-        private Dictionary<Type, object> _generators = new Dictionary<Type, object>();
-        private ISynchronizationService _syncService;
+        internal EntityRespository<Budget, BudgetSnapshot> BudgetRepository { get; private set; }
 
-        internal EntityGenerator<T> FindGenerator<T>() where T : EntityBase
-        {
-            return (EntityGenerator<T>)_generators[typeof(T)];
-        }
+        internal EntitySnapshotDenormalizer<Budget, BudgetSnapshot> BudgetSnapshotDenormalizer { get; set; }
+
+
+        private BudgetViewListener _budgetViewListenter;
+        private Dictionary<Type, IEntityDenormalizer> _entityDenormallizers = new Dictionary<Type, IEntityDenormalizer>();
+        private ISynchronizationService _syncService;
 
         public T FindEntity<T>(string EntityID) where T : EntityBase
         {
-            IIdentityMap map = FindGenerator<T>() as IIdentityMap;
-            return (T)map.GetEntity(EntityID);
+            /*IIdentityMap map = FindGenerator<T>() as IIdentityMap;
+            return (T)map.GetEntity(EntityID);*/
+            return null;
         }
 
         public EntityBase FindEntity(string EntityType, string EntityID)
         {
-            var generator = _generators.Where(kvp => kvp.Key.Name == EntityType).Single().Value as IIdentityMap;
+            var generator = _entityDenormallizers.Where(kvp => kvp.Key.Name == EntityType).Single().Value as IIdentityMap;
             return generator.GetEntity(EntityID);
+        }
+
+        internal IEntityDenormalizer FindDenormalizer<TEntity>()
+        {
+            return _entityDenormallizers[typeof(TEntity)];
+        }
+
+        internal IEntityDenormalizer FindDenormalizer(EntityBase entity)
+        {
+            return _entityDenormallizers[entity.GetType()];
+        }
+
+        public Budget GetBudget()
+        {
+            return BudgetRepository.GetAllEntities().Single();
         }
 
         public EntityBase FindEntity(EntityReference reference)
@@ -72,8 +89,8 @@ namespace OpenBudget.Model
         {
             if (initialBudget == null) throw new ArgumentNullException(nameof(initialBudget));
 
-            Budget = initialBudget;
-            initialBudget.AttachToModel(this);
+            RegisterHasChanges(initialBudget);
+            this.SaveChanges();
         }
 
         protected BudgetModel(Guid deviceId, IBudgetStore budgetStore, bool createBudget)
@@ -84,28 +101,46 @@ namespace OpenBudget.Model
             InternalMessageBus = new BudgetMessageBus();
             MessageBus = new BudgetMessageBus();
 
-            InitializeGenerators();
+            InitializeInternals();
 
             if (createBudget)
             {
-                Budget = new Budget();
-                Budget.AttachToModel(this);
+                var budget = new Budget();
+                RegisterHasChanges(budget);
+                this.SaveChanges();
             }
 
             InitializeBudgetViewCache();
         }
 
-        private void InitializeGenerators()
+        private void InitializeInternals()
         {
-            BudgetGenerator = RegisterGenerator(new EntityGenerator<Budget>(this));
-            AccountGenerator = RegisterGenerator(new EntityGenerator<Account>(this));
-            TransactionGenerator = RegisterGenerator(new EntityGenerator<Transaction>(this));
-            SubTransactionGenerator = RegisterGenerator(new EntityGenerator<SubTransaction>(this));
-            BudgetCategoryGenerator = RegisterGenerator(new EntityGenerator<MasterCategory>(this));
-            BudgetSubCategoryGenerator = RegisterGenerator(new EntityGenerator<Category>(this));
-            PayeeGenerator = RegisterGenerator(new EntityGenerator<Payee>(this));
-            IncomeCategoryGenerator = (IncomeCategoryGenerator)RegisterGenerator(new IncomeCategoryGenerator(this));
-            BudgetCategoryMonthGenerator = (CategoryMonthGenerator)RegisterGenerator(new CategoryMonthGenerator(this));
+            InitializeSnapshotDenormalizers();
+            InitializeEntityDenormalizers();
+            InitializeRepositories();
+        }
+
+        private void InitializeRepositories()
+        {
+            BudgetRepository = new EntityRespository<Budget, BudgetSnapshot>(this);
+        }
+
+        private void InitializeSnapshotDenormalizers()
+        {
+            BudgetSnapshotDenormalizer = new EntitySnapshotDenormalizer<Budget, BudgetSnapshot>(this);
+        }
+
+        private void InitializeEntityDenormalizers()
+        {
+            BudgetGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Budget>(this));
+            AccountGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Account>(this));
+            TransactionGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Transaction>(this));
+            SubTransactionGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<SubTransaction>(this));
+            BudgetCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<MasterCategory>(this));
+            BudgetSubCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Category>(this));
+            PayeeGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Payee>(this));
+            IncomeCategoryGenerator = (IncomeCategoryGenerator)RegisterEntityDenormalizer(new IncomeCategoryGenerator(this));
+            BudgetCategoryMonthGenerator = (CategoryMonthGenerator)RegisterEntityDenormalizer(new CategoryMonthGenerator(this));
         }
 
         private void InitializeBudgetViewCache()
@@ -133,8 +168,21 @@ namespace OpenBudget.Model
         internal void EnsureIdentityTracked(EntityBase entity)
         {
             Type entityType = entity.GetType();
-            IIdentityMap generator = _generators[entityType] as IIdentityMap;
+            IIdentityMap generator = _entityDenormallizers[entityType] as IIdentityMap;
             generator.EnsureIdentityTracked(entity);
+        }
+
+        internal void AttachToModel(EntityBase entity)
+        {
+            if (entity.IsAttached && entity.Model != this)
+            {
+                throw new InvalidOperationException("You can't attach the same entity to multiple models.");
+            }
+            else if (entity.IsAttached && entity.Model == this)
+                return;
+
+            var denormalizer = FindDenormalizer(entity);
+            denormalizer.RegisterForChanges(entity);
         }
 
         public static BudgetModel OpenExistingOnNewDevice(Guid deviceId, ISynchronizationService syncService, IBudgetStore budgetStore)
@@ -400,10 +448,10 @@ namespace OpenBudget.Model
             return false;
         }
 
-        private EntityGenerator<T> RegisterGenerator<T>(EntityGenerator<T> generator) where T : EntityBase
+        private EntityDenormalizer<T> RegisterEntityDenormalizer<T>(EntityDenormalizer<T> entityDenormalizer) where T : EntityBase
         {
-            _generators[typeof(T)] = generator;
-            return generator;
+            _entityDenormallizers[typeof(T)] = entityDenormalizer;
+            return entityDenormalizer;
         }
 
         public void SaveChanges()
@@ -411,50 +459,33 @@ namespace OpenBudget.Model
             SaveChangesInternal(null);
         }
 
-        private void BeforeSaveChanges()
-        {
-            //Fire before event recursively down object tree
-            Budget.BeforeSaveChanges();
+        private UnitOfWork _unitOfWork = new UnitOfWork();
 
-            //Check for generators that implement IHasChanges and fire before event
-            foreach (var generator in _generators.Values)
-            {
-                IHasChanges hasChanges = generator as IHasChanges;
-                if (hasChanges != null)
-                {
-                    hasChanges.BeforeSaveChanges();
-                }
-            }
+        internal void RegisterHasChanges(EntityBase entity)
+        {
+            _unitOfWork.RegisterChangedEntity(entity);
         }
 
         private void SaveChangesInternal(List<EntityConflictResolution> pendingConflictResolutions)
         {
-            BeforeSaveChanges();
+            /*if (pendingConflictResolutions != null)
+                changes.AddRange(pendingConflictResolutions.SelectMany(e => e.ConflictResolutionEvents).Where(e => e.DeviceID == Guid.Empty));*/
 
-            var changes = Budget.GetAndSaveChanges().ToList();
-
-            foreach (var change in GetGeneratorChanges())
-            {
-                changes.Add(change);
-            }
-
-            if (pendingConflictResolutions != null)
-                changes.AddRange(pendingConflictResolutions.SelectMany(e => e.ConflictResolutionEvents).Where(e => e.DeviceID == Guid.Empty));
-
+            var changes = _unitOfWork.GetChangedEventsAndNotifyEntities();
 
             var vectorClock = EventStore.GetMaxVectorClock();
 
-            foreach (var change in changes)
+            foreach (var changeEvent in changes.Select(c => c.Event))
             {
                 vectorClock = vectorClock == null ?
                     new VectorClock().Increment(DeviceID)
                     : vectorClock.Increment(DeviceID);
 
-                change.stampEvent(DeviceID, vectorClock);
-                this.MessageBus.PublishEvent(change.EntityType, change);
+                changeEvent.stampEvent(DeviceID, vectorClock);
+                this.MessageBus.PublishEvent(changeEvent.EntityType, changeEvent);
             }
 
-            EventStore.StoreEvents(changes);
+            EventStore.StoreEvents(changes.Select(c => c.Event));
             EventStore.SetMaxVectorClock(vectorClock);
 
             if (pendingConflictResolutions != null)
@@ -480,21 +511,6 @@ namespace OpenBudget.Model
             EntityBase entity = this.FindEntity(entityType, entityId);
             var entityEvents = this.EventStore.GetEntityEvents(entityType, entityId);
             entity.RebuildEntity(entityEvents);
-        }
-
-        private IEnumerable<ModelEvent> GetGeneratorChanges()
-        {
-            foreach (var generator in _generators.Values)
-            {
-                IHasChanges hasChanges = generator as IHasChanges;
-                if (hasChanges != null)
-                {
-                    foreach (var change in hasChanges.GetAndSaveChanges())
-                    {
-                        yield return change;
-                    }
-                }
-            }
         }
     }
 }

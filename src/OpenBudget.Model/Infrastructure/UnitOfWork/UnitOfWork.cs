@@ -8,18 +8,32 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
 {
     internal class UnitOfWork
     {
+        private Dictionary<string, EntityBase> _entityIdentityMap = new Dictionary<string, EntityBase>();
         private List<EntityBase> _changedEntities = new List<EntityBase>();
 
         public void RegisterChangedEntity(EntityBase entity)
         {
+            if (_entityIdentityMap.ContainsKey(entity.EntityID))
+            {
+                throw new InvalidOperationException("This entity has already been registered for changes. You cannot perform operations on different copies of the same entity.");
+            }
+            _entityIdentityMap.Add(entity.EntityID, entity);
             _changedEntities.Add(entity);
+
+            foreach (var childCollection in entity.EnumerateChildEntityCollections())
+            {
+                foreach (var childEntity in childCollection.EnumerateUnattachedEntities())
+                {
+                    this.RegisterChangedEntity(childEntity);
+                }
+            }
         }
 
 
 
-        public List<ModelEvent> GetChangedEventsAndNotifyEntities()
+        public List<EventSavingCallback> GetChangedEventsAndNotifyEntities()
         {
-            List<ModelEvent> events = new List<ModelEvent>();
+            List<EventSavingCallback> events = new List<EventSavingCallback>();
             foreach (var entity in _changedEntities)
             {
                 entity.BeforeSaveChanges();

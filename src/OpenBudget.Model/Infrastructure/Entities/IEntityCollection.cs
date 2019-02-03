@@ -17,5 +17,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
         void CancelDeletion(EntityBase child);
         void ForceRemoveChild(EntityBase child);
         void ForceAddChild(EntityBase child);
+        IEnumerable<EntityBase> EnumerateUnattachedEntities();
     }
 }

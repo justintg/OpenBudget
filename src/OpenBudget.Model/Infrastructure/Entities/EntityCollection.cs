@@ -1,6 +1,8 @@
 ﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Messaging;
+using OpenBudget.Model.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -8,22 +10,51 @@ using System.Linq;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    public class EntityCollection<T> : ObservableCollection<T>, IEntityCollection, IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent> where T : EntityBase
+    public enum EntityCollectionState
+    {
+        Unattached,
+        UnattachedRegistered,
+        AttachedUnloaded,
+        AttachedLoaded
+    }
+
+    public class EntityCollection<T> : IList<T>, INotifyCollectionChanged, IEntityCollection, IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent> where T : EntityBase
     {
         private EntityBase _parent;
 
+        private List<T> _loadedEntities = new List<T>();
+
         private List<Tuple<T, int>> _pendingDeletions;
+
+        public EntityCollectionState CollectionState { get; protected set; }
 
         public EntityCollection(EntityBase parent)
         {
             _parent = parent;
             _pendingDeletions = new List<Tuple<T, int>>();
-            this.CollectionChanged += EntityCollection_CollectionChanged;
+            CollectionState = EntityCollectionState.Unattached;
+            DetermineCollectionState();
+        }
+
+        private void DetermineCollectionState()
+        {
+            if (_parent.SaveState == EntitySaveState.Unattached)
+            {
+                CollectionState = EntityCollectionState.Unattached;
+            }
+            else if (_parent.SaveState == EntitySaveState.AttachedNoChanges)
+            {
+                CollectionState = EntityCollectionState.AttachedUnloaded;
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
 
         private bool _isBuilding = false;
 
-        private void EntityCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        /*private void EntityCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (_isBuilding)
                 return;
@@ -53,9 +84,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     item.Parent = null;
                 }
             }
-        }
+        }*/
 
-        private EntityGenerator<T> _generator;
         private IMessenger<ModelEvent> _messenger;
         private BudgetModel _model;
 
@@ -80,21 +110,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var externalMessenger = model.MessageBus;
             _externalUpdateHandler = new MessageHandler<EntityUpdatedEvent>(e => HandleDeletedEvent(e));
             externalMessenger.RegisterForMessages<EntityUpdatedEvent>(typeof(T).Name, _externalUpdateHandler);
-            _generator = model.FindGenerator<T>();
             _messenger = messenger;
 
             foreach (var entity in this)
             {
-                entity.AttachToModel(model);
+                //entity.AttachToModel(model);
             }
-        }
-
-        protected override void RemoveItem(int index)
-        {
-            if (!_isBuilding && _model != null)
-                throw new InvalidOperationException("You cannot manually remove an item from this collection.  You must call EntityBase.Delete() or add the entity to a different collection");
-
-            base.RemoveItem(index);
         }
 
         internal void BeforeSaveChanges()
@@ -105,7 +126,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        internal IEnumerable<ModelEvent> GetAndSaveChanges()
+        /*internal IEnumerable<ModelEvent> GetAndSaveChanges()
         {
             foreach (EntityBase entity in this)
             {
@@ -125,17 +146,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     yield return change;
                 }
             }
-        }
-
-        void IHasChanges.BeforeSaveChanges()
-        {
-            this.BeforeSaveChanges();
-        }
-
-        IEnumerable<ModelEvent> IHasChanges.GetAndSaveChanges()
-        {
-            return this.GetAndSaveChanges();
-        }
+    }*/
 
         public void Handle(EntityUpdatedEvent message)
         {
@@ -149,6 +160,19 @@ namespace OpenBudget.Model.Infrastructure.Entities
         }
 
         private MessageHandler<EntityUpdatedEvent> _externalUpdateHandler;
+
+        public int Count => _loadedEntities.Count;
+
+        public bool IsReadOnly => false;
+
+        public T this[int index] { get => _loadedEntities[index]; set => throw new NotSupportedException(); }
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            CollectionChanged?.Invoke(this, e);
+        }
 
         private void HandleDeletedEvent(EntityUpdatedEvent message)
         {
@@ -271,6 +295,100 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 this.Insert(deletion.Item2, deletion.Item1);
             });
+        }
+
+        public IEnumerable<EntityBase> EnumerateUnattachedEntities()
+        {
+            return _loadedEntities.Where(e => e.SaveState == EntitySaveState.Unattached);
+        }
+
+        public int IndexOf(T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Insert(int index, T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAt(int index)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Add(T item)
+        {
+            _loadedEntities.Add(item);
+            EnsureAddedEntityRegisteredForChanges(item);
+
+            NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item.Yield().ToList());
+            RaiseCollectionChanged(args);
+        }
+
+        private void EnsureAddedEntityRegisteredForChanges(T entity)
+        {
+            if (CollectionState == EntityCollectionState.Unattached)
+            {
+                //Do nothing
+            }
+            else if (CollectionState == EntityCollectionState.UnattachedRegistered || CollectionState == EntityCollectionState.AttachedLoaded || CollectionState == EntityCollectionState.AttachedUnloaded)
+            {
+                if (entity.SaveState == EntitySaveState.Unattached)
+                {
+                    _model.RegisterHasChanges(entity);
+                }
+            }
+        }
+
+        public void Clear()
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Contains(T item)
+        {
+            return _loadedEntities.Contains(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool Remove(T item)
+        {
+            throw new InvalidOperationException("You cannot manually remove an item from this collection.  You must call EntityBase.Delete() or add the entity to a different collection");
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return (_loadedEntities as IEnumerable<T>).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _loadedEntities.GetEnumerator();
+        }
+
+        void IEntityCollection.AttachToModel(BudgetModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<EntityBase> IEntityCollection.EnumerateUnattachedEntities()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IHasChanges.BeforeSaveChanges()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<ModelEvent> IHasChanges.GetAndSaveChanges()
+        {
+            throw new NotImplementedException();
         }
     }
 }

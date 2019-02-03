@@ -37,7 +37,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected EntityBase(TSnapshot snapshot) : base(snapshot.EntityID)
         {
-
+            _entityData = snapshot;
+            this.SaveState = EntitySaveState.AttachedNoChanges;
+            CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
         }
 
         internal TSnapshot GetSnapshot()
@@ -76,7 +78,15 @@ namespace OpenBudget.Model.Infrastructure.Entities
         }
     }
 
-    public abstract class EntityBase : INotifyPropertyChanged, INotifyPropertyChanging, IHasChanges, INotifyDataErrorInfo
+    public enum EntitySaveState
+    {
+        Unattached,
+        UnattachedRegistered,
+        AttachedNoChanges,
+        AttachedHasChanges,
+    }
+
+    public abstract class EntityBase : INotifyPropertyChanged, INotifyPropertyChanging, INotifyDataErrorInfo
     {
         public string EntityID
         {
@@ -90,12 +100,29 @@ namespace OpenBudget.Model.Infrastructure.Entities
             private set => SetProperty(value);
         }
 
+        public string LastEventID
+        {
+            get => GetProperty<string>();
+            protected set => SetEntityData<string>(value, nameof(LastEventID));
+        }
+
+        public VectorClock LastEventVector
+        {
+            get => GetProperty<VectorClock>();
+            protected set => SetEntityData<VectorClock>(value.Copy(), nameof(LastEventVector));
+        }
+
         private bool _isAttached;
 
         public bool IsAttached
         {
             get { return _isAttached; }
-            private set { _isAttached = value; }
+            internal set { _isAttached = value; }
+        }
+
+        public EntitySaveState SaveState
+        {
+            get; internal set;
         }
 
         public virtual EntityBase Parent
@@ -106,9 +133,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected EntityBase(string entityId)
         {
-            _childEntities = new List<IEntityCollection>();
+            _childEntityCollections = new List<IEntityCollection>();
             _subEntities = new Dictionary<string, ISubEntityCollection>();
             CurrentEvent = new EntityCreatedEvent(this.GetType().Name, entityId);
+            SaveState = EntitySaveState.Unattached;
             EntityID = entityId;
             RegisterValidations();
             RegisterDependencies();
@@ -116,10 +144,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected EntityBase(EntityCreatedEvent evt)
         {
-            _childEntities = new List<IEntityCollection>();
+            _childEntityCollections = new List<IEntityCollection>();
             _subEntities = new Dictionary<string, ISubEntityCollection>();
             ReplayEvents(evt.Yield());
             CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
+            SaveState = EntitySaveState.AttachedNoChanges;
             RegisterValidations();
             RegisterDependencies();
         }
@@ -128,7 +157,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private BudgetModel _model;
 
-        public BudgetModel Model => _model;
+        public BudgetModel Model
+        {
+            get { return _model; }
+            internal set { _model = value; }
+        }
 
         public virtual void Delete()
         {
@@ -142,30 +175,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
             get
             {
                 return this.CurrentEvent is EntityCreatedEvent || this.CurrentEvent.Changes.Count > 0;
-            }
-        }
-
-        private void SerializeProperties()
-        {
-            foreach (var serializedProperty in _serializedProperties.Values)
-            {
-                if (!serializedProperty.IsLoaded)
-                    continue;
-
-                if (serializedProperty.HasChanged)
-                {
-                    var stringValue = this.GetProperty<string>(serializedProperty.PropertyName);
-                    if (serializedProperty.DeserializedObject == null & stringValue != null)
-                    {
-                        SetProperty<string>(null, serializedProperty.PropertyName);
-                    }
-                    else if (serializedProperty.DeserializedObject != null)
-                    {
-                        Serializer ser = new Serializer();
-                        string newValue = ser.SerializeToString(serializedProperty.DeserializedObject, serializedProperty.PropertyType);
-                        SetProperty<string>(newValue, serializedProperty.PropertyName);
-                    }
-                }
             }
         }
 
@@ -202,7 +211,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             var childType = child.GetType();
             var childCollectionType = typeof(EntityCollection<>).MakeGenericType(childType);
-            var childCollection = _childEntities.Where(c => c.GetType() == childCollectionType).FirstOrDefault();
+            var childCollection = _childEntityCollections.Where(c => c.GetType() == childCollectionType).FirstOrDefault();
             return childCollection;
         }
 
@@ -212,26 +221,33 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return _subEntities[entityType];
         }
 
-        void IHasChanges.BeforeSaveChanges()
-        {
-            this.BeforeSaveChanges();
-        }
-
         internal virtual void BeforeSaveChanges()
         {
-            foreach (var childCollection in _childEntities)
-            {
-                childCollection.BeforeSaveChanges();
-            }
+
         }
 
         internal bool IsBeingSaved { get; private set; }
         internal bool RegisteredForChanges { get; private set; }
 
+        protected void NotifyEventSaved(ModelEvent evt)
+        {
+            LastEventID = evt.EventID.ToString();
+            LastEventVector = evt.EventVector;
+
+            CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
+        }
+
+        private EventSavingCallback ConvertToCallback(ModelEvent evt)
+        {
+            return new EventSavingCallback()
+            {
+                Event = evt,
+                EventSavedCallback = NotifyEventSaved
+            };
+        }
+
         internal virtual IEnumerable<EventSavingCallback> GetAndSaveChanges()
         {
-            SerializeProperties();
-
             bool groupChangesPublished = false;
             List<FieldChangeEvent> groupedChanges = new List<FieldChangeEvent>();
 
@@ -251,122 +267,25 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     groupedChanges.Insert(0, evt);
                     GroupedFieldChangeEvent groupedEvent = new GroupedFieldChangeEvent(this.GetType().Name, EntityID, groupedChanges);
                     groupChangesPublished = true;
-                    yield return groupedEvent;
+                    yield return ConvertToCallback(groupedEvent);
                 }
                 else
-                    yield return evt;
-
-                CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
+                    yield return ConvertToCallback(evt);
             }
 
             if (groupedChanges.Count > 0 && !groupChangesPublished)
             {
                 GroupedFieldChangeEvent groupedEvent = new GroupedFieldChangeEvent(this.GetType().Name, EntityID, groupedChanges);
-                yield return groupedEvent;
+                yield return ConvertToCallback(groupedEvent);
             }
 
-            foreach (var child in _childEntities)
+            /*foreach (var child in _childEntityCollections)
             {
                 foreach (var change in child.GetAndSaveChanges())
                 {
                     yield return change;
                 }
-            }
-        }
-
-        internal class SerializedProperty
-        {
-            private IChangeListener _listener;
-            private object _deserializedObject;
-            private bool _hasChanged = false;
-
-            public SerializedProperty(string propertyName, Type propertyType, IChangeListener listener)
-            {
-                PropertyName = propertyName;
-                PropertyType = propertyType;
-                _listener = listener;
-            }
-
-            public string PropertyName { get; private set; }
-            public Type PropertyType { get; private set; }
-            public bool IsLoaded { get; private set; }
-
-            public void NotifyChangesSaved()
-            {
-                _hasChanged = false;
-            }
-
-            public bool HasChanged
-            {
-                get
-                {
-                    if (_listener == null)
-                        return true;
-
-                    return _hasChanged;
-                }
-            }
-
-            public object DeserializedObject
-            {
-                get { return _deserializedObject; }
-                set
-                {
-                    _deserializedObject = value;
-                    _hasChanged = true;
-                    IsLoaded = true;
-                }
-            }
-
-            public void DeserializeObjectOnLoad(object obj)
-            {
-                IsLoaded = true;
-                _deserializedObject = obj;
-            }
-
-            public void ForceRefresh()
-            {
-                IsLoaded = false;
-                _deserializedObject = null;
-            }
-        }
-
-        private Dictionary<string, SerializedProperty> _serializedProperties = new Dictionary<string, SerializedProperty>();
-
-        protected void RegisterSerializedProperty<T, TProp>(Expression<Func<T, TProp>> propertyExpression, IChangeListener listener = null) where T : EntityBase
-        {
-            var memberExpression = propertyExpression.Body as MemberExpression;
-            var propertyType = (memberExpression.Member as PropertyInfo).PropertyType;
-            Func<T, TProp> getter = propertyExpression.Compile();
-            var propertyName = memberExpression.Member.Name;
-            _serializedProperties.Add(propertyName, new SerializedProperty(propertyName, propertyType, listener));
-        }
-
-        protected T GetSerializedProperty<T>([CallerMemberName]string property = null)
-        {
-            string stringValue = GetProperty<string>(property);
-            SerializedProperty serializedProperty = _serializedProperties[property];
-            if (serializedProperty.DeserializedObject != null)
-            {
-                return (T)serializedProperty.DeserializedObject;
-            }
-            else if (stringValue != null)
-            {
-                Serializer ser = new Serializer();
-                T obj = ser.DeserializeFromString<T>(stringValue);
-                serializedProperty.DeserializeObjectOnLoad(obj);
-                return obj;
-            }
-            else
-            {
-                return default(T);
-            }
-        }
-
-        protected void SetSerializedProperty<T>(T value, [CallerMemberName]string property = null)
-        {
-            SerializedProperty serializedProperty = _serializedProperties[property];
-            serializedProperty.DeserializedObject = value;
+            }*/
         }
 
         /// <summary>
@@ -395,7 +314,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             //model.EnsureIdentityTracked(this);
 
-            foreach (IEntityCollection childCollection in _childEntities)
+            foreach (IEntityCollection childCollection in _childEntityCollections)
             {
                 childCollection.AttachToModel(model);
             }
@@ -403,7 +322,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         internal T RegisterChildEntityCollection<T>(T childEntityCollection) where T : IEntityCollection
         {
-            _childEntities.Add(childEntityCollection);
+            _childEntityCollections.Add(childEntityCollection);
             return childEntityCollection;
         }
 
@@ -413,7 +332,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return subEntityCollection;
         }
 
-        private List<IEntityCollection> _childEntities;
+        private List<IEntityCollection> _childEntityCollections;
 
         internal Dictionary<string, ISubEntityCollection> _subEntities;
 
@@ -464,12 +383,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     object previousValue = GetEntityDataObject(change.Key);
 
                     SetEntityDataObject(change.Value.NewValue, change.Key);
-
-                    SerializedProperty serializedProperty = null;
-                    if (_serializedProperties.TryGetValue(change.Key, out serializedProperty))
-                    {
-                        serializedProperty.ForceRefresh();
-                    }
                     OnReplayChange(change.Key, previousValue, change.Value);
                 }
             }
@@ -645,9 +558,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return new EntityReference(this);
         }
 
-        IEnumerable<ModelEvent> IHasChanges.GetAndSaveChanges()
+        internal IEnumerable<IEntityCollection> EnumerateChildEntityCollections()
         {
-            return this.GetAndSaveChanges();
+            return _childEntityCollections.ToList();
         }
 
         #region INotifyDataErrorInfo
