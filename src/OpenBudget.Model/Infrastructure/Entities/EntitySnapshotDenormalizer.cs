@@ -1,0 +1,90 @@
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Events;
+using OpenBudget.Model.Infrastructure.Messaging;
+using OpenBudget.Model.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text;
+
+namespace OpenBudget.Model.Infrastructure.Entities
+{
+    internal class EntitySnapshotDenormalizer<TEntity, TSnapshot>
+        : IHandler<EntityCreatedEvent>,
+        IHandler<EntityUpdatedEvent>,
+        IHandler<GroupedFieldChangeEvent>
+        where TEntity : EntityBase<TSnapshot>
+        where TSnapshot : EntitySnapshot, new()
+    {
+
+        private readonly BudgetModel _budgetModel;
+        private readonly ISnapshotStore _snapshotStore;
+        private readonly Func<EntityCreatedEvent, TEntity> _createEntityFromEvent;
+        private readonly Func<TSnapshot, TEntity> _createEntityFromSnapshot;
+
+        internal EntitySnapshotDenormalizer(BudgetModel budgetModel)
+        {
+            _budgetModel = budgetModel ?? throw new ArgumentNullException(nameof(budgetModel));
+            _snapshotStore = budgetModel?.BudgetStore?.SnapshotStore ?? throw new ArgumentException("Could not find snapshot store of budgetModel", nameof(budgetModel));
+
+            _createEntityFromEvent = CreateFromEventConstructor();
+            _createEntityFromSnapshot = CreateFromSnapshotConstructor();
+
+            RegisterForMessages();
+        }
+
+        private void RegisterForMessages()
+        {
+            _budgetModel.InternalMessageBus.RegisterForMessages<EntityCreatedEvent>(nameof(TEntity), this);
+            _budgetModel.InternalMessageBus.RegisterForMessages<EntityUpdatedEvent>(nameof(TEntity), this);
+        }
+
+        private Func<TSnapshot, TEntity> CreateFromSnapshotConstructor()
+        {
+            var entityType = typeof(TEntity);
+            var constructor = entityType
+                .GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(c => c.GetParameters().Count() == 1 && c.GetParameters().First().ParameterType == typeof(TSnapshot))
+                .First();
+
+            var snapshotParam = Expression.Parameter(typeof(TSnapshot), "s");
+            var constructExp = Expression.New(constructor, snapshotParam);
+            return Expression.Lambda<Func<TSnapshot, TEntity>>(constructExp, snapshotParam).Compile();
+        }
+
+        private Func<EntityCreatedEvent, TEntity> CreateFromEventConstructor()
+        {
+            var entityType = typeof(TEntity);
+            var constructor = entityType
+                .GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(c => c.GetParameters().Count() == 1 && c.GetParameters().First().ParameterType == typeof(EntityCreatedEvent))
+                .First();
+
+            var snapshotParam = Expression.Parameter(typeof(EntityCreatedEvent), "s");
+            var constructExp = Expression.New(constructor, snapshotParam);
+            return Expression.Lambda<Func<EntityCreatedEvent, TEntity>>(constructExp, snapshotParam).Compile();
+        }
+
+        public void Handle(EntityCreatedEvent message)
+        {
+            var snapshot = _createEntityFromEvent(message).GetSnapshot();
+            _snapshotStore.StoreSnapshot(snapshot);
+        }
+
+        public void Handle(EntityUpdatedEvent message)
+        {
+            var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(message.EntityID);
+            var entity = _createEntityFromSnapshot(snapshot);
+            entity.ReplayEvents(message.Yield());
+            snapshot = entity.GetSnapshot();
+            _snapshotStore.StoreSnapshot(snapshot);
+        }
+
+        public void Handle(GroupedFieldChangeEvent message)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

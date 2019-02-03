@@ -15,7 +15,8 @@ namespace OpenBudget.Model.Entities.Generators
         public IncomeCategory GetIncomeCategory(DateTime date)
         {
             string entityId = string.Format("IncomeCategory/{0:yyyyMM}", date);
-            return _model?.IncomeCategoryGenerator.GetEntity(entityId);
+            //return _model?.IncomeCategoryGenerator.GetEntity(entityId);
+            return null;
         }
     }
 }

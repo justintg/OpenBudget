@@ -22,21 +22,21 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _messenger.RegisterForMessages<EntityUpdatedEvent>(typeof(T).Name, this);
         }
 
-        public override void Handle(EntityCreatedEvent message)
+        /*public override void Handle(EntityCreatedEvent message)
         {
             throw new NotSupportedException("This Generator cannot handle the EntityCreatedEvent");
-        }
+        }*/
 
         protected abstract T MaterializeEntity(string entityID);
 
         protected abstract bool IsValidID(string entityID);
 
-        public IEnumerable<T> GetAllMaterialized()
+        /*public IEnumerable<T> GetAllMaterialized()
         {
             return _identityMap.Values;
-        }
+        }*/
 
-        public override T GetEntity(string entityID)
+        /*public override T GetEntity(string entityID)
         {
             T entity = base.GetEntity(entityID);
             if (entity != null)
@@ -51,25 +51,26 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
             else
                 return null;
-        }
+        }*/
 
         internal virtual IEnumerable<ModelEvent> GetAndSaveChanges()
         {
-            foreach (var entity in _identityMap.Values)
+            return null;
+            /*foreach (var entity in _identityMap.Values)
             {
                 foreach (var change in entity.GetAndSaveChanges())
                 {
                     yield return change;
                 }
-            }
+            }*/
         }
 
         internal virtual void BeforeSaveChanges()
         {
-            foreach (var entity in _identityMap.Values)
+            /*foreach (var entity in _identityMap.Values)
             {
                 entity.BeforeSaveChanges();
-            }
+            }*/
         }
 
         IEnumerable<ModelEvent> IHasChanges.GetAndSaveChanges()

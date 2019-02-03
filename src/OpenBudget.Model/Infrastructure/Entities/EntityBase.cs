@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
 using OpenBudget.Model.Serialization;
+using OpenBudget.Model.Infrastructure.UnitOfWork;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
@@ -32,6 +33,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected EntityBase(EntityCreatedEvent evt) : base(evt)
         {
+        }
+
+        protected EntityBase(TSnapshot snapshot) : base(snapshot.EntityID)
+        {
+
+        }
+
+        internal TSnapshot GetSnapshot()
+        {
+            return _entityData;
         }
 
         protected override T GetEntityData<T>(string property)
@@ -214,7 +225,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        internal virtual IEnumerable<ModelEvent> GetAndSaveChanges()
+        internal bool IsBeingSaved { get; private set; }
+        internal bool RegisteredForChanges { get; private set; }
+
+        internal virtual IEnumerable<EventSavingCallback> GetAndSaveChanges()
         {
             SerializeProperties();
 
@@ -360,7 +374,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         /// </summary>
         /// <param name="model"></param>
         /// <exception cref="InvalidOperationException">When the entity has already been attached to a different Model or the Parent is attached to a different Model</exception>
-        internal virtual void AttachToModel(BudgetModel model)
+        protected virtual void AttachToModel(BudgetModel model)
         {
             if (_isAttached && _model == model)
                 return;
@@ -379,7 +393,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 throw new InvalidOperationException("Parent and Child must be attached to the same model");
             }
 
-            model.EnsureIdentityTracked(this);
+            //model.EnsureIdentityTracked(this);
 
             foreach (IEntityCollection childCollection in _childEntities)
             {
@@ -406,15 +420,15 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         internal void rebuildEntityData(IEnumerable<FieldChangeEvent> events)
         {
-            notifyAllPropertiesChanging();
+            NotifyAllPropertiesChanging();
 
             ClearEntityData();
             ReplayEvents(events);
 
-            notifyAllPropertiesChanged();
+            NotifyAllPropertiesChanged();
         }
 
-        protected void notifyAllPropertiesChanging()
+        protected void NotifyAllPropertiesChanging()
         {
             foreach (var prop in GetPropertyNames())
             {
@@ -422,7 +436,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        protected void notifyAllPropertiesChanged()
+        protected void NotifyAllPropertiesChanged()
         {
             foreach (var prop in GetPropertyNames())
             {
@@ -493,7 +507,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 SetEntityDataObject(change.Value.PreviousValue, change.Key);
                 OnCancelChange(change.Key, change.Value);
             }
-            notifyAllPropertiesChanged();
+            NotifyAllPropertiesChanged();
 
             foreach (var subEntity in _subEntities)
             {

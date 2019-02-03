@@ -9,99 +9,69 @@ using System.Reflection;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    internal class EntityGenerator<T> : IIdentityMap, IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent>, IHandler<GroupedFieldChangeEvent> where T : EntityBase
+    internal class EntityGenerator<T> : IHandler<EntityUpdatedEvent>, IHandler<GroupedFieldChangeEvent> where T : EntityBase
     {
-        protected Dictionary<string, T> _identityMap;
         protected IMessenger<ModelEvent> _messenger;
         protected BudgetModel _model;
+        protected Dictionary<string, List<WeakReference<T>>> _registrations;
 
         public EntityGenerator(BudgetModel model)
         {
             _model = model;
             IMessenger<ModelEvent> messenger = model.InternalMessageBus;
-            _identityMap = new Dictionary<string, T>();
             _messenger = messenger;
             RegisterForMessages();
         }
 
-        protected virtual void RegisterForMessages()
+        internal void RegisterForChanges(T entity)
         {
-            _messenger.RegisterForMessages<EntityCreatedEvent>(typeof(T).Name, this);
-            _messenger.RegisterForMessages<EntityUpdatedEvent>(typeof(T).Name, this);
-            _messenger.RegisterForMessages<GroupedFieldChangeEvent>(typeof(T).Name, this);
+            List<WeakReference<T>> entityReferences = null;
+            if (!_registrations.TryGetValue(entity.EntityID, out entityReferences))
+            {
+                entityReferences = new List<WeakReference<T>>();
+                _registrations.Add(entity.EntityID, entityReferences);
+            }
+
+            entityReferences.Add(new WeakReference<T>(entity));
         }
 
-        public virtual void EnsureIdentityTracked(EntityBase entity)
+        protected IEnumerable<T> EnumerateRegistrations(string entityId)
         {
-            if (entity.GetType() != typeof(T))
-                throw new InvalidOperationException("The Entity to be Tracked is not the appropriate type for this Generator!");
-
-            T typedEntity = (T)entity;
-            T identityEntity;
-            if (!_identityMap.TryGetValue(typedEntity.EntityID, out identityEntity))
+            List<WeakReference<T>> entityRegistrations = null;
+            if (_registrations.TryGetValue(entityId, out entityRegistrations))
             {
-                _identityMap.Add(entity.EntityID, typedEntity);
-            }
-            else
-            {
-                if (identityEntity != typedEntity)
+                foreach (var registration in entityRegistrations)
                 {
-                    throw new InvalidOperationException("An entity is already tracked with this ID!");
+                    T entity = null;
+                    if (registration.TryGetTarget(out entity))
+                    {
+                        yield return entity;
+                    }
+                    else
+                    {
+                        entityRegistrations.Remove(registration);
+                    }
                 }
             }
         }
 
-        public virtual T GetEntity(string entityID)
+        protected virtual void RegisterForMessages()
         {
-            T entity;
-            if (_identityMap.TryGetValue(entityID, out entity))
-            {
-                if (entity.IsDeleted)
-                    return null;
-
-                return entity;
-            }
-
-            return null;
+            _messenger.RegisterForMessages<EntityUpdatedEvent>(typeof(T).Name, this);
+            _messenger.RegisterForMessages<GroupedFieldChangeEvent>(typeof(T).Name, this);
         }
 
         public virtual void Handle(EntityUpdatedEvent message)
         {
-            T entity = this.GetEntity(message.EntityID);
-            entity.ReplayEvents(message.Yield());
+            foreach (var entity in EnumerateRegistrations(message.EntityID))
+            {
+                entity.ReplayEvents(message.Yield());
+            }
         }
-
-        public virtual void Handle(EntityCreatedEvent message)
-        {
-            var constructor =
-                typeof(T)
-                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Single(c =>
-                {
-                    var parameters = c.GetParameters().ToList();
-                    if (parameters.Count == 1 && parameters.Single().ParameterType == typeof(EntityCreatedEvent))
-                    {
-                        return true;
-                    }
-
-                    return false;
-                });
-
-            T entity = (T)constructor.Invoke(new object[] { message });
-            entity.AttachToModel(_model);
-            _identityMap[entity.EntityID] = entity;
-        }
-
-        public IEnumerable<EntityBase> GetAll()
-        {
-            return _identityMap.Values;
-        }
-
-        EntityBase IIdentityMap.GetEntity(string EntityID) => GetEntity(EntityID);
 
         public void Handle(GroupedFieldChangeEvent message)
         {
-            T entity = this.GetEntity(message.EntityID);
+            /*T entity = this.GetEntity(message.EntityID);
             List<FieldChangeEvent> eventsToBroadcast = message.GroupedEvents.ToList();
             if (entity == null)
             {
@@ -127,7 +97,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 {
                     entity.HandleSubEntityEvent(evt);
                 }
-            }
+            }*/
         }
     }
 }

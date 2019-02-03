@@ -73,7 +73,7 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
-        internal override void AttachToModel(BudgetModel model)
+        protected override void AttachToModel(BudgetModel model)
         {
             base.AttachToModel(model);
             IncomeCategories.AttachToModel(model);

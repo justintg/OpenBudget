@@ -187,7 +187,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 try
                 {
                     _isBuilding = true;
-                    T entity = _generator.GetEntity(message.EntityID);
+                    T entity = null;//_generator.GetEntity(message.EntityID);
+
                     if (entity != null)
                         this.Add(entity);
                 }
@@ -201,7 +202,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 try
                 {
                     _isBuilding = true;
-                    T entity = _generator.GetEntity(message.EntityID);
+                    T entity = null;//_generator.GetEntity(message.EntityID);
                     if (entity != null)
                         this.Remove(entity);
                 }
