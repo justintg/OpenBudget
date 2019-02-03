@@ -35,6 +35,8 @@ namespace OpenBudget.Model.SQLite
 
         public IEventStore EventStore => _eventStore;
 
+        public ISnapshotStore SnapshotStore => throw new NotImplementedException();
+
         public TExtension TryGetExtension<TExtension>() where TExtension : class
         {
             return null;

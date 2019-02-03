@@ -125,7 +125,7 @@ namespace OpenBudget.Model
             _budgetViewListenter = new BudgetViewListener(this);
         }
 
-        public void setSynchronizationService(ISynchronizationService syncService)
+        public void SetSynchronizationService(ISynchronizationService syncService)
         {
             _syncService = syncService;
         }
@@ -141,11 +141,11 @@ namespace OpenBudget.Model
         {
             //var budgetId = events.Single(e => e.EntityType == "Budget" && e is EntityCreatedEvent).EntityID;
             BudgetModel model = new BudgetModel(deviceId, budgetStore, false);
-            model.setSynchronizationService(syncService);
+            model.SetSynchronizationService(syncService);
             model.Sync();
 
-            model.Budget = (Budget)model.BudgetGenerator.GetAll().Single();
-            model.Budget.AttachToModel(model);
+            //model.Budget = (Budget)model.BudgetGenerator.GetAll().Single();
+            //model.Budget.AttachToModel(model);
             return model;
         }
 
@@ -156,8 +156,8 @@ namespace OpenBudget.Model
             {
                 model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
             }
-            model.Budget = (Budget)model.BudgetGenerator.GetAll().Single();
-            model.Budget.AttachToModel(model);
+            //model.Budget = (Budget)model.BudgetGenerator.GetAll().Single();
+            //model.Budget.AttachToModel(model);
             model.BudgetViewCache.RecalculateCache();
             return model;
         }
@@ -399,7 +399,6 @@ namespace OpenBudget.Model
 
             return false;
         }
-
 
         private EntityGenerator<T> RegisterGenerator<T>(EntityGenerator<T> generator) where T : EntityBase
         {

@@ -20,7 +20,8 @@ namespace OpenBudget.Model.Entities.Generators
             if (!match.Success) return false;
 
             var budgetCategoryID = match.Groups[1].Value;
-            var budgetCategory = _model.BudgetSubCategoryGenerator.GetEntity(budgetCategoryID);
+            //var budgetCategory = _model.BudgetSubCategoryGenerator.GetEntity(budgetCategoryID);
+            Category budgetCategory = null;
 
             if (budgetCategory != null) return true;
 

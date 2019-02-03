@@ -18,12 +18,14 @@ namespace OpenBudget.Model.Entities.Generators
         public CategoryMonth GetCategoryMonth(DateTime date)
         {
             string entityId = _parent.EntityID.ToString() + $"/{date:yyyyMM}";
-            return _model?.BudgetCategoryMonthGenerator.GetEntity(entityId);
+            return null;
+            //return _model?.BudgetCategoryMonthGenerator.GetEntity(entityId);
         }
 
         public IEnumerable<CategoryMonth> GetAllMaterialized()
         {
-            return _model?.BudgetCategoryMonthGenerator.GetAllMaterialized().Where(bc => bc.Parent == _parent);
+            return null;
+            //return _model?.BudgetCategoryMonthGenerator.GetAllMaterialized().Where(bc => bc.Parent == _parent);
         }
     }
 }

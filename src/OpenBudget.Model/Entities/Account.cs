@@ -61,6 +61,10 @@ namespace OpenBudget.Model.Entities
             //Transactions.CollectionChanged += (sender, e) => { BalanceChanged(); };
         }
 
+        internal Account(AccountSnapshot snapshot) : base(snapshot)
+        {
+        }
+
         public string Name
         {
             get { return GetProperty<string>(); }
@@ -105,7 +109,7 @@ namespace OpenBudget.Model.Entities
 
         //private PropertyChangedMessageFilter<Transaction> _amountUpdatedFilter;
 
-        internal override void AttachToModel(BudgetModel model)
+        protected override void AttachToModel(BudgetModel model)
         {
             base.AttachToModel(model);
 
