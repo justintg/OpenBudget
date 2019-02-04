@@ -23,7 +23,7 @@ namespace OpenBudget.Model.Tests
         {
             TestBudget = BudgetSetup.CreateBudget();
             BudgetModel = TestBudget.BudgetModel;
-            Budget = BudgetModel.Budget;
+            Budget = BudgetModel.GetBudget();
             Account = Budget.Accounts[0];
             TestEvents = TestBudget.EventStore.TestEvents;
         }

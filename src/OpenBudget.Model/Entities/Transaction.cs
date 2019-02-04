@@ -279,7 +279,7 @@ namespace OpenBudget.Model.Entities
         {
             if (!this.HasChanges) return;
 
-            var payeeCollection = this.Model.Budget.Payees;
+            var payeeCollection = this.Model.GetBudget().Payees;
             if (this.Payee != null && !this.Payee.IsAttached)
             {
                 var newPayee = this.Payee;

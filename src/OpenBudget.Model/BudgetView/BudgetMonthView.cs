@@ -24,10 +24,10 @@ namespace OpenBudget.Model.BudgetView
             _model = model;
             Date = date.FirstDayOfMonth();
             _lastDayOfMonth = Date.LastDayOfMonth();
-            _incomeCategory = _model.Budget.IncomeCategories.GetIncomeCategory(Date);
+            _incomeCategory = _model.GetBudget().IncomeCategories.GetIncomeCategory(Date);
 
             _masterCategories = new TransformingObservableCollection<MasterCategory, MasterCategoryMonthView>(
-                _model.Budget.MasterCategories,
+                _model.GetBudget().MasterCategories,
                 mc => { return new MasterCategoryMonthView(mc, Date); },
                 mcv => { mcv.Dispose(); });
 

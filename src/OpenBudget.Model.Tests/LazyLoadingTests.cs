@@ -24,8 +24,9 @@ namespace OpenBudget.Model.Tests
         [Test]
         public void CanCreateRespository()
         {
-            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore());
-            var accountRepositor = new EntityRespository<Account, AccountSnapshot>(model);
+            Budget initialBudget = new Budget();
+            initialBudget.Accounts.Add(new Account() { Name = "Checking" });
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
         }
     }
 }
