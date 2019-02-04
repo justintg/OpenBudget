@@ -18,7 +18,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         AttachedLoaded
     }
 
-    public class EntityCollection<T> : IList<T>, INotifyCollectionChanged, IEntityCollection, IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent> where T : EntityBase
+    public class EntityCollection<T> : IList<T>, IReadOnlyList<T>, INotifyCollectionChanged, IEntityCollection, IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent> where T : EntityBase
     {
         private EntityBase _parent;
 
@@ -378,7 +378,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         IEnumerable<EntityBase> IEntityCollection.EnumerateUnattachedEntities()
         {
-            throw new NotImplementedException();
+            return _loadedEntities.Where(e => e.SaveState == EntitySaveState.Unattached);
         }
 
         void IHasChanges.BeforeSaveChanges()

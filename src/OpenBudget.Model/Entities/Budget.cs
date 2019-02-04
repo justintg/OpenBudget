@@ -42,6 +42,16 @@ namespace OpenBudget.Model.Entities
             ValidationEnabled = true;
         }
 
+        internal Budget(BudgetSnapshot snapshot) : base(snapshot)
+        {
+            MasterCategories = RegisterChildEntityCollection(new EntityCollection<MasterCategory>(this));
+            IncomeCategories = new IncomeCategoryFinder();
+            Payees = RegisterChildEntityCollection(new EntityCollection<Payee>(this));
+            Accounts = RegisterChildEntityCollection(new EntityCollection<Account>(this));
+
+            ValidationEnabled = true;
+        }
+
         protected override void RegisterValidations()
         {
             RegisterValidationRule(() => this.Name, () => string.IsNullOrEmpty(Name), "You must enter a Budget Name.");

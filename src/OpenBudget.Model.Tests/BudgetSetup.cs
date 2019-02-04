@@ -23,7 +23,7 @@ namespace OpenBudget.Model.Tests
         public void ReloadBudget()
         {
             BudgetModel = BudgetModel.Load(DeviceID, BudgetStore);
-            Budget = BudgetModel.Budget;
+            Budget = BudgetModel.GetBudget();
         }
 
         public void SaveChanges()
@@ -46,7 +46,7 @@ namespace OpenBudget.Model.Tests
 
             testBudget.EventStore.TestEvents.Clear();
             testBudget.TestEvents = testBudget.EventStore.TestEvents;
-            testBudget.Budget = testBudget.BudgetModel.Budget;
+            testBudget.Budget = testBudget.BudgetModel.GetBudget();
 
             return testBudget;
         }
