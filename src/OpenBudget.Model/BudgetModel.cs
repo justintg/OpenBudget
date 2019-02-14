@@ -471,25 +471,47 @@ namespace OpenBudget.Model
             /*if (pendingConflictResolutions != null)
                 changes.AddRange(pendingConflictResolutions.SelectMany(e => e.ConflictResolutionEvents).Where(e => e.DeviceID == Guid.Empty));*/
 
-            var changes = _unitOfWork.GetChangedEventsAndNotifyEntities();
+            var changes = _unitOfWork.GetChangeEvents();
 
+            var events = changes.Select(c => c.Event).ToList();
+            StampEvents(events);
+            EventStore.StoreEvents(events);
+
+            UpdateModelState(changes);
+
+
+            if (pendingConflictResolutions != null)
+                RebuildEntities(pendingConflictResolutions);
+        }
+
+        private void UpdateModelState(List<EventSavingCallback> changes)
+        {
+            foreach (var change in changes)
+            {
+                change.EventSavedCallback(change.Event);
+                if (change.NeedsAttach)
+                {
+                    AttachToModel(change.Entity);
+                    change.NotifyAttachedCallback(this);
+                }
+                InternalMessageBus.PublishEvent(change.Event.EntityType, change.Event);
+                MessageBus.PublishEvent(change.Event.EntityType, change.Event);
+            }
+        }
+
+        private void StampEvents(IEnumerable<ModelEvent> events)
+        {
             var vectorClock = EventStore.GetMaxVectorClock();
 
-            foreach (var changeEvent in changes.Select(c => c.Event))
+            foreach (var evt in events)
             {
                 vectorClock = vectorClock == null ?
                     new VectorClock().Increment(DeviceID)
                     : vectorClock.Increment(DeviceID);
-
-                changeEvent.stampEvent(DeviceID, vectorClock);
-                this.MessageBus.PublishEvent(changeEvent.EntityType, changeEvent);
+                evt.StampEvent(DeviceID, vectorClock);
             }
 
-            EventStore.StoreEvents(changes.Select(c => c.Event));
             EventStore.SetMaxVectorClock(vectorClock);
-
-            if (pendingConflictResolutions != null)
-                RebuildEntities(pendingConflictResolutions);
         }
 
         private void RebuildEntities(List<EntityConflictResolution> entityConflictResolutions)

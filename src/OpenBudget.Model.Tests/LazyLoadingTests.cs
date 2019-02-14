@@ -22,11 +22,16 @@ namespace OpenBudget.Model.Tests
         }*/
 
         [Test]
-        public void CanCreateRespository()
+        public void InitialBudget_IsAttachedAfterCreate()
         {
             Budget initialBudget = new Budget();
-            initialBudget.Accounts.Add(new Account() { Name = "Checking" });
+            Account account = new Account() { Name = "Checking" };
+            initialBudget.Accounts.Add(account);
+
             var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            Assert.That(model.EventStore.GetEvents().Count(), Is.EqualTo(2));
+            Assert.That(initialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
     }
 }

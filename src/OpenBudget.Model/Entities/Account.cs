@@ -109,17 +109,14 @@ namespace OpenBudget.Model.Entities
 
         //private PropertyChangedMessageFilter<Transaction> _amountUpdatedFilter;
 
-        protected override void AttachToModel(BudgetModel model)
+        protected override void OnAttached(BudgetModel model)
         {
-            base.AttachToModel(model);
-
-            model.MessageBus.EntityCreatedOrUpdated
+            var balanceChanged = model.MessageBus.EntityCreatedOrUpdated
                 .Where(e => e.EntityType == nameof(Transaction)
                 && Transactions.Select(t => t.EntityID).Contains(e.EntityID)
-                && e.Changes.ContainsKey(nameof(Transaction.Amount)))
-                .Subscribe(e => BalanceChanged());
+                && e.Changes.ContainsKey(nameof(Transaction.Amount)));
 
-            //_amountUpdatedFilter = new PropertyChangedMessageFilter<Transaction>(model, id => Transactions.Select(t => t.EntityID).Contains(id), nameof(Transaction.Amount), e => BalanceChanged());
+            model.MessageBus.ObservableContainer.RegisterObservable(balanceChanged, this, (a, e) => a.BalanceChanged());
         }
 
         public EntityCollection<Transaction> Transactions { get; private set; }

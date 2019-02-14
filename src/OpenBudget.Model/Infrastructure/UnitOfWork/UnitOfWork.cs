@@ -27,11 +27,23 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
                     this.RegisterChangedEntity(childEntity);
                 }
             }
+
+            UpdateEntityState(entity);
         }
 
+        private void UpdateEntityState(EntityBase entity)
+        {
+            if (entity.SaveState == EntitySaveState.Unattached)
+            {
+                entity.SaveState = EntitySaveState.UnattachedRegistered;
+            }
+            else if (entity.SaveState == EntitySaveState.AttachedNoChanges)
+            {
+                entity.SaveState = EntitySaveState.AttachedHasChanges;
+            }
+        }
 
-
-        public List<EventSavingCallback> GetChangedEventsAndNotifyEntities()
+        public List<EventSavingCallback> GetChangeEvents()
         {
             List<EventSavingCallback> events = new List<EventSavingCallback>();
             foreach (var entity in _changedEntities)
