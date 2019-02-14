@@ -40,6 +40,8 @@ namespace OpenBudget.Model.Infrastructure.Messaging
 
         private Subject<ModelEvent> _modelEventSubject = new Subject<ModelEvent>();
 
+        public WeakObservableContainer ObservableContainer { get; private set; } = new WeakObservableContainer();
+
         public override void PublishEvent<TMessage>(string entityName, TMessage message)
         {
             base.PublishEvent(entityName, message);

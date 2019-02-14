@@ -112,17 +112,23 @@ namespace OpenBudget.Model.Infrastructure.Entities
             protected set => SetEntityData<VectorClock>(value.Copy(), nameof(LastEventVector));
         }
 
-        private bool _isAttached;
-
         public bool IsAttached
         {
-            get { return _isAttached; }
-            internal set { _isAttached = value; }
+            get { return SaveState == EntitySaveState.AttachedHasChanges || SaveState == EntitySaveState.AttachedNoChanges; }
         }
+
+        private EntitySaveState _saveState;
 
         public EntitySaveState SaveState
         {
-            get; internal set;
+            get
+            {
+                return _saveState;
+            }
+            internal set
+            {
+                _saveState = value; RaisePropertyChanged(); RaisePropertyChanged(nameof(IsAttached));
+            }
         }
 
         public virtual EntityBase Parent
@@ -229,6 +235,19 @@ namespace OpenBudget.Model.Infrastructure.Entities
         internal bool IsBeingSaved { get; private set; }
         internal bool RegisteredForChanges { get; private set; }
 
+        protected void NotifyAttached(BudgetModel model)
+        {
+            SaveState = EntitySaveState.AttachedNoChanges;
+            this.Model = model;
+
+            OnAttached(model);
+        }
+
+        protected virtual void OnAttached(BudgetModel model)
+        {
+
+        }
+
         protected void NotifyEventSaved(ModelEvent evt)
         {
             LastEventID = evt.EventID.ToString();
@@ -239,10 +258,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private EventSavingCallback ConvertToCallback(ModelEvent evt)
         {
+            bool needsAttach = !IsAttached;
             return new EventSavingCallback()
             {
+                Entity = this,
+                NeedsAttach = needsAttach,
                 Event = evt,
-                EventSavedCallback = NotifyEventSaved
+                EventSavedCallback = NotifyEventSaved,
+                NotifyAttachedCallback = needsAttach ? this.NotifyAttached : (NotifyAttachedHandler)null
             };
         }
 
@@ -286,38 +309,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     yield return change;
                 }
             }*/
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="model"></param>
-        /// <exception cref="InvalidOperationException">When the entity has already been attached to a different Model or the Parent is attached to a different Model</exception>
-        protected virtual void AttachToModel(BudgetModel model)
-        {
-            if (_isAttached && _model == model)
-                return;
-
-            if (_model != null && _model != model)
-                throw new InvalidOperationException("This entity has already been attached to a model.  You cannot attach it again.");
-
-            _isAttached = true;
-            _model = model;
-
-            var parent = this.Parent;
-            if (parent != null && parent.Model != model)
-            {
-                _isAttached = false;
-                _model = null;
-                throw new InvalidOperationException("Parent and Child must be attached to the same model");
-            }
-
-            //model.EnsureIdentityTracked(this);
-
-            foreach (IEntityCollection childCollection in _childEntityCollections)
-            {
-                childCollection.AttachToModel(model);
-            }
         }
 
         internal T RegisterChildEntityCollection<T>(T childEntityCollection) where T : IEntityCollection

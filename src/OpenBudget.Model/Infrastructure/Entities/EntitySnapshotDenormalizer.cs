@@ -37,8 +37,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private void RegisterForMessages()
         {
-            _budgetModel.InternalMessageBus.RegisterForMessages<EntityCreatedEvent>(nameof(TEntity), this);
-            _budgetModel.InternalMessageBus.RegisterForMessages<EntityUpdatedEvent>(nameof(TEntity), this);
+            _budgetModel.InternalMessageBus.RegisterForMessages<EntityCreatedEvent>(typeof(TEntity).Name, this);
+            _budgetModel.InternalMessageBus.RegisterForMessages<EntityUpdatedEvent>(typeof(TEntity).Name, this);
         }
 
         private Func<TSnapshot, TEntity> CreateFromSnapshotConstructor()

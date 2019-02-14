@@ -13,7 +13,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
     {
         protected IMessenger<ModelEvent> _messenger;
         protected BudgetModel _model;
-        protected Dictionary<string, List<WeakReference<T>>> _registrations;
+        protected Dictionary<string, List<WeakReference<T>>> _registrations = new Dictionary<string, List<WeakReference<T>>>();
 
         public EntityDenormalizer(BudgetModel model)
         {
