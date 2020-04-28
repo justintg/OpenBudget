@@ -11,6 +11,31 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
         private Dictionary<string, EntityBase> _entityIdentityMap = new Dictionary<string, EntityBase>();
         private List<EntityBase> _changedEntities = new List<EntityBase>();
 
+        /// <summary>
+        /// Returns true if this instance of the entity is contained in the UnitOfWork.
+        /// </summary>
+        /// <param name="entity">An instance of entity</param>
+        /// <returns>true if the isntance of the entity is registered in the unit of work.</returns>
+        public bool ContainsEntity(EntityBase entity)
+        {
+            EntityBase registeredEntity = null;
+            if (_entityIdentityMap.TryGetValue(entity.EntityID, out registeredEntity))
+            {
+                return entity == registeredEntity;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the UnitOfWork contains any copy of this entity, based on the entity key.
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <returns></returns>
+        public bool ContainsEntityId(string entityId)
+        {
+            return _entityIdentityMap.ContainsKey(entityId);
+        }
+
         public void RegisterChangedEntity(EntityBase entity)
         {
             if (_entityIdentityMap.ContainsKey(entity.EntityID))
@@ -43,9 +68,9 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
             }
         }
 
-        public List<EventSavingCallback> GetChangeEvents()
+        public List<EventSaveInfo> GetChangeEvents()
         {
-            List<EventSavingCallback> events = new List<EventSavingCallback>();
+            List<EventSaveInfo> events = new List<EventSaveInfo>();
             foreach (var entity in _changedEntities)
             {
                 entity.BeforeSaveChanges();

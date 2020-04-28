@@ -1,18 +1,13 @@
 ﻿using OpenBudget.Model.Events;
-using OpenBudget.Model.Infrastructure;
+using OpenBudget.Model.Infrastructure.UnitOfWork;
 using OpenBudget.Model.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
-using OpenBudget.Model.Serialization;
-using OpenBudget.Model.Infrastructure.UnitOfWork;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
@@ -38,7 +33,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         protected EntityBase(TSnapshot snapshot) : base(snapshot.EntityID)
         {
             _entityData = snapshot;
-            this.SaveState = EntitySaveState.AttachedNoChanges;
+            this.SaveState = EntitySaveState.Unattached;
             CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
         }
 
@@ -235,10 +230,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
         internal bool IsBeingSaved { get; private set; }
         internal bool RegisteredForChanges { get; private set; }
 
-        protected void NotifyAttached(BudgetModel model)
+        internal void NotifyAttachedToBudget(BudgetModel model)
         {
-            SaveState = EntitySaveState.AttachedNoChanges;
-            this.Model = model;
+            if (HasChanges)
+                SaveState = EntitySaveState.AttachedHasChanges;
+            else
+                SaveState = EntitySaveState.AttachedNoChanges;
 
             OnAttached(model);
         }
@@ -254,22 +251,24 @@ namespace OpenBudget.Model.Infrastructure.Entities
             LastEventVector = evt.EventVector;
 
             CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
+
+            if (IsAttached)
+                SaveState = EntitySaveState.AttachedNoChanges;
         }
 
-        private EventSavingCallback ConvertToCallback(ModelEvent evt)
+        private EventSaveInfo ConvertToCallback(ModelEvent evt)
         {
             bool needsAttach = !IsAttached;
-            return new EventSavingCallback()
+            return new EventSaveInfo()
             {
                 Entity = this,
                 NeedsAttach = needsAttach,
                 Event = evt,
-                EventSavedCallback = NotifyEventSaved,
-                NotifyAttachedCallback = needsAttach ? this.NotifyAttached : (NotifyAttachedHandler)null
+                EventSavedCallback = NotifyEventSaved
             };
         }
 
-        internal virtual IEnumerable<EventSavingCallback> GetAndSaveChanges()
+        internal virtual IEnumerable<EventSaveInfo> GetAndSaveChanges()
         {
             bool groupChangesPublished = false;
             List<FieldChangeEvent> groupedChanges = new List<FieldChangeEvent>();
@@ -481,6 +480,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             RaisePropertyChanged(property);
             FieldChange change = FieldChange.Create(oldValue, newValue);
             CurrentEvent.AddChange(property, change);
+
+            if (this.SaveState == EntitySaveState.AttachedNoChanges)
+            {
+                this.Model.RegisterHasChanges(this);
+            }
         }
 
         protected T ResolveEntityReference<T>([CallerMemberName]string property = null) where T : EntityBase

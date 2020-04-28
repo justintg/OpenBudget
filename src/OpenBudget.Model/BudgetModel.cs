@@ -185,6 +185,9 @@ namespace OpenBudget.Model
 
             var denormalizer = FindDenormalizer(entity);
             denormalizer.RegisterForChanges(entity);
+
+            entity.Model = this;
+            entity.NotifyAttachedToBudget(this);
         }
 
         public static BudgetModel OpenExistingOnNewDevice(Guid deviceId, ISynchronizationService syncService, IBudgetStore budgetStore)
@@ -463,6 +466,8 @@ namespace OpenBudget.Model
 
         private UnitOfWork _unitOfWork = new UnitOfWork();
 
+        internal UnitOfWork GetCurrentUnitOfWork() => _unitOfWork;
+
         internal void RegisterHasChanges(EntityBase entity)
         {
             _unitOfWork.RegisterChangedEntity(entity);
@@ -484,9 +489,11 @@ namespace OpenBudget.Model
 
             if (pendingConflictResolutions != null)
                 RebuildEntities(pendingConflictResolutions);
+
+            _unitOfWork = new UnitOfWork();
         }
 
-        private void UpdateModelState(List<EventSavingCallback> changes)
+        private void UpdateModelState(List<EventSaveInfo> changes)
         {
             foreach (var change in changes)
             {
@@ -494,7 +501,6 @@ namespace OpenBudget.Model
                 if (change.NeedsAttach)
                 {
                     AttachToModel(change.Entity);
-                    change.NotifyAttachedCallback(this);
                 }
                 InternalMessageBus.PublishEvent(change.Event.EntityType, change.Event);
                 MessageBus.PublishEvent(change.Event.EntityType, change.Event);
