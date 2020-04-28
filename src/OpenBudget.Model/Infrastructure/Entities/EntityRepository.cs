@@ -8,15 +8,13 @@ using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-
-
-    public class EntityRespository<TEntity, TSnapshot> where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
+    public class EntityRepository<TEntity, TSnapshot> where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
     {
         private readonly BudgetModel _budgetModel;
         private readonly ISnapshotStore _snapshotStore;
         private readonly Func<TSnapshot, TEntity> _loadEntityFromSnapshot;
 
-        internal EntityRespository(BudgetModel budgetModel)
+        internal EntityRepository(BudgetModel budgetModel)
         {
             _budgetModel = budgetModel ?? throw new ArgumentNullException(nameof(budgetModel));
             _snapshotStore = budgetModel?.BudgetStore?.SnapshotStore ?? throw new ArgumentException("Could not find snapshot store of budgetModel", nameof(budgetModel));
@@ -45,14 +43,17 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        public IEnumerable<TEntity> GetEntitiesByParent()
+        public IEnumerable<TEntity> GetEntitiesByParent<TParent>(string parentId) where TParent : EntityBase
         {
             return null;
         }
 
         public IEnumerable<TEntity> GetAllEntities()
         {
-            return null;
+            foreach (var snapshot in _snapshotStore.GetAllSnapshots<TSnapshot>())
+            {
+                yield return _loadEntityFromSnapshot(snapshot);
+            }
         }
 
 
