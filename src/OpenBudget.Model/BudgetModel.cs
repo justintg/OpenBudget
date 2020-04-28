@@ -38,9 +38,10 @@ namespace OpenBudget.Model
         internal IncomeCategoryGenerator IncomeCategoryGenerator { get; private set; }
         internal CategoryMonthGenerator BudgetCategoryMonthGenerator { get; private set; }
 
-        internal EntityRespository<Budget, BudgetSnapshot> BudgetRepository { get; private set; }
+        internal EntityRepository<Budget, BudgetSnapshot> BudgetRepository { get; private set; }
 
-        internal EntitySnapshotDenormalizer<Budget, BudgetSnapshot> BudgetSnapshotDenormalizer { get; set; }
+        internal EntitySnapshotDenormalizer<Budget, BudgetSnapshot> BudgetSnapshotDenormalizer { get; private set; }
+        internal EntitySnapshotDenormalizer<Account, AccountSnapshot> AccountSnapshotDenormalizer { get; private set; }
 
 
         private BudgetViewListener _budgetViewListenter;
@@ -122,12 +123,13 @@ namespace OpenBudget.Model
 
         private void InitializeRepositories()
         {
-            BudgetRepository = new EntityRespository<Budget, BudgetSnapshot>(this);
+            BudgetRepository = new EntityRepository<Budget, BudgetSnapshot>(this);
         }
 
         private void InitializeSnapshotDenormalizers()
         {
             BudgetSnapshotDenormalizer = new EntitySnapshotDenormalizer<Budget, BudgetSnapshot>(this);
+            AccountSnapshotDenormalizer = new EntitySnapshotDenormalizer<Account, AccountSnapshot>(this);
         }
 
         private void InitializeEntityDenormalizers()
