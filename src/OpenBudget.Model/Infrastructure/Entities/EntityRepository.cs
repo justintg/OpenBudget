@@ -12,7 +12,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
     {
         private readonly BudgetModel _budgetModel;
         private readonly ISnapshotStore _snapshotStore;
-        private readonly Func<TSnapshot, TEntity> _loadEntityFromSnapshot;
+        private readonly Func<TSnapshot, TEntity> _entitySnapshotConstructor;
 
         internal EntityRepository(BudgetModel budgetModel)
         {
@@ -27,7 +27,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             var snapshotParam = Expression.Parameter(typeof(TSnapshot), "s");
             var constructExp = Expression.New(constructor, snapshotParam);
-            _loadEntityFromSnapshot = Expression.Lambda<Func<TSnapshot, TEntity>>(constructExp, snapshotParam).Compile();
+            _entitySnapshotConstructor = Expression.Lambda<Func<TSnapshot, TEntity>>(constructExp, snapshotParam).Compile();
+        }
+
+        private TEntity LoadEntityFromSnapshot(TSnapshot snapshot)
+        {
+            TEntity entity = _entitySnapshotConstructor(snapshot);
+            _budgetModel.AttachToModel(entity);
+            return entity;
         }
 
         public TEntity GetEntity(string entityId)
@@ -35,7 +42,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(entityId);
             if (snapshot != null)
             {
-                return _loadEntityFromSnapshot(snapshot);
+                return LoadEntityFromSnapshot(snapshot);
             }
             else
             {
@@ -52,7 +59,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             foreach (var snapshot in _snapshotStore.GetAllSnapshots<TSnapshot>())
             {
-                yield return _loadEntityFromSnapshot(snapshot);
+                yield return LoadEntityFromSnapshot(snapshot);
             }
         }
 
