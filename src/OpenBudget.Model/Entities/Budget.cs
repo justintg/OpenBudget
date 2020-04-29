@@ -23,10 +23,10 @@ namespace OpenBudget.Model.Entities
         public Budget()
             : base(Guid.NewGuid().ToString())
         {
-            MasterCategories = RegisterChildEntityCollection(new EntityCollection<MasterCategory>(this));
+            MasterCategories = RegisterChildEntityCollection(new EntityCollection<MasterCategory>(this, true));
             IncomeCategories = new IncomeCategoryFinder();
-            Payees = RegisterChildEntityCollection(new EntityCollection<Payee>(this));
-            Accounts = RegisterChildEntityCollection(new EntityCollection<Account>(this));
+            Payees = RegisterChildEntityCollection(new EntityCollection<Payee>(this, true));
+            Accounts = RegisterChildEntityCollection(new EntityCollection<Account>(this, true));
 
             ValidationEnabled = true;
         }

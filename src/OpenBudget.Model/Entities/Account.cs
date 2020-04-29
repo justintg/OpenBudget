@@ -50,7 +50,7 @@ namespace OpenBudget.Model.Entities
         public Account()
             : base(Guid.NewGuid().ToString())
         {
-            Transactions = RegisterChildEntityCollection(new EntityCollection<Transaction>(this));
+            Transactions = RegisterChildEntityCollection(new EntityCollection<Transaction>(this, true));
             //Transactions.CollectionChanged += (sender, e) => { BalanceChanged(); };
         }
 
@@ -63,6 +63,7 @@ namespace OpenBudget.Model.Entities
 
         internal Account(AccountSnapshot snapshot) : base(snapshot)
         {
+            Transactions = RegisterChildEntityCollection(new EntityCollection<Transaction>(this));
         }
 
         public string Name

@@ -17,7 +17,7 @@ namespace OpenBudget.Model.Entities
         public MasterCategory()
             : base(Guid.NewGuid().ToString())
         {
-            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this));
+            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this, true));
         }
 
         internal MasterCategory(EntityCreatedEvent evt)

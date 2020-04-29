@@ -13,9 +13,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
     public enum EntityCollectionState
     {
         Unattached,
-        UnattachedRegistered,
-        AttachedUnloaded,
-        AttachedLoaded
+        Attached
     }
 
     public class EntityCollection<T> : IList<T>, IReadOnlyList<T>, INotifyCollectionChanged, IEntityCollection, IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent> where T : EntityBase
@@ -27,12 +25,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
         private List<Tuple<T, int>> _pendingDeletions;
 
         public EntityCollectionState CollectionState { get; protected set; }
+        public bool IsLoaded { get; protected set; }
 
-        public EntityCollection(EntityBase parent)
+        internal EntityCollection(EntityBase parent, bool isLoaded = false)
         {
             _parent = parent;
             _pendingDeletions = new List<Tuple<T, int>>();
             CollectionState = EntityCollectionState.Unattached;
+            IsLoaded = isLoaded;
             DetermineCollectionState();
         }
 
@@ -44,7 +44,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
             else if (_parent.SaveState == EntitySaveState.AttachedNoChanges)
             {
-                CollectionState = EntityCollectionState.AttachedUnloaded;
+                CollectionState = EntityCollectionState.Attached;
             }
             else
             {
@@ -110,6 +110,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var externalMessenger = model.MessageBus;
             _externalUpdateHandler = new MessageHandler<EntityUpdatedEvent>(e => HandleDeletedEvent(e));
             externalMessenger.RegisterForMessages<EntityUpdatedEvent>(typeof(T).Name, _externalUpdateHandler);
+
+            this.CollectionState = EntityCollectionState.Attached;
+
             _messenger = messenger;
 
             foreach (var entity in this)
@@ -332,7 +335,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 //Do nothing
             }
-            else if (CollectionState == EntityCollectionState.UnattachedRegistered || CollectionState == EntityCollectionState.AttachedLoaded || CollectionState == EntityCollectionState.AttachedUnloaded)
+            else if (CollectionState == EntityCollectionState.Attached)
             {
                 if (entity.SaveState == EntitySaveState.Unattached)
                 {
@@ -369,11 +372,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _loadedEntities.GetEnumerator();
-        }
-
-        void IEntityCollection.AttachToModel(BudgetModel model)
-        {
-            throw new NotImplementedException();
         }
 
         IEnumerable<EntityBase> IEntityCollection.EnumerateUnattachedEntities()
