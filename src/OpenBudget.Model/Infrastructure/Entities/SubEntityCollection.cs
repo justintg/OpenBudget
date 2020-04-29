@@ -71,7 +71,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public IEnumerator<T> GetEnumerator() => _collection.GetEnumerator();
 
-        public IEnumerable<EventSavingCallback> GetChanges()
+        public IEnumerable<EventSaveInfo> GetChanges()
         {
             foreach (var entity in _collection)
             {
