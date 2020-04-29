@@ -104,5 +104,35 @@ namespace OpenBudget.Model.Tests
             Assert.That(initialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
             Assert.That(getBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
+
+        [Test]
+        public void ChildEntityCollection_Starts_Unattached()
+        {
+            Budget initialBudget = CreateInitialBudget();
+
+            Assert.That(initialBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Unattached));
+        }
+
+        [Test]
+        public void ChildEntityCollection_IsAttachedLoaded_AfterCreate()
+        {
+            Budget initialBudget = CreateInitialBudget();
+
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            Assert.That(initialBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(initialBudget.Accounts.IsLoaded, Is.True);
+        }
+
+        [Test]
+        public void ChildEntityCollectionCopy_StartsUnloaded()
+        {
+            Budget initialBudget = CreateInitialBudget();
+
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            var getBudget = model.GetBudget();
+
+            Assert.That(getBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(getBudget.Accounts.IsLoaded, Is.False);
+        }
     }
 }

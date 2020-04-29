@@ -237,6 +237,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             else
                 SaveState = EntitySaveState.AttachedNoChanges;
 
+            foreach (var childEntityCollection in _childEntityCollections)
+            {
+                childEntityCollection.AttachToModel(model);
+            }
+
             OnAttached(model);
         }
 
