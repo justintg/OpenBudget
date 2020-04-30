@@ -39,13 +39,15 @@ namespace OpenBudget.Model
         internal CategoryMonthGenerator BudgetCategoryMonthGenerator { get; private set; }
 
         internal EntityRepository<Budget, BudgetSnapshot> BudgetRepository { get; private set; }
+        internal EntityRepository<Account, AccountSnapshot> AccountRepository { get; private set; }
 
         internal EntitySnapshotDenormalizer<Budget, BudgetSnapshot> BudgetSnapshotDenormalizer { get; private set; }
         internal EntitySnapshotDenormalizer<Account, AccountSnapshot> AccountSnapshotDenormalizer { get; private set; }
 
 
         private BudgetViewListener _budgetViewListenter;
-        private Dictionary<Type, IEntityDenormalizer> _entityDenormallizers = new Dictionary<Type, IEntityDenormalizer>();
+        private Dictionary<Type, IEntityDenormalizer> _entityDenormalizers = new Dictionary<Type, IEntityDenormalizer>();
+        private Dictionary<Type, object> _entityRepositories = new Dictionary<Type, object>();
         private ISynchronizationService _syncService;
 
         public T FindEntity<T>(string EntityID) where T : EntityBase
@@ -53,32 +55,6 @@ namespace OpenBudget.Model
             /*IIdentityMap map = FindGenerator<T>() as IIdentityMap;
             return (T)map.GetEntity(EntityID);*/
             return null;
-        }
-
-        public EntityBase FindEntity(string EntityType, string EntityID)
-        {
-            var generator = _entityDenormallizers.Where(kvp => kvp.Key.Name == EntityType).Single().Value as IIdentityMap;
-            return generator.GetEntity(EntityID);
-        }
-
-        internal IEntityDenormalizer FindDenormalizer<TEntity>()
-        {
-            return _entityDenormallizers[typeof(TEntity)];
-        }
-
-        internal IEntityDenormalizer FindDenormalizer(EntityBase entity)
-        {
-            return _entityDenormallizers[entity.GetType()];
-        }
-
-        public Budget GetBudget()
-        {
-            return BudgetRepository.GetAllEntities().Single();
-        }
-
-        public EntityBase FindEntity(EntityReference reference)
-        {
-            return this.FindEntity(reference.EntityType, reference.EntityID);
         }
 
         protected BudgetModel(Guid deviceId, IBudgetStore budgetStore) : this(deviceId, budgetStore, true)
@@ -123,7 +99,15 @@ namespace OpenBudget.Model
 
         private void InitializeRepositories()
         {
-            BudgetRepository = new EntityRepository<Budget, BudgetSnapshot>(this);
+            BudgetRepository = RegisterRepository(new EntityRepository<Budget, BudgetSnapshot>(this));
+            AccountRepository = RegisterRepository(new EntityRepository<Account, AccountSnapshot>(this));
+        }
+
+        private EntityRepository<TEntity, TSnapshot> RegisterRepository<TEntity, TSnapshot>(EntityRepository<TEntity, TSnapshot> repository)
+            where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
+        {
+            _entityRepositories[typeof(TEntity)] = repository;
+            return repository;
         }
 
         private void InitializeSnapshotDenormalizers()
@@ -162,6 +146,46 @@ namespace OpenBudget.Model
             _budgetViewListenter = new BudgetViewListener(this);
         }
 
+        public EntityBase FindEntity(string EntityType, string EntityID)
+        {
+            var generator = _entityDenormalizers.Where(kvp => kvp.Key.Name == EntityType).Single().Value as IIdentityMap;
+            return generator.GetEntity(EntityID);
+        }
+
+        internal IEntityRepository<TEntity> FindRepository<TEntity>()
+            where TEntity : EntityBase 
+        {
+            object repository = null;
+
+            if (_entityRepositories.TryGetValue(typeof(TEntity), out repository))
+            {
+                return (IEntityRepository<TEntity>)repository;
+            }
+
+            return null;
+        }
+
+
+        internal IEntityDenormalizer FindDenormalizer<TEntity>()
+        {
+            return _entityDenormalizers[typeof(TEntity)];
+        }
+
+        internal IEntityDenormalizer FindDenormalizer(EntityBase entity)
+        {
+            return _entityDenormalizers[entity.GetType()];
+        }
+
+        public Budget GetBudget()
+        {
+            return BudgetRepository.GetAllEntities().Single();
+        }
+
+        public EntityBase FindEntity(EntityReference reference)
+        {
+            return this.FindEntity(reference.EntityType, reference.EntityID);
+        }
+
         public void SetSynchronizationService(ISynchronizationService syncService)
         {
             _syncService = syncService;
@@ -170,7 +194,7 @@ namespace OpenBudget.Model
         internal void EnsureIdentityTracked(EntityBase entity)
         {
             Type entityType = entity.GetType();
-            IIdentityMap generator = _entityDenormallizers[entityType] as IIdentityMap;
+            IIdentityMap generator = _entityDenormalizers[entityType] as IIdentityMap;
             generator.EnsureIdentityTracked(entity);
         }
 
@@ -455,7 +479,7 @@ namespace OpenBudget.Model
 
         private EntityDenormalizer<T> RegisterEntityDenormalizer<T>(EntityDenormalizer<T> entityDenormalizer) where T : EntityBase
         {
-            _entityDenormallizers[typeof(T)] = entityDenormalizer;
+            _entityDenormalizers[typeof(T)] = entityDenormalizer;
             return entityDenormalizer;
         }
 
