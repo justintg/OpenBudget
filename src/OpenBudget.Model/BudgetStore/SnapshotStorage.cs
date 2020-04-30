@@ -16,7 +16,7 @@ namespace OpenBudget.Model.BudgetStore
         void StoreSnapshot(TSnapshot snapshot);
         TSnapshot GetSnapshot(string entityId);
         IEnumerable<TSnapshot> GetSnapshots();
-        IEnumerable<TSnapshot> GetSnapshotsByParent<TParentSnapshot>(string parentId) where TParentSnapshot : EntitySnapshot;
+        IEnumerable<TSnapshot> GetSnapshotsByParent(string parentType, string parentId);
     }
 
     internal class ParentKey : IEquatable<ParentKey>
@@ -70,9 +70,8 @@ namespace OpenBudget.Model.BudgetStore
             };
         }
 
-        public IEnumerable<TSnapshot> GetSnapshotsByParent<TParentSnapshot>(string parentId) where TParentSnapshot : EntitySnapshot
+        public IEnumerable<TSnapshot> GetSnapshotsByParent(string parentType, string parentId)
         {
-            string parentType = typeof(TParentSnapshot).Name;
             ParentKey parentKey = new ParentKey(parentType, parentId);
 
             List<TSnapshot> childSnapshot = null;

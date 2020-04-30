@@ -8,7 +8,8 @@ using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    public class EntityRepository<TEntity, TSnapshot> where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
+    public class EntityRepository<TEntity, TSnapshot> : IEntityRepository<TEntity>
+        where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
     {
         private readonly BudgetModel _budgetModel;
         private readonly ISnapshotStore _snapshotStore;
@@ -50,9 +51,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        public IEnumerable<TEntity> GetEntitiesByParent<TParent>(string parentId) where TParent : EntityBase
+        public IEnumerable<TEntity> GetEntitiesByParent(string parentType, string parentId)
         {
-            return null;
+            var snapshots = _snapshotStore.GetChildSnapshots<TSnapshot>(parentType, parentId);
+            foreach (var snapshot in snapshots)
+            {
+                yield return LoadEntityFromSnapshot(snapshot);
+            }
         }
 
         public IEnumerable<TEntity> GetAllEntities()

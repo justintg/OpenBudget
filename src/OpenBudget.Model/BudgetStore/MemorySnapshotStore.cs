@@ -16,12 +16,11 @@ namespace OpenBudget.Model.BudgetStore
             return storage.GetSnapshots();
         }
 
-        public IEnumerable<TChildSnapshot> GetChildSnapshots<TParentSnapshot, TChildSnapshot>(string parentId)
-            where TParentSnapshot : EntitySnapshot
+        public IEnumerable<TChildSnapshot> GetChildSnapshots<TChildSnapshot>(string parentType, string parentId)
             where TChildSnapshot : EntitySnapshot
         {
             var storage = GetOrCreateSnapshotStorage<TChildSnapshot>();
-            return storage.GetSnapshotsByParent<TParentSnapshot>(parentId);
+            return storage.GetSnapshotsByParent(parentType, parentId);
         }
 
         public TSnapshot GetSnapshot<TSnapshot>(string entityId) where TSnapshot : EntitySnapshot

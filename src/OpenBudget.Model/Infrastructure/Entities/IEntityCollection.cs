@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    internal interface IEntityCollection : IHasChanges
+    internal interface IEntityCollection
     {
         void AttachToModel(BudgetModel model);
         void RequestDeletion(EntityBase child);

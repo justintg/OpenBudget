@@ -86,15 +86,32 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }*/
 
+        public void LoadCollection()
+        {
+            if (_model == null)
+                throw new InvalidOperationException("This EntityCollection has not been attached to a model");
+
+            if (IsLoaded)
+                return;
+
+            var repository = _model.FindRepository<T>();
+            var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID);
+            _loadedEntities.AddRange(entities);
+
+            IsLoaded = true;
+        }
+
         private IMessenger<ModelEvent> _messenger;
         private BudgetModel _model;
+
+        void IEntityCollection.AttachToModel(BudgetModel model) => this.AttachToModel(model);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="model"></param>
         /// <exception cref="InvalidOperationException">When the <see cref="EntityCollection{T}"/> has already been attached to a different model.</exception>
-        public void AttachToModel(BudgetModel model)
+        internal void AttachToModel(BudgetModel model)
         {
             if (_model == model)
                 return;
@@ -322,6 +339,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Add(T item)
         {
+            item.Parent = _parent;
             _loadedEntities.Add(item);
             EnsureAddedEntityRegisteredForChanges(item);
 
@@ -377,16 +395,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
         IEnumerable<EntityBase> IEntityCollection.EnumerateUnattachedEntities()
         {
             return _loadedEntities.Where(e => e.SaveState == EntitySaveState.Unattached);
-        }
-
-        void IHasChanges.BeforeSaveChanges()
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerable<ModelEvent> IHasChanges.GetAndSaveChanges()
-        {
-            throw new NotImplementedException();
         }
     }
 }

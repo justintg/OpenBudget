@@ -134,5 +134,29 @@ namespace OpenBudget.Model.Tests
             Assert.That(getBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
             Assert.That(getBudget.Accounts.IsLoaded, Is.False);
         }
+
+        [Test]
+        public void CanLoadChildEntityCollection()
+        {
+            Budget initialBudget = CreateInitialBudget();
+
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            var getBudget = model.GetBudget();
+
+            getBudget.Accounts.LoadCollection();
+
+            Assert.That(getBudget.Accounts.IsLoaded, Is.True);
+            Assert.That(getBudget.Accounts.Count, Is.EqualTo(1));
+        }
+
+        public void CanUnloadChildEntityCollection()
+        {
+
+        }
+
+        public void ChildEntityCollections_EntitiesInsideAreAttached()
+        {
+
+        }
     }
 }
