@@ -20,7 +20,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
     {
         private EntityBase _parent;
 
-        private List<T> _loadedEntities = new List<T>();
+        private ObservableCollection<T> _loadedEntities = new ObservableCollection<T>();
 
         private List<Tuple<T, int>> _pendingDeletions;
 
@@ -52,39 +52,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        private bool _isBuilding = false;
-
-        /*private void EntityCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        public void EnsureCollectionLoaded()
         {
-            if (_isBuilding)
-                return;
-
-            if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (T item in e.NewItems)
-                {
-                    if (_model != null)
-                        item.AttachToModel(_model);
-
-                    if (item.Parent != null)
-                    {
-                        item.Parent.RemoveReferenceToChild(item);
-                    }
-
-                    item.Parent = _parent;
-                }
-            }
-            if (e.Action == NotifyCollectionChangedAction.Remove)
-            {
-                foreach (T item in e.NewItems)
-                {
-                    if (_model != null)
-                        item.AttachToModel(_model);
-
-                    item.Parent = null;
-                }
-            }
-        }*/
+            if (!IsLoaded) LoadCollection();
+        }
 
         public void LoadCollection()
         {
@@ -96,9 +67,30 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             var repository = _model.FindRepository<T>();
             var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID);
-            _loadedEntities.AddRange(entities);
+            AddRangeInternal(entities);
 
             IsLoaded = true;
+        }
+
+        private void AddRangeInternal(IEnumerable<T> entities)
+        {
+            foreach (var entity in entities)
+            {
+                AddInternal(entity);
+            }
+        }
+
+        private void AddInternal(T entity)
+        {
+            if (entity.IsPropertyNull(nameof(EntityBase.Parent)))
+            {
+                entity.Parent = _parent;
+            }
+            else
+            {
+                entity.ForceResolveEntityReference(nameof(EntityBase.Parent), _parent);
+            }
+            _loadedEntities.Add(entity);
         }
 
         private IMessenger<ModelEvent> _messenger;
@@ -187,11 +179,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public T this[int index] { get => _loadedEntities[index]; set => throw new NotSupportedException(); }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs e)
+        public event NotifyCollectionChangedEventHandler CollectionChanged
         {
-            CollectionChanged?.Invoke(this, e);
+            add { _loadedEntities.CollectionChanged += value; }
+            remove { _loadedEntities.CollectionChanged -= value; }
         }
 
         private void HandleDeletedEvent(EntityUpdatedEvent message)
@@ -203,18 +194,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 if (!isDeleted)
                     return;
 
-                var entity = this.Where(e => e.EntityID == message.EntityID).SingleOrDefault();
+                var entity = _loadedEntities.SingleOrDefault(e => e.EntityID == message.EntityID);
                 if (entity == null) return;
 
-                try
-                {
-                    _isBuilding = true;
-                    this.Remove(entity);
-                }
-                finally
-                {
-                    _isBuilding = false;
-                }
+                RemoveInternal(entity);
             }
         }
 
@@ -228,45 +211,15 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             if (parent.EntityID == _parent.EntityID)
             {
-                try
-                {
-                    _isBuilding = true;
-                    T entity = null;//_generator.GetEntity(message.EntityID);
+                T entity = _model.FindRepository<T>().GetEntity(message.EntityID);
 
-                    if (entity != null)
-                        this.Add(entity);
-                }
-                finally
-                {
-                    _isBuilding = false;
-                }
+                AddInternal(entity);
             }
             else if (parent.EntityID != _parent.EntityID && oldParent != null && oldParent.EntityID == _parent.EntityID)
             {
-                try
-                {
-                    _isBuilding = true;
-                    T entity = null;//_generator.GetEntity(message.EntityID);
-                    if (entity != null)
-                        this.Remove(entity);
-                }
-                finally
-                {
-                    _isBuilding = false;
-                }
-            }
-        }
+                T entity = _loadedEntities.Single(e => e.EntityID == message.EntityID);
 
-        private void BuildCollection(Action action)
-        {
-            try
-            {
-                _isBuilding = true;
-                action();
-            }
-            finally
-            {
-                _isBuilding = false;
+                RemoveInternal(entity);
             }
         }
 
@@ -275,10 +228,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             T typedChild = child as T;
             if (typedChild == null) return;
 
-            BuildCollection(() =>
-            {
-                this.Remove(typedChild);
-            });
+            RemoveInternal(typedChild);
         }
 
         void IEntityCollection.ForceAddChild(EntityBase child)
@@ -286,10 +236,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             T typedChild = child as T;
             if (typedChild == null) return;
 
-            BuildCollection(() =>
-            {
-                this.Add(typedChild);
-            });
+            AddInternal(typedChild);
         }
 
         void IEntityCollection.RequestDeletion(EntityBase child)
@@ -300,10 +247,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
             int childIndex = IndexOf(typedChild);
             _pendingDeletions.Add((typedChild, childIndex).ToTuple());
 
-            BuildCollection(() =>
-            {
-                this.Remove(typedChild);
-            });
+            RemoveInternal(typedChild);
+        }
+
+        private void RemoveInternal(T child)
+        {
+            _loadedEntities.Remove(child);
         }
 
         void IEntityCollection.CancelDeletion(EntityBase child)
@@ -311,10 +260,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
             Tuple<T, int> deletion = _pendingDeletions.Where(t => t.Item1 == child).FirstOrDefault();
             if (deletion == null) return;
 
-            BuildCollection(() =>
-            {
-                this.Insert(deletion.Item2, deletion.Item1);
-            });
+            _pendingDeletions.Remove(deletion);
+
+            _loadedEntities.Insert(deletion.Item2, deletion.Item1);
         }
 
         public IEnumerable<EntityBase> EnumerateUnattachedEntities()
@@ -324,27 +272,29 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public int IndexOf(T item)
         {
-            throw new NotImplementedException();
+            if (!IsLoaded)
+                throw new InvalidOperationException("This operation is not supported when the EntityCollection is not loaded.");
+
+            return _loadedEntities.IndexOf(item);
         }
 
         public void Insert(int index, T item)
         {
-            throw new NotImplementedException();
+            if (!IsLoaded)
+                throw new InvalidOperationException("This operation is not supported when the EntityCollection is not loaded.");
+
+            _loadedEntities.Insert(index, item);
         }
 
         public void RemoveAt(int index)
         {
-            throw new NotSupportedException();
+            throw new InvalidOperationException("You cannot manually remove an item from this collection.  You must call EntityBase.Delete() or add the entity to a different collection");
         }
 
         public void Add(T item)
         {
-            item.Parent = _parent;
-            _loadedEntities.Add(item);
+            AddInternal(item);
             EnsureAddedEntityRegisteredForChanges(item);
-
-            NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item.Yield().ToList());
-            RaiseCollectionChanged(args);
         }
 
         private void EnsureAddedEntityRegisteredForChanges(T entity)

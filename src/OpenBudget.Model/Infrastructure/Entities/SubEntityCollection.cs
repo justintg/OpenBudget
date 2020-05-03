@@ -14,7 +14,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 {
     internal interface ISubEntityCollection : IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent>
     {
-        IEnumerable<ModelEvent> GetChanges();
+        IEnumerable<FieldChangeEvent> GetChanges();
         void CancelCurrentChanges();
         void DeleteChild(SubEntity childEntity);
     }
@@ -71,13 +71,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public IEnumerator<T> GetEnumerator() => _collection.GetEnumerator();
 
-        public IEnumerable<EventSaveInfo> GetChanges()
+        public IEnumerable<FieldChangeEvent> GetChanges()
         {
             foreach (var entity in _collection)
             {
                 foreach (var change in entity.GetAndSaveChanges())
                 {
-                    yield return change;
+                    if (change.Event is FieldChangeEvent fieldChangeEvent)
+                        yield return fieldChangeEvent;
                 }
             }
 
@@ -85,7 +86,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 foreach (var change in entity.GetAndSaveChanges())
                 {
-                    yield return change;
+                    if (change.Event is FieldChangeEvent fieldChangeEvent)
+                        yield return fieldChangeEvent;
                 }
             }
 
@@ -179,26 +181,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 _pendingDeletes.Add(child);
                 _collection.Remove(child);
             }
-        }
-
-        IEnumerable<ModelEvent> ISubEntityCollection.GetChanges()
-        {
-            throw new NotImplementedException();
-        }
-
-        void ISubEntityCollection.CancelCurrentChanges()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IHandler<EntityCreatedEvent>.Handle(EntityCreatedEvent message)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IHandler<EntityUpdatedEvent>.Handle(EntityUpdatedEvent message)
-        {
-            throw new NotImplementedException();
         }
     }
 }

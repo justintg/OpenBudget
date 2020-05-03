@@ -492,6 +492,21 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
+        internal bool IsPropertyNull(string property)
+        {
+            object propertyValue = GetEntityDataObject(property);
+            return propertyValue == null;
+        }
+
+        internal void ForceResolveEntityReference(string property, EntityBase entity)
+        {
+            EntityReference reference = GetProperty<EntityReference>(property);
+            if (reference == null)
+                throw new InvalidOperationException();
+
+            reference.ResolveToEntity(entity);
+        }
+
         protected T ResolveEntityReference<T>([CallerMemberName]string property = null) where T : EntityBase
         {
             EntityReference reference = GetProperty<EntityReference>(property);

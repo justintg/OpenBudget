@@ -20,6 +20,11 @@ namespace OpenBudget.Model.Entities
             Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this, true));
         }
 
+        internal MasterCategory(MasterCategorySnapshot snapshot) : base(snapshot)
+        {
+            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this));
+        }
+
         internal MasterCategory(EntityCreatedEvent evt)
             : base(evt)
         {
