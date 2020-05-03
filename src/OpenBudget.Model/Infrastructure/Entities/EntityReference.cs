@@ -57,5 +57,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
             ReferencedEntity = entity;
             return entity;
         }
+
+        internal void ResolveToEntity(EntityBase entity)
+        {
+            if (EntityType != entity.GetType().Name || EntityID != entity.EntityID)
+                throw new InvalidOperationException("Entity/EntityReference type or ID mismatch");
+
+            ReferencedEntity = entity;
+        }
     }
 }

@@ -40,9 +40,17 @@ namespace OpenBudget.Model
 
         internal EntityRepository<Budget, BudgetSnapshot> BudgetRepository { get; private set; }
         internal EntityRepository<Account, AccountSnapshot> AccountRepository { get; private set; }
+        internal EntityRepository<Transaction, TransactionSnapshot> TransactionRepository { get; private set; }
+        internal EntityRepository<MasterCategory, MasterCategorySnapshot> MasterCategoryRepository { get; private set; }
+        internal EntityRepository<Category, CategorySnapshot> CategoryRepository { get; private set; }
+        internal EntityRepository<Payee, PayeeSnapshot> PayeeRepository { get; private set; }
 
         internal EntitySnapshotDenormalizer<Budget, BudgetSnapshot> BudgetSnapshotDenormalizer { get; private set; }
         internal EntitySnapshotDenormalizer<Account, AccountSnapshot> AccountSnapshotDenormalizer { get; private set; }
+        internal EntitySnapshotDenormalizer<Transaction, TransactionSnapshot> TransactionSnapshotDenormalizer { get; private set; }
+        internal EntitySnapshotDenormalizer<MasterCategory, MasterCategorySnapshot> MasterCategorySnapshotDenormalizer { get; private set; }
+        internal EntitySnapshotDenormalizer<Category, CategorySnapshot> CategorySnapshotDenormalizer { get; private set; }
+        internal EntitySnapshotDenormalizer<Payee, PayeeSnapshot> PayeeSnapshotDenormalizer { get; private set; }
 
 
         private BudgetViewListener _budgetViewListenter;
@@ -101,6 +109,10 @@ namespace OpenBudget.Model
         {
             BudgetRepository = RegisterRepository(new EntityRepository<Budget, BudgetSnapshot>(this));
             AccountRepository = RegisterRepository(new EntityRepository<Account, AccountSnapshot>(this));
+            TransactionRepository = RegisterRepository(new EntityRepository<Transaction, TransactionSnapshot>(this));
+            MasterCategoryRepository = RegisterRepository(new EntityRepository<MasterCategory, MasterCategorySnapshot>(this));
+            CategoryRepository = RegisterRepository(new EntityRepository<Category, CategorySnapshot>(this));
+            PayeeRepository = RegisterRepository(new EntityRepository<Payee, PayeeSnapshot>(this));
         }
 
         private EntityRepository<TEntity, TSnapshot> RegisterRepository<TEntity, TSnapshot>(EntityRepository<TEntity, TSnapshot> repository)
@@ -114,6 +126,10 @@ namespace OpenBudget.Model
         {
             BudgetSnapshotDenormalizer = new EntitySnapshotDenormalizer<Budget, BudgetSnapshot>(this);
             AccountSnapshotDenormalizer = new EntitySnapshotDenormalizer<Account, AccountSnapshot>(this);
+            TransactionSnapshotDenormalizer = new EntitySnapshotDenormalizer<Transaction, TransactionSnapshot>(this);
+            MasterCategorySnapshotDenormalizer = new EntitySnapshotDenormalizer<MasterCategory, MasterCategorySnapshot>(this);
+            CategorySnapshotDenormalizer = new EntitySnapshotDenormalizer<Category, CategorySnapshot>(this);
+            PayeeSnapshotDenormalizer = new EntitySnapshotDenormalizer<Payee, PayeeSnapshot>(this);
         }
 
         private void InitializeEntityDenormalizers()
@@ -153,7 +169,7 @@ namespace OpenBudget.Model
         }
 
         internal IEntityRepository<TEntity> FindRepository<TEntity>()
-            where TEntity : EntityBase 
+            where TEntity : EntityBase
         {
             object repository = null;
 

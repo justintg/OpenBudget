@@ -19,6 +19,11 @@ namespace OpenBudget.Model.Entities
         {
         }
 
+        internal Payee(PayeeSnapshot snapshot)
+            : base(snapshot)
+        {
+        }
+
         internal Payee(EntityCreatedEvent evt)
             : base(evt)
         {

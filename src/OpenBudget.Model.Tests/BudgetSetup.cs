@@ -41,12 +41,13 @@ namespace OpenBudget.Model.Tests
 
             testBudget.EventStore = new TestEventStore();
             testBudget.BudgetStore = new MemoryBudgetStore(testBudget.EventStore);
-            testBudget.BudgetModel = BudgetModel.CreateNew(testBudget.DeviceID, testBudget.BudgetStore, InitializeBudget());
+            var initialBudget = InitializeBudget();
+            testBudget.BudgetModel = BudgetModel.CreateNew(testBudget.DeviceID, testBudget.BudgetStore, initialBudget);
             testBudget.BudgetModel.SaveChanges();
 
             testBudget.EventStore.TestEvents.Clear();
             testBudget.TestEvents = testBudget.EventStore.TestEvents;
-            testBudget.Budget = testBudget.BudgetModel.GetBudget();
+            testBudget.Budget = initialBudget;
 
             return testBudget;
         }

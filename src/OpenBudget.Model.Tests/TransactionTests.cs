@@ -343,7 +343,8 @@ namespace OpenBudget.Model.Tests
 
             Assert.That(payee.IsAttached, Is.EqualTo(true));
             Assert.That(payee.Model, Is.EqualTo(TestBudget.BudgetModel));
-            Assert.That(TestBudget.Budget.Payees[0], Is.EqualTo(payee));
+            Assert.That(TestBudget.Budget.Payees[0].EntityID, Is.EqualTo(payee.EntityID));
+            Assert.That(TestBudget.Budget.Payees[0].Name, Is.EqualTo(payee.Name));
         }
 
         [Test]

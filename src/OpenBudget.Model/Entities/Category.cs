@@ -21,6 +21,12 @@ namespace OpenBudget.Model.Entities
             CategoryMonths = new CategoryMonthFinder(this);
         }
 
+        internal Category(CategorySnapshot snapshot)
+            : base(snapshot)
+        {
+            CategoryMonths = new CategoryMonthFinder(this);
+        }
+
         internal Category(EntityCreatedEvent evt)
             : base(evt)
         {

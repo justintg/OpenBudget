@@ -2,6 +2,7 @@
 using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.UnitOfWork
@@ -71,9 +72,14 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
         public List<EventSaveInfo> GetChangeEvents()
         {
             List<EventSaveInfo> events = new List<EventSaveInfo>();
-            foreach (var entity in _changedEntities)
+            
+            foreach (var entity in _changedEntities.ToList())
             {
                 entity.BeforeSaveChanges();
+            }
+
+            foreach (var entity in _changedEntities)
+            {
                 var entityEvents = entity.GetAndSaveChanges();
                 events.AddRange(entityEvents);
             }

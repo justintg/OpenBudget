@@ -57,6 +57,11 @@ namespace OpenBudget.Model.Entities
             SubTransactions = RegisterSubEntityCollection(new SubEntityCollection<SubTransaction>(this, SubTransactionInitializer));
         }
 
+        internal Transaction(TransactionSnapshot snapshot) : base(snapshot)
+        {
+            SubTransactions = RegisterSubEntityCollection(new SubEntityCollection<SubTransaction>(this, SubTransactionInitializer));
+        }
+
         private SubTransaction SubTransactionInitializer()
         {
             if (TransactionType != TransactionTypes.SplitTransaction)
@@ -279,9 +284,11 @@ namespace OpenBudget.Model.Entities
         {
             if (!this.HasChanges) return;
 
-            var payeeCollection = this.Model.GetBudget().Payees;
             if (this.Payee != null && !this.Payee.IsAttached)
             {
+                var payeeCollection = this.Model.GetBudget().Payees;
+                payeeCollection.LoadCollection();
+
                 var newPayee = this.Payee;
                 newPayee.Name = newPayee.Name.Trim();
 
