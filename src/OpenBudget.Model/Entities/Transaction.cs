@@ -300,6 +300,7 @@ namespace OpenBudget.Model.Entities
                 else
                 {
                     payeeCollection.Add(this.Payee);
+                    this.Model.EnsureSaveOrder(newPayee, this);
                 }
             }
         }

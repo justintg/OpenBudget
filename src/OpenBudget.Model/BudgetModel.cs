@@ -55,6 +55,7 @@ namespace OpenBudget.Model
 
         private BudgetViewListener _budgetViewListenter;
         private Dictionary<Type, IEntityDenormalizer> _entityDenormalizers = new Dictionary<Type, IEntityDenormalizer>();
+        private Dictionary<string, object> _entityRepositoriesStringKey = new Dictionary<string, object>();
         private Dictionary<Type, object> _entityRepositories = new Dictionary<Type, object>();
         private ISynchronizationService _syncService;
 
@@ -119,6 +120,7 @@ namespace OpenBudget.Model
             where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
         {
             _entityRepositories[typeof(TEntity)] = repository;
+            _entityRepositoriesStringKey[typeof(TEntity).Name] = repository;
             return repository;
         }
 
@@ -162,10 +164,23 @@ namespace OpenBudget.Model
             _budgetViewListenter = new BudgetViewListener(this);
         }
 
-        public EntityBase FindEntity(string EntityType, string EntityID)
+        public EntityBase FindEntity(string entityType, string entityId)
         {
-            var generator = _entityDenormalizers.Where(kvp => kvp.Key.Name == EntityType).Single().Value as IIdentityMap;
-            return generator.GetEntity(EntityID);
+            var repository = FindRepository(entityType);
+            return repository.GetEntityBase(entityId);
+        }
+
+        internal IEntityRepository FindRepository(string entityType)
+        {
+            if (_entityRepositoriesStringKey.TryGetValue(entityType, out object value))
+            {
+                if (value is IEntityRepository repository)
+                {
+                    return repository;
+                }
+            }
+
+            return null;
         }
 
         internal IEntityRepository<TEntity> FindRepository<TEntity>()
@@ -511,6 +526,11 @@ namespace OpenBudget.Model
         internal void RegisterHasChanges(EntityBase entity)
         {
             _unitOfWork.RegisterChangedEntity(entity);
+        }
+
+        internal void EnsureSaveOrder(EntityBase first, EntityBase second)
+        {
+            _unitOfWork.EnsureSaveOrder(first, second);
         }
 
         private void SaveChangesInternal(List<EntityConflictResolution> pendingConflictResolutions)

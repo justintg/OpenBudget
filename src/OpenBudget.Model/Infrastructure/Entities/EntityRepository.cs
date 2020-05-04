@@ -68,6 +68,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-
+        public EntityBase GetEntityBase(string entityId)
+        {
+            return GetEntity(entityId);
+        }
     }
 }

@@ -57,6 +57,21 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
             UpdateEntityState(entity);
         }
 
+        internal void EnsureSaveOrder(EntityBase first, EntityBase second)
+        {
+            int firstIndex = _changedEntities.IndexOf(first);
+            int secondIndex = _changedEntities.IndexOf(second);
+
+            if (firstIndex < 0 || secondIndex < 0)
+                throw new InvalidOperationException("One of the two entities wasn't already registered for changes.");
+
+            if (firstIndex > secondIndex)
+            {
+                _changedEntities[secondIndex] = first;
+                _changedEntities[firstIndex] = second;
+            }
+        }
+
         private void UpdateEntityState(EntityBase entity)
         {
             if (entity.SaveState == EntitySaveState.Unattached)
@@ -72,7 +87,7 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
         public List<EventSaveInfo> GetChangeEvents()
         {
             List<EventSaveInfo> events = new List<EventSaveInfo>();
-            
+
             foreach (var entity in _changedEntities.ToList())
             {
                 entity.BeforeSaveChanges();

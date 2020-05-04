@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenBudget.Model.Infrastructure.Messaging
 {
@@ -41,7 +42,7 @@ namespace OpenBudget.Model.Infrastructure.Messaging
         {
             var handlerList = GetHandlerList<TMessage>(entityName);
             if (handlerList == null) yield break;
-            foreach (var handlerReference in handlerList)
+            foreach (var handlerReference in handlerList.ToList())
             {
                 IHandler<TMessage> handler;
                 if (handlerReference.TryGetTarget(out handler))
