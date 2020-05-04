@@ -6,7 +6,7 @@ using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.UnitOfWork
 {
-    public delegate void NotifyEventSavedHandler(ModelEvent evt);
+    public delegate void NotifyEventSavedHandler(EventSaveInfo eventSaveInfo);
 
     public class EventSaveInfo
     {
@@ -14,5 +14,6 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
         public EntityBase Entity { get; set; }
         public ModelEvent Event { get; set; }
         public NotifyEventSavedHandler EventSavedCallback { get; set; }
+        public List<EventSaveInfo> SubEntityEvents { get; set; }
     }
 }

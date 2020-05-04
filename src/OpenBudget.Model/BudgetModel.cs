@@ -557,7 +557,7 @@ namespace OpenBudget.Model
         {
             foreach (var change in changes)
             {
-                change.EventSavedCallback(change.Event);
+                change.EventSavedCallback(change);
                 if (change.NeedsAttach)
                 {
                     AttachToModel(change.Entity);
