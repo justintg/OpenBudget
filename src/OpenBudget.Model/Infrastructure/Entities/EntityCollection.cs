@@ -150,28 +150,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        /*internal IEnumerable<ModelEvent> GetAndSaveChanges()
-        {
-            foreach (EntityBase entity in this)
-            {
-                var changes = entity.GetAndSaveChanges();
-                foreach (var change in changes)
-                {
-                    yield return change;
-                }
-            }
-
-            //Allow deleted entities to broadcast their events
-            foreach (EntityBase entity in _pendingDeletions.Select(t => t.Item1))
-            {
-                var changes = entity.GetAndSaveChanges();
-                foreach (var change in changes)
-                {
-                    yield return change;
-                }
-            }
-    }*/
-
         public void Handle(EntityUpdatedEvent message)
         {
             HandleParentEvent(message, false);
@@ -310,8 +288,18 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Add(T item)
         {
+            EnsureDeletedFromPreviousParent(item);
             AddInternal(item);
             EnsureAddedEntityRegisteredForChanges(item);
+        }
+
+        private void EnsureDeletedFromPreviousParent(T item)
+        {
+            var reference = item.GetProperty<EntityReference>(nameof(EntityBase.Parent));
+            if (reference != null && reference.ReferencedEntity != null)
+            {
+                reference.ReferencedEntity.RemoveReferenceToChild(item);
+            }
         }
 
         private void EnsureAddedEntityRegisteredForChanges(T entity)

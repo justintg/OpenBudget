@@ -417,7 +417,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        public void CancelCurrentChanges()
+        internal void CancelCurrentChanges()
         {
             if (CurrentEvent is EntityCreatedEvent)
                 throw new InvalidOperationException("You cant cancel the Entity Created Event");
@@ -460,8 +460,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 && change.TypedNewValue != null
                 && change.TypedPreviousValue != change.TypedNewValue)
             {
-                var parent = change.TypedPreviousValue.Resolve<EntityBase>(_model);
-                var canceledParent = change.TypedNewValue.Resolve<EntityBase>(_model);
+                var parent = change.TypedPreviousValue.ReferencedEntity;
+                var canceledParent = change.TypedNewValue.ReferencedEntity;
                 canceledParent.RemoveReferenceToChild(this);
                 parent.ForceReferenceToChild(this);
             }
@@ -474,7 +474,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         protected abstract object GetEntityDataObject(string property);
         protected abstract void ClearEntityData();
 
-        protected T GetProperty<T>([CallerMemberName]string property = null)
+        internal T GetProperty<T>([CallerMemberName]string property = null)
         {
             return GetEntityData<T>(property);
         }

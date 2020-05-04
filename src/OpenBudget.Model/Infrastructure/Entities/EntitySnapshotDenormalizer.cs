@@ -39,6 +39,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             _budgetModel.InternalMessageBus.RegisterForMessages<EntityCreatedEvent>(typeof(TEntity).Name, this);
             _budgetModel.InternalMessageBus.RegisterForMessages<EntityUpdatedEvent>(typeof(TEntity).Name, this);
+            _budgetModel.InternalMessageBus.RegisterForMessages<GroupedFieldChangeEvent>(typeof(TEntity).Name, this);
         }
 
         private Func<TSnapshot, TEntity> CreateFromSnapshotConstructor()
@@ -84,7 +85,20 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Handle(GroupedFieldChangeEvent message)
         {
-            throw new NotImplementedException();
+            foreach (var evt in message.GroupedEvents)
+            {
+                if (evt.EntityType == typeof(TEntity).Name)
+                {
+                    if (evt is EntityCreatedEvent entityCreatedEvent)
+                    {
+                        Handle(entityCreatedEvent);
+                    }
+                    else if (evt is EntityUpdatedEvent entityUpdatedEvent)
+                    {
+                        Handle(entityUpdatedEvent);
+                    }
+                }
+            }
         }
     }
 }

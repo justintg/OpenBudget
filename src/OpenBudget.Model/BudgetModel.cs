@@ -514,6 +514,11 @@ namespace OpenBudget.Model
             return entityDenormalizer;
         }
 
+        public void CancelChanges()
+        {
+            _unitOfWork.CancelChanges();
+        }
+
         public void SaveChanges()
         {
             SaveChangesInternal(null);

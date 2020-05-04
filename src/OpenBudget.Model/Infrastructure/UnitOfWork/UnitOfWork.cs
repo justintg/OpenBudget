@@ -101,5 +101,16 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
 
             return events;
         }
+
+        internal void CancelChanges()
+        {
+            foreach (var entity in _changedEntities)
+            {
+                entity.CancelCurrentChanges();
+            }
+
+            _changedEntities.Clear();
+            _entityIdentityMap.Clear();
+        }
     }
 }

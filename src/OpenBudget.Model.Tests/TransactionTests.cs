@@ -433,7 +433,11 @@ namespace OpenBudget.Model.Tests
             Assert.That(parent.Transactions, Contains.Item(transaction));
 
             otherAccount.Transactions.Add(transaction);
-            transaction.CancelCurrentChanges();
+            Assert.That(otherAccount.Transactions, Has.Member(transaction));
+            Assert.That(parent.Transactions, Has.No.Member(transaction));
+
+
+            TestBudget.BudgetModel.CancelChanges();
             TestBudget.BudgetModel.SaveChanges();
 
             Assert.That(transaction.Parent, Is.EqualTo(parent));
