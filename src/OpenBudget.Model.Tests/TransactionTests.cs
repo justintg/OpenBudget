@@ -386,7 +386,7 @@ namespace OpenBudget.Model.Tests
 
             TestBudget.BudgetModel.SaveChanges();
 
-            Assert.That(transaction.Payee, Is.EqualTo(payee));
+            Assert.That(transaction.Payee.EntityID, Is.EqualTo(payee.EntityID));
         }
 
         [Test]

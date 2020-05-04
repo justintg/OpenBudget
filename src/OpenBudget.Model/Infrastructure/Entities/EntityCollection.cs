@@ -88,7 +88,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
             else
             {
-                entity.ForceResolveEntityReference(nameof(EntityBase.Parent), _parent);
+                if (entity.Parent.EntityID != _parent.EntityID)
+                {
+                    entity.Parent = _parent;
+                }
+                else
+                {
+                    entity.ForceResolveEntityReference(nameof(EntityBase.Parent), _parent);
+                }
             }
             _loadedEntities.Add(entity);
         }

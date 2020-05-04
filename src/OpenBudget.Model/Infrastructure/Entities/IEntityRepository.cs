@@ -4,7 +4,12 @@ using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    internal interface IEntityRepository<TEntity> where TEntity : EntityBase
+    internal interface IEntityRepository
+    {
+        EntityBase GetEntityBase(string entityId);
+    }
+
+    internal interface IEntityRepository<TEntity> : IEntityRepository where TEntity : EntityBase
     {
         TEntity GetEntity(string entityId);
         IEnumerable<TEntity> GetEntitiesByParent(string parentType, string parentId);
