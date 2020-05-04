@@ -21,6 +21,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         private EntityBase _parent;
 
         private ObservableCollection<T> _loadedEntities = new ObservableCollection<T>();
+        private HashSet<string> _loadedEntityIds = new HashSet<string>();
 
         private List<Tuple<T, int>> _pendingDeletions;
 
@@ -82,6 +83,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private void AddInternal(T entity)
         {
+            if (_loadedEntityIds.Contains(entity.EntityID))
+                throw new InvalidOperationException("Cannot add an entity that is already in the collection.");
+
             if (entity.IsPropertyNull(nameof(EntityBase.Parent)))
             {
                 entity.Parent = _parent;
@@ -98,6 +102,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 }
             }
             _loadedEntities.Add(entity);
+            _loadedEntityIds.Add(entity.EntityID);
         }
 
         private IMessenger<ModelEvent> _messenger;
@@ -218,13 +223,17 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             if (parent.EntityID == _parent.EntityID)
             {
+                if (_loadedEntityIds.Contains(message.EntityID)) return;
+
                 T entity = _model.FindRepository<T>().GetEntity(message.EntityID);
 
                 AddInternal(entity);
             }
             else if (parent.EntityID != _parent.EntityID && oldParent != null && oldParent.EntityID == _parent.EntityID)
             {
-                T entity = _loadedEntities.Single(e => e.EntityID == message.EntityID);
+                T entity = _loadedEntities.SingleOrDefault(e => e.EntityID == message.EntityID);
+
+                if (entity == null) return;
 
                 RemoveInternal(entity);
             }
@@ -260,6 +269,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         private void RemoveInternal(T child)
         {
             _loadedEntities.Remove(child);
+            _loadedEntityIds.Remove(child.EntityID);
         }
 
         void IEntityCollection.CancelDeletion(EntityBase child)

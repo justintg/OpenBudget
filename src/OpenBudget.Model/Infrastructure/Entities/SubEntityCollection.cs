@@ -14,7 +14,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 {
     internal interface ISubEntityCollection : IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent>
     {
-        IEnumerable<FieldChangeEvent> GetChanges();
+        IEnumerable<EventSaveInfo> GetChanges();
         void CancelCurrentChanges();
         void DeleteChild(SubEntity childEntity);
     }
@@ -71,14 +71,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public IEnumerator<T> GetEnumerator() => _collection.GetEnumerator();
 
-        public IEnumerable<FieldChangeEvent> GetChanges()
+        public IEnumerable<EventSaveInfo> GetChanges()
         {
             foreach (var entity in _collection)
             {
                 foreach (var change in entity.GetAndSaveChanges())
                 {
-                    if (change.Event is FieldChangeEvent fieldChangeEvent)
-                        yield return fieldChangeEvent;
+                    yield return change;
                 }
             }
 
@@ -86,8 +85,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 foreach (var change in entity.GetAndSaveChanges())
                 {
-                    if (change.Event is FieldChangeEvent fieldChangeEvent)
-                        yield return fieldChangeEvent;
+                    yield return change;
                 }
             }
 

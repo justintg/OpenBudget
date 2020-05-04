@@ -104,7 +104,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         public VectorClock LastEventVector
         {
             get => GetProperty<VectorClock>();
-            protected set => SetEntityData<VectorClock>(value.Copy(), nameof(LastEventVector));
+            protected set => SetEntityData<VectorClock>(value?.Copy(), nameof(LastEventVector));
         }
 
         public bool IsAttached
@@ -250,8 +250,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         }
 
-        protected void NotifyEventSaved(ModelEvent evt)
+        protected void NotifyEventSaved(EventSaveInfo eventSaveInfo)
         {
+            var evt = eventSaveInfo.Event;
             LastEventID = evt.EventID.ToString();
             LastEventVector = evt.EventVector;
 
@@ -259,9 +260,17 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             if (IsAttached)
                 SaveState = EntitySaveState.AttachedNoChanges;
+
+            if (eventSaveInfo.SubEntityEvents != null)
+            {
+                foreach (var subEntitySaveInfo in eventSaveInfo.SubEntityEvents)
+                {
+                    subEntitySaveInfo.EventSavedCallback(subEntitySaveInfo);
+                }
+            }
         }
 
-        private EventSaveInfo ConvertToCallback(ModelEvent evt)
+        private EventSaveInfo ConvertToCallback(ModelEvent evt, List<EventSaveInfo> subEntityEvents = null)
         {
             bool needsAttach = !IsAttached;
             return new EventSaveInfo()
@@ -269,7 +278,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 Entity = this,
                 NeedsAttach = needsAttach,
                 Event = evt,
-                EventSavedCallback = NotifyEventSaved
+                EventSavedCallback = NotifyEventSaved,
+                SubEntityEvents = subEntityEvents
             };
         }
 
@@ -277,10 +287,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             bool groupChangesPublished = false;
             List<FieldChangeEvent> groupedChanges = new List<FieldChangeEvent>();
+            List<EventSaveInfo> subEntityEvents = new List<EventSaveInfo>();
 
             foreach (var subEntity in _subEntities.Values)
             {
-                groupedChanges.AddRange(subEntity.GetChanges().Where(e => e is FieldChangeEvent).Select(e => e as FieldChangeEvent));
+                var changes = subEntity.GetChanges();
+                subEntityEvents.AddRange(changes);
+                groupedChanges.AddRange(changes.Select(c => c.Event).Where(e => e is FieldChangeEvent).Select(e => e as FieldChangeEvent));
             }
 
             var evt = CurrentEvent;
@@ -294,7 +307,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     groupedChanges.Insert(0, evt);
                     GroupedFieldChangeEvent groupedEvent = new GroupedFieldChangeEvent(this.GetType().Name, EntityID, groupedChanges);
                     groupChangesPublished = true;
-                    yield return ConvertToCallback(groupedEvent);
+                    yield return ConvertToCallback(groupedEvent, subEntityEvents);
                 }
                 else
                     yield return ConvertToCallback(evt);
