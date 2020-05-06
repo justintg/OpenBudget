@@ -29,6 +29,19 @@ namespace OpenBudget.Model.Infrastructure.Entities
             get => _parent;
             internal set => _parent = value;
         }
+
+        public override bool IsAttached => _parent.IsAttached;
+
+        public override EntitySaveState SaveState
+        {
+            get => _parent.SaveState;
+            internal set { }
+        }
+
+        protected override void EnsureRegisteredForChanges()
+        {
+            _parent?.RegisterHasChanges(this);
+        }
     }
 
     public abstract class SubEntity<TSnapshot> : SubEntity where TSnapshot : EntitySnapshot, new()

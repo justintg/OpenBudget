@@ -26,6 +26,11 @@ namespace OpenBudget.Model.Tests
             Budget = BudgetModel.GetBudget();
         }
 
+        public void ClearEvents()
+        {
+            EventStore.TestEvents.Clear();
+        }
+
         public void SaveChanges()
         {
             BudgetModel.SaveChanges();

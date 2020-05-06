@@ -149,6 +149,56 @@ namespace OpenBudget.Model.Tests
             Assert.That(getBudget.Accounts.Count, Is.EqualTo(1));
         }
 
+        [Test]
+        public void SubEntity_IsNotAttached_OnCreate_WhenParentIsNotAttached()
+        {
+            Transaction transaction = new Transaction();
+            transaction.MakeSplitTransaction();
+            var subTransaction = transaction.SubTransactions.Create();
+
+            Assert.That(transaction.IsAttached, Is.False);
+            Assert.That(transaction.SaveState, Is.EqualTo(EntitySaveState.Unattached));
+            Assert.That(subTransaction.IsAttached, Is.False);
+            Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.Unattached));
+        }
+
+        [Test]
+        public void SubEntity_Unattached_IsAttachedWithParent()
+        {
+            Transaction transaction = new Transaction();
+            transaction.MakeSplitTransaction();
+            var subTransaction = transaction.SubTransactions.Create();
+
+            Budget initialBudget = CreateInitialBudget();
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            initialBudget.Accounts[0].Transactions.Add(transaction);
+            model.SaveChanges();
+
+            Assert.That(subTransaction.IsAttached, Is.True);
+            Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
+        }
+
+        [Test]
+        public void SubEntity_IsAttached_OnCreate_WhenParentIsAttached()
+        {
+            Transaction transaction = new Transaction();
+
+            Budget initialBudget = CreateInitialBudget();
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+
+            initialBudget.Accounts[0].Transactions.Add(transaction);
+            transaction.MakeSplitTransaction();
+            model.SaveChanges();
+
+            Assert.That(transaction.IsAttached, Is.True);
+            Assert.That(transaction.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
+
+            var subTransaction = transaction.SubTransactions.Create();
+
+            Assert.That(subTransaction.IsAttached, Is.True);
+            Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
+        }
+
         public void CanUnloadChildEntityCollection()
         {
 

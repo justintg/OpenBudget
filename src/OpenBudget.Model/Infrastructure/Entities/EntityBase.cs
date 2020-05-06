@@ -107,14 +107,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
             protected set => SetEntityData<VectorClock>(value?.Copy(), nameof(LastEventVector));
         }
 
-        public bool IsAttached
+        public virtual bool IsAttached
         {
             get { return SaveState == EntitySaveState.AttachedHasChanges || SaveState == EntitySaveState.AttachedNoChanges; }
         }
 
         private EntitySaveState _saveState;
 
-        public EntitySaveState SaveState
+        public virtual EntitySaveState SaveState
         {
             get
             {
@@ -499,6 +499,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
             FieldChange change = FieldChange.Create(oldValue, newValue);
             CurrentEvent.AddChange(property, change);
 
+            EnsureRegisteredForChanges();
+        }
+
+        protected virtual void EnsureRegisteredForChanges()
+        {
+            if (!IsAttached) return;
+
             if (this.SaveState == EntitySaveState.AttachedNoChanges)
             {
                 this.Model.RegisterHasChanges(this);
@@ -542,6 +549,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 else
                     throw new InvalidOperationException("Cannot Resolve an Unresolved EntityReference when the reference entity is not attached to a model");
             }
+        }
+
+        internal virtual void SubEntityCreated(SubEntity subEntity)
+        {
+            EnsureRegisteredForChanges();
+        }
+
+        internal virtual void RegisterHasChanges(SubEntity subEntity)
+        {
+            EnsureRegisteredForChanges();
         }
 
         protected void SetEntityReference<T>(T value, [CallerMemberName]string property = null) where T : EntityBase

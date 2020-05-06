@@ -59,11 +59,10 @@ namespace OpenBudget.Model
         private Dictionary<Type, object> _entityRepositories = new Dictionary<Type, object>();
         private ISynchronizationService _syncService;
 
-        public T FindEntity<T>(string EntityID) where T : EntityBase
+        public T FindEntity<T>(string entityId) where T : EntityBase
         {
-            /*IIdentityMap map = FindGenerator<T>() as IIdentityMap;
-            return (T)map.GetEntity(EntityID);*/
-            return null;
+            var repo = FindRepository<T>();
+            return repo.GetEntity(entityId);
         }
 
         protected BudgetModel(Guid deviceId, IBudgetStore budgetStore) : this(deviceId, budgetStore, true)
