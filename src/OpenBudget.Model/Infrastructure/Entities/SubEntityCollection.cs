@@ -56,6 +56,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _collection.Add(entity);
             _pendingAdds.Add(entity);
             entity.Parent = _parent;
+            _parent.SubEntityCreated(entity);
             return entity;
         }
 
@@ -73,11 +74,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public IEnumerable<EventSaveInfo> GetChanges()
         {
+            List<EventSaveInfo> changes = new List<EventSaveInfo>();
             foreach (var entity in _collection)
             {
                 foreach (var change in entity.GetAndSaveChanges())
                 {
-                    yield return change;
+                    changes.Add(change);
                 }
             }
 
@@ -85,13 +87,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 foreach (var change in entity.GetAndSaveChanges())
                 {
-                    yield return change;
+                    changes.Add(change);
                 }
             }
 
             //At this point we assume changes are commited and clear pending changes
             _pendingAdds.Clear();
             _pendingDeletes.Clear();
+            return changes;
         }
 
         public virtual T GetEntity(string entityID)
