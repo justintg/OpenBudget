@@ -44,6 +44,7 @@ namespace OpenBudget.Model
         internal EntityRepository<MasterCategory, MasterCategorySnapshot> MasterCategoryRepository { get; private set; }
         internal EntityRepository<Category, CategorySnapshot> CategoryRepository { get; private set; }
         internal EntityRepository<Payee, PayeeSnapshot> PayeeRepository { get; private set; }
+        internal SubEntityRepository<SubTransaction, SubTransactionSnapshot> SubTransactionRepository { get; private set; }
 
         internal EntitySnapshotDenormalizer<Budget, BudgetSnapshot> BudgetSnapshotDenormalizer { get; private set; }
         internal EntitySnapshotDenormalizer<Account, AccountSnapshot> AccountSnapshotDenormalizer { get; private set; }
@@ -51,12 +52,14 @@ namespace OpenBudget.Model
         internal EntitySnapshotDenormalizer<MasterCategory, MasterCategorySnapshot> MasterCategorySnapshotDenormalizer { get; private set; }
         internal EntitySnapshotDenormalizer<Category, CategorySnapshot> CategorySnapshotDenormalizer { get; private set; }
         internal EntitySnapshotDenormalizer<Payee, PayeeSnapshot> PayeeSnapshotDenormalizer { get; private set; }
+        internal SubEntitySnapshotDenormalizer<SubTransaction, SubTransactionSnapshot, Transaction> SubTransactionSnapshotDenormalizer { get; private set; }
 
 
         private BudgetViewListener _budgetViewListenter;
         private Dictionary<Type, IEntityDenormalizer> _entityDenormalizers = new Dictionary<Type, IEntityDenormalizer>();
         private Dictionary<string, object> _entityRepositoriesStringKey = new Dictionary<string, object>();
         private Dictionary<Type, object> _entityRepositories = new Dictionary<Type, object>();
+        private Dictionary<Type, object> _subEntityRepositories = new Dictionary<Type, object>();
         private ISynchronizationService _syncService;
 
         public T FindEntity<T>(string entityId) where T : EntityBase
@@ -113,6 +116,14 @@ namespace OpenBudget.Model
             MasterCategoryRepository = RegisterRepository(new EntityRepository<MasterCategory, MasterCategorySnapshot>(this));
             CategoryRepository = RegisterRepository(new EntityRepository<Category, CategorySnapshot>(this));
             PayeeRepository = RegisterRepository(new EntityRepository<Payee, PayeeSnapshot>(this));
+            SubTransactionRepository = RegisterRepository(new SubEntityRepository<SubTransaction, SubTransactionSnapshot>(this));
+        }
+
+        private SubEntityRepository<TEntity, TSnapshot> RegisterRepository<TEntity, TSnapshot>(SubEntityRepository<TEntity, TSnapshot> repository)
+            where TEntity : SubEntity where TSnapshot : EntitySnapshot, new()
+        {
+            _subEntityRepositories[typeof(TEntity)] = repository;
+            return repository;
         }
 
         private EntityRepository<TEntity, TSnapshot> RegisterRepository<TEntity, TSnapshot>(EntityRepository<TEntity, TSnapshot> repository)
@@ -131,6 +142,7 @@ namespace OpenBudget.Model
             MasterCategorySnapshotDenormalizer = new EntitySnapshotDenormalizer<MasterCategory, MasterCategorySnapshot>(this);
             CategorySnapshotDenormalizer = new EntitySnapshotDenormalizer<Category, CategorySnapshot>(this);
             PayeeSnapshotDenormalizer = new EntitySnapshotDenormalizer<Payee, PayeeSnapshot>(this);
+            SubTransactionSnapshotDenormalizer = new SubEntitySnapshotDenormalizer<SubTransaction, SubTransactionSnapshot, Transaction>(this);
         }
 
         private void InitializeEntityDenormalizers()
@@ -177,6 +189,17 @@ namespace OpenBudget.Model
                 {
                     return repository;
                 }
+            }
+
+            return null;
+        }
+
+        internal ISubEntityRepository<TEntity> FindSubEntityRepository<TEntity>()
+            where TEntity : SubEntity
+        {
+            if (_subEntityRepositories.TryGetValue(typeof(TEntity), out object repository))
+            {
+                return (ISubEntityRepository<TEntity>)repository;
             }
 
             return null;

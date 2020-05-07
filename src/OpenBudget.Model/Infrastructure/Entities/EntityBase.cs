@@ -827,6 +827,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
         protected virtual void RegisterDependencies()
         {
         }
+
+        internal void LoadSubEntities()
+        {
+            foreach (var subEntity in _subEntities.Values)
+            {
+                subEntity.LoadCollection();
+            }
+        }
         #endregion
     }
 }
