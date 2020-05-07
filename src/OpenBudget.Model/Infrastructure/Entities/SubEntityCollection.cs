@@ -17,6 +17,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         IEnumerable<EventSaveInfo> GetChanges();
         void CancelCurrentChanges();
         void DeleteChild(SubEntity childEntity);
+        void LoadCollection();
     }
 
     public class SubEntityCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, ISubEntityCollection where T : SubEntity
@@ -113,6 +114,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Handle(EntityCreatedEvent message)
         {
+            if (_identityMap.ContainsKey(message.EntityID)) return;
+
             var constructor =
             typeof(T)
             .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
@@ -181,6 +184,19 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 _pendingDeletes.Add(child);
                 _collection.Remove(child);
+            }
+        }
+
+        void ISubEntityCollection.LoadCollection()
+        {
+            BudgetModel model = _parent.Model;
+            var repo = model.FindSubEntityRepository<T>();
+            var subEntities = repo.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID);
+            foreach (var subEntity in subEntities)
+            {
+                _identityMap.Add(subEntity.EntityID, subEntity);
+                subEntity.Parent = _parent;
+                _collection.Add(subEntity);
             }
         }
     }

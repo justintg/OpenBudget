@@ -21,6 +21,10 @@ namespace OpenBudget.Model.Entities
         {
         }
 
+        internal SubTransaction(SubTransactionSnapshot snapshot) : base(snapshot)
+        {
+        }
+
         internal SubTransaction(EntityCreatedEvent evt) : base(evt)
         {
         }

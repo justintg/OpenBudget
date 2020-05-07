@@ -8,14 +8,15 @@ using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    public class EntityRepository<TEntity, TSnapshot> : IEntityRepository<TEntity>
-        where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
+    internal class SubEntityRepository<TEntity, TSnapshot>
+        : ISubEntityRepository<TEntity>
+        where TEntity : SubEntity where TSnapshot : EntitySnapshot, new()
     {
         private readonly BudgetModel _budgetModel;
         private readonly ISnapshotStore _snapshotStore;
         private readonly Func<TSnapshot, TEntity> _entitySnapshotConstructor;
 
-        internal EntityRepository(BudgetModel budgetModel)
+        public SubEntityRepository(BudgetModel budgetModel)
         {
             _budgetModel = budgetModel ?? throw new ArgumentNullException(nameof(budgetModel));
             _snapshotStore = budgetModel?.BudgetStore?.SnapshotStore ?? throw new ArgumentException("Could not find snapshot store of budgetModel", nameof(budgetModel));
@@ -34,22 +35,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         private TEntity LoadEntityFromSnapshot(TSnapshot snapshot)
         {
             TEntity entity = _entitySnapshotConstructor(snapshot);
-            _budgetModel.AttachToModel(entity);
-            entity.LoadSubEntities();
             return entity;
-        }
-
-        public TEntity GetEntity(string entityId)
-        {
-            var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(entityId);
-            if (snapshot != null)
-            {
-                return LoadEntityFromSnapshot(snapshot);
-            }
-            else
-            {
-                return null;
-            }
         }
 
         public IEnumerable<TEntity> GetEntitiesByParent(string parentType, string parentId)
@@ -59,19 +45,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 yield return LoadEntityFromSnapshot(snapshot);
             }
-        }
-
-        public IEnumerable<TEntity> GetAllEntities()
-        {
-            foreach (var snapshot in _snapshotStore.GetAllSnapshots<TSnapshot>())
-            {
-                yield return LoadEntityFromSnapshot(snapshot);
-            }
-        }
-
-        public EntityBase GetEntityBase(string entityId)
-        {
-            return GetEntity(entityId);
         }
     }
 }

@@ -11,20 +11,18 @@ using System.Text;
 
 namespace OpenBudget.Model.Infrastructure.Entities
 {
-    internal class EntitySnapshotDenormalizer<TEntity, TSnapshot>
-        : IHandler<EntityCreatedEvent>,
-        IHandler<EntityUpdatedEvent>,
-        IHandler<GroupedFieldChangeEvent>
-        where TEntity : EntityBase<TSnapshot>
+    internal class SubEntitySnapshotDenormalizer<TEntity, TSnapshot, TParent>
+        : IHandler<GroupedFieldChangeEvent>
+        where TEntity : SubEntity<TSnapshot>
         where TSnapshot : EntitySnapshot, new()
+        where TParent : EntityBase
     {
-
         protected readonly BudgetModel _budgetModel;
         protected readonly ISnapshotStore _snapshotStore;
         protected readonly Func<EntityCreatedEvent, TEntity> _createEntityFromEvent;
         protected readonly Func<TSnapshot, TEntity> _createEntityFromSnapshot;
 
-        internal EntitySnapshotDenormalizer(BudgetModel budgetModel)
+        internal SubEntitySnapshotDenormalizer(BudgetModel budgetModel) 
         {
             _budgetModel = budgetModel ?? throw new ArgumentNullException(nameof(budgetModel));
             _snapshotStore = budgetModel?.BudgetStore?.SnapshotStore ?? throw new ArgumentException("Could not find snapshot store of budgetModel", nameof(budgetModel));
@@ -33,13 +31,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _createEntityFromSnapshot = CreateFromSnapshotConstructor();
 
             RegisterForMessages();
-        }
-
-        protected virtual void RegisterForMessages()
-        {
-            _budgetModel.InternalMessageBus.RegisterForMessages<EntityCreatedEvent>(typeof(TEntity).Name, this);
-            _budgetModel.InternalMessageBus.RegisterForMessages<EntityUpdatedEvent>(typeof(TEntity).Name, this);
-            _budgetModel.InternalMessageBus.RegisterForMessages<GroupedFieldChangeEvent>(typeof(TEntity).Name, this);
         }
 
         private Func<TSnapshot, TEntity> CreateFromSnapshotConstructor()
@@ -83,6 +74,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _snapshotStore.StoreSnapshot(snapshot);
         }
 
+
         public void Handle(GroupedFieldChangeEvent message)
         {
             foreach (var evt in message.GroupedEvents)
@@ -99,6 +91,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     }
                 }
             }
+        }
+
+        protected void RegisterForMessages()
+        {
+            _budgetModel.InternalMessageBus.RegisterForMessages<GroupedFieldChangeEvent>(typeof(TParent).Name, this);
         }
     }
 }

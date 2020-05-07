@@ -88,33 +88,25 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Handle(GroupedFieldChangeEvent message)
         {
-            /*T entity = this.GetEntity(message.EntityID);
             List<FieldChangeEvent> eventsToBroadcast = message.GroupedEvents.ToList();
-            if (entity == null)
-            {
-                var firstEvent = message.GroupedEvents[0];
-                if (firstEvent.EntityType != typeof(T).Name || !(firstEvent is EntityCreatedEvent))
-                    throw new InvalidBudgetException("The order of events is incorrect, sub entity events are present for an entity not yet created.");
-
-                _messenger.PublishEvent(typeof(T).Name, (EntityCreatedEvent)firstEvent);
-                entity = this.GetEntity(message.EntityID);
-                if (entity == null)
-                    throw new InvalidBudgetException("The order of events is incorrect, sub entity events are present for an entity not yet created.");
-
-                eventsToBroadcast.Remove(firstEvent);
-            }
 
             foreach (var evt in eventsToBroadcast)
             {
                 if (evt.EntityType == typeof(T).Name)
                 {
-                    _messenger.PublishEvent(typeof(T).Name, evt);
+                    if (evt is EntityUpdatedEvent entityUpdatedEvent)
+                    {
+                        Handle(entityUpdatedEvent);
+                    }
                 }
                 else
                 {
-                    entity.HandleSubEntityEvent(evt);
+                    foreach (var entity in EnumerateRegistrations(message.EntityID))
+                    {
+                        entity.HandleSubEntityEvent(evt);
+                    }
                 }
-            }*/
+            }
         }
     }
 }

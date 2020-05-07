@@ -199,14 +199,59 @@ namespace OpenBudget.Model.Tests
             Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
         }
 
-        public void CanUnloadChildEntityCollection()
+        [Test]
+        public void SubEntity_CopiesStayInSync()
         {
+            Transaction transaction = new Transaction();
+
+            Budget initialBudget = CreateInitialBudget();
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+
+            initialBudget.Accounts[0].Transactions.Add(transaction);
+            transaction.MakeSplitTransaction();
+            transaction.Amount = 100;
+
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 100;
+            model.SaveChanges();
+
+            var accountCopy = model.FindEntity<Account>(initialBudget.Accounts[0].EntityID);
+            accountCopy.Transactions.LoadCollection();
+            var transactionCopy = accountCopy.Transactions[0];
+            var subTransactionCopy = transactionCopy.SubTransactions[0];
+
+            transactionCopy.Amount = 150;
+            subTransactionCopy.Amount = 150;
+            model.SaveChanges();
+
+            Assert.That(subTransactionCopy.Amount, Is.EqualTo(subTransaction.Amount));
+            Assert.That(transactionCopy.Amount, Is.EqualTo(transaction.Amount));
+
+            var subTransactionCopy2 = transactionCopy.SubTransactions.Create();
+            subTransactionCopy.Amount = 75;
+            subTransactionCopy2.Amount = 75;
+
+            model.SaveChanges();
+            Assert.That(transaction.SubTransactions, Has.Count.EqualTo(2));
+
+            var subTransaction2 = transaction.SubTransactions.Where(st => st.EntityID == subTransactionCopy2.EntityID).Single();
+
+            Assert.That(subTransactionCopy.Amount, Is.EqualTo(subTransaction.Amount));
+            Assert.That(subTransactionCopy2.Amount, Is.EqualTo(subTransaction2.Amount));
+            Assert.That(transactionCopy.Amount, Is.EqualTo(transaction.Amount));
 
         }
 
+        [Test]
+        public void CanUnloadChildEntityCollection()
+        {
+            Assert.That(true, Is.False);
+        }
+
+        [Test]
         public void ChildEntityCollections_EntitiesInsideAreAttached()
         {
-
+            Assert.That(true, Is.False);
         }
     }
 }

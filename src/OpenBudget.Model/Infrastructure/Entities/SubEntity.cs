@@ -27,7 +27,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
         public override EntityBase Parent
         {
             get => _parent;
-            internal set => _parent = value;
+            internal set
+            {
+                _parent = value;
+                if (GetProperty<EntityReference>(nameof(Parent)) == null)
+                {
+                    SetProperty<EntityReference>(value.ToEntityReference(), nameof(Parent));
+                }
+            }
         }
 
         public override bool IsAttached => _parent.IsAttached;
@@ -54,6 +61,27 @@ namespace OpenBudget.Model.Infrastructure.Entities
         }
 
         private TSnapshot _entityData = new TSnapshot();
+
+        internal TSnapshot GetSnapshot()
+        {
+            return _entityData;
+        }
+
+        public override EntityBase Parent
+        {
+            get => base.Parent;
+            internal set
+            {
+                base.Parent = value;
+                _entityData.Parent = value.ToEntityReference();
+            }
+        }
+
+        protected SubEntity(TSnapshot snapshot) : base(snapshot.EntityID)
+        {
+            _entityData = snapshot;
+            CurrentEvent = new EntityUpdatedEvent(this.GetType().Name, EntityID);
+        }
 
         protected SubEntity(string entityId) : base(entityId)
         {
