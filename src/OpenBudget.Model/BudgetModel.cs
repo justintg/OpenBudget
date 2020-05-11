@@ -65,7 +65,8 @@ namespace OpenBudget.Model
         public T FindEntity<T>(string entityId) where T : EntityBase
         {
             var repo = FindRepository<T>();
-            return repo.GetEntity(entityId);
+            var entity = repo.GetEntity(entityId);
+            return entity.IsDeleted ? default(T) : entity;
         }
 
         protected BudgetModel(Guid deviceId, IBudgetStore budgetStore) : this(deviceId, budgetStore, true)

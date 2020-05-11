@@ -42,7 +42,7 @@ namespace OpenBudget.Model.Infrastructure.Messaging
         {
             var handlerList = GetHandlerList<TMessage>(entityName);
             if (handlerList == null) yield break;
-            foreach (var handlerReference in handlerList.ToList())
+            foreach (var handlerReference in handlerList.ToList()) //Enumerate a copy of the list
             {
                 IHandler<TMessage> handler;
                 if (handlerReference.TryGetTarget(out handler))

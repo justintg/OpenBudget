@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Events;
+﻿using OpenBudget.Model.Entities;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Messaging;
 using OpenBudget.Model.Util;
 using System;
@@ -67,8 +68,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 return;
 
             var repository = _model.FindRepository<T>();
-            var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID);
-            AddRangeInternal(entities);
+            var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID).Where(e => !e.IsDeleted).ToList();
+            if (entities.Count > 0)
+                AddRangeInternal(entities);
 
             IsLoaded = true;
         }
@@ -135,11 +137,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
             this.CollectionState = EntityCollectionState.Attached;
 
             _messenger = messenger;
-
-            foreach (var entity in this)
-            {
-                //entity.AttachToModel(model);
-            }
         }
 
         internal void BeforeSaveChanges()
@@ -163,7 +160,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private MessageHandler<EntityUpdatedEvent> _externalUpdateHandler;
 
-        public int Count => _loadedEntities.Count;
+        public int Count => IsLoaded ? _loadedEntities.Count : throw new InvalidBudgetActionException("You cannot access this property while the collection is not loaded.");
 
         public bool IsReadOnly => false;
 
@@ -268,7 +265,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         public int IndexOf(T item)
         {
             if (!IsLoaded)
-                throw new InvalidOperationException("This operation is not supported when the EntityCollection is not loaded.");
+                throw new InvalidBudgetActionException("This operation is not supported when the EntityCollection is not loaded.");
 
             return _loadedEntities.IndexOf(item);
         }
@@ -276,14 +273,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
         public void Insert(int index, T item)
         {
             if (!IsLoaded)
-                throw new InvalidOperationException("This operation is not supported when the EntityCollection is not loaded.");
+                throw new InvalidBudgetActionException("This operation is not supported when the EntityCollection is not loaded.");
 
             _loadedEntities.Insert(index, item);
         }
 
         public void RemoveAt(int index)
         {
-            throw new InvalidOperationException("You cannot manually remove an item from this collection.  You must call EntityBase.Delete() or add the entity to a different collection");
+            throw new InvalidBudgetActionException("You cannot manually remove an item from this collection.  You must call EntityBase.Delete() or add the entity to a different collection");
         }
 
         public void Add(T item)
@@ -319,11 +316,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Clear()
         {
-            throw new NotSupportedException();
+            throw new InvalidBudgetActionException();
         }
 
         public bool Contains(T item)
         {
+            if (!IsLoaded)
+                throw new InvalidBudgetActionException("This operation is not supported when the EntityCollection is not loaded.");
+
             return _loadedEntities.Contains(item);
         }
 
@@ -334,16 +334,22 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public bool Remove(T item)
         {
-            throw new InvalidOperationException("You cannot manually remove an item from this collection.  You must call EntityBase.Delete() or add the entity to a different collection");
+            throw new InvalidBudgetActionException("You cannot manually remove an item from this collection.  You must call EntityBase.Delete() or add the entity to a different collection");
         }
 
         public IEnumerator<T> GetEnumerator()
         {
+            if (!IsLoaded)
+                throw new InvalidBudgetActionException("This operation is not supported when the EntityCollection is not loaded.");
+
             return (_loadedEntities as IEnumerable<T>).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
+            if (!IsLoaded)
+                throw new InvalidBudgetActionException("This operation is not supported when the EntityCollection is not loaded.");
+
             return _loadedEntities.GetEnumerator();
         }
 

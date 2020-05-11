@@ -57,7 +57,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             List<WeakReference<T>> entityRegistrations = null;
             if (_registrations.TryGetValue(entityId, out entityRegistrations))
             {
-                foreach (var registration in entityRegistrations)
+                foreach (var registration in entityRegistrations.ToList())
                 {
                     T entity = null;
                     if (registration.TryGetTarget(out entity))

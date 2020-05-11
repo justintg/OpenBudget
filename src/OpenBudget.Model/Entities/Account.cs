@@ -98,8 +98,11 @@ namespace OpenBudget.Model.Entities
 
         private void CalculateBalance()
         {
-            _balanceCalculated = true;
-            _balance = Transactions.Sum(t => t.Amount);
+            if (Transactions.IsLoaded)
+            {
+                _balanceCalculated = true;
+                _balance = Transactions.Sum(t => t.Amount);
+            }
         }
 
         private void BalanceChanged()
@@ -112,12 +115,12 @@ namespace OpenBudget.Model.Entities
 
         protected override void OnAttached(BudgetModel model)
         {
-            var balanceChanged = model.MessageBus.EntityCreatedOrUpdated
+            /*var balanceChanged = model.MessageBus.EntityCreatedOrUpdated
                 .Where(e => e.EntityType == nameof(Transaction)
                 && Transactions.Select(t => t.EntityID).Contains(e.EntityID)
                 && e.Changes.ContainsKey(nameof(Transaction.Amount)));
 
-            model.MessageBus.ObservableContainer.RegisterObservable(balanceChanged, this, (a, e) => a.BalanceChanged());
+            model.MessageBus.ObservableContainer.RegisterObservable(balanceChanged, this, (a, e) => a.BalanceChanged());*/
         }
 
         public EntityCollection<Transaction> Transactions { get; private set; }

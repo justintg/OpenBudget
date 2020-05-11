@@ -60,6 +60,8 @@ namespace OpenBudget.Model.Tests
             TestBudget.BudgetModel.SaveChanges();
             TestBudget.ReloadBudget();
 
+            account = TestBudget.BudgetModel.FindEntity<Account>(account.EntityID);
+            account.Transactions.LoadCollection();
             transaction = TestBudget.BudgetModel.FindEntity<Transaction>(transaction.EntityID);
             Assert.That(transaction, Is.Null);
             Assert.That(account.Transactions.Count, Is.EqualTo(0));
@@ -116,9 +118,12 @@ namespace OpenBudget.Model.Tests
             parent = TestBudget.BudgetModel.FindEntity<Account>(parent.EntityID);
             otherAccount = TestBudget.BudgetModel.FindEntity<Account>(otherAccount.EntityID);
 
-            Assert.That(transaction.Parent, Is.EqualTo(otherAccount));
-            Assert.That(parent.Transactions, Has.No.Member(transaction));
-            Assert.That(otherAccount.Transactions, Contains.Item(transaction));
+            Assert.That(transaction.Parent.EntityID, Is.EqualTo(otherAccount.EntityID));
+            
+            parent.Transactions.LoadCollection();
+            otherAccount.Transactions.LoadCollection();
+            Assert.That(parent.Transactions.Select(t => t.EntityID), Has.No.Member(transaction.EntityID));
+            Assert.That(otherAccount.Transactions.Select(t => t.EntityID), Contains.Item(transaction.EntityID));
         }
     }
 }
