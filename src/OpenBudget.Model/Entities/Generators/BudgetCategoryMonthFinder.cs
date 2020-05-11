@@ -24,7 +24,8 @@ namespace OpenBudget.Model.Entities.Generators
 
         public IEnumerable<CategoryMonth> GetAllMaterialized()
         {
-            return null;
+            yield break;
+            //return null;
             //return _model?.BudgetCategoryMonthGenerator.GetAllMaterialized().Where(bc => bc.Parent == _parent);
         }
     }

@@ -136,6 +136,19 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void UnloadedEntityCollectionThrowsException()
+        {
+            Budget initialBudget = CreateInitialBudget();
+
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            var account = model.FindEntity<Account>(initialBudget.Accounts[0].EntityID);
+
+            Assert.That(account.Transactions.IsLoaded, Is.False);
+            Assert.Throws<InvalidBudgetActionException>(() => { int count = account.Transactions.Count; });
+            Assert.Throws<InvalidBudgetActionException>(() => { foreach (var t in account.Transactions) { } });
+        }
+
+        [Test]
         public void CanLoadChildEntityCollection()
         {
             Budget initialBudget = CreateInitialBudget();
@@ -239,7 +252,6 @@ namespace OpenBudget.Model.Tests
             Assert.That(subTransactionCopy.Amount, Is.EqualTo(subTransaction.Amount));
             Assert.That(subTransactionCopy2.Amount, Is.EqualTo(subTransaction2.Amount));
             Assert.That(transactionCopy.Amount, Is.EqualTo(transaction.Amount));
-
         }
 
         [Test]

@@ -48,6 +48,12 @@ namespace OpenBudget.Model.Tests
             Assert.That((string)currentEvent.Changes[nameof(Budget.Name)].PreviousValue, Is.EqualTo(PreviousName));
         }
 
+        [Test]
+        public void EventsAreNotReplayed_OnEntityThatIsSourceOfTheEvent()
+        {
+            Assert.That(true, Is.False);
+        }
+
         [TearDown]
         public void Teardown()
         {

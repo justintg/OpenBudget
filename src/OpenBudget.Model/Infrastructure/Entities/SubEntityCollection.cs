@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Events;
+﻿using OpenBudget.Model.Entities;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Messaging;
 using OpenBudget.Model.Infrastructure.UnitOfWork;
 using OpenBudget.Model.Util;
@@ -140,6 +141,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
         public void Handle(EntityUpdatedEvent message)
         {
             T entity = this.GetEntity(message.EntityID);
+            if (entity == null)
+            {
+                if (!_identityMap.ContainsKey(message.EntityID)) throw new InvalidBudgetException("This entity should exist but doesn't!");
+
+                return;
+            }
+
             entity.ReplayEvents(message.Yield());
 
             if (message.Changes.ContainsKey(nameof(SubEntity.IsDeleted)) && entity.IsDeleted)
@@ -196,7 +204,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 _identityMap.Add(subEntity.EntityID, subEntity);
                 subEntity.Parent = _parent;
-                _collection.Add(subEntity);
+
+                if (!subEntity.IsDeleted)
+                    _collection.Add(subEntity);
             }
         }
     }
