@@ -380,6 +380,15 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         internal virtual void ReplayEvents(IEnumerable<FieldChangeEvent> events)
         {
+            /*Check if this event is actually the last event and do nothing
+             * if it is, since this entity already has current data */
+            if (events.Count() == 1)
+            {
+                var evt = events.Single();
+                if (evt.EventID.ToString() == LastEventID)
+                    return;
+            }
+
             var changedProperties = events.SelectMany(e => e.Changes.Keys).Distinct().ToList();
             foreach (var prop in changedProperties)
                 RaisePropertyChanging(prop);
@@ -393,6 +402,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     SetEntityDataObject(change.Value.NewValue, change.Key);
                     OnReplayChange(change.Key, previousValue, change.Value);
                 }
+                LastEventID = evt.EventID.ToString();
+                LastEventVector = evt.EventVector;
             }
 
             foreach (var prop in changedProperties)

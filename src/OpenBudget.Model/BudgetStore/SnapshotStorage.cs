@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using OpenBudget.Model.Infrastructure.Entities;
+using OpenBudget.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -49,6 +50,7 @@ namespace OpenBudget.Model.BudgetStore
     {
         private Dictionary<string, TSnapshot> _identityMap = new Dictionary<string, TSnapshot>();
         private Dictionary<ParentKey, List<TSnapshot>> _parentMap = new Dictionary<ParentKey, List<TSnapshot>>();
+        private SnapshotSerializer _serializer = new SnapshotSerializer();
 
         public SnapshotStorage()
         {
@@ -110,8 +112,8 @@ namespace OpenBudget.Model.BudgetStore
 
         private TSnapshot SerializeRoundTripSnapshot(TSnapshot snapshot)
         {
-            string data = JsonConvert.SerializeObject(snapshot);
-            return JsonConvert.DeserializeObject<TSnapshot>(data);
+            string data = _serializer.SerializeToString(snapshot);
+            return _serializer.DeserializeFromString<TSnapshot>(data);
         }
 
         public void StoreSnapshot(EntitySnapshot snapshot)

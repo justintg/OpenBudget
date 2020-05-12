@@ -54,6 +54,25 @@ namespace OpenBudget.Model.Tests
             Assert.That(true, Is.False);
         }
 
+        [Test]
+        public void LastEventInformation_IsAvailableOnReplay()
+        {
+            string lastEventId = Account.LastEventID;
+            Account accountCopy = BudgetModel.FindEntity<Account>(Account.EntityID);
+
+            Assert.That(accountCopy.LastEventID, Is.EqualTo(lastEventId));
+
+            bool vectorEqual = Account.LastEventVector.CompareVectors(accountCopy.LastEventVector) == Infrastructure.VectorClock.ComparisonResult.Equal;
+            Assert.That(vectorEqual, Is.True);
+
+            Account.Name = "Change The Name";
+            BudgetModel.SaveChanges();
+
+            Assert.That(Account.LastEventID, Is.Not.EqualTo(lastEventId));
+            Assert.That(Account.LastEventID, Is.EqualTo(TestEvents[0].EventID.ToString()));
+            Assert.That(Account.LastEventID, Is.EqualTo(accountCopy.LastEventID));
+        }
+
         [TearDown]
         public void Teardown()
         {
