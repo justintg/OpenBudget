@@ -49,12 +49,6 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
-        public void EventsAreNotReplayed_OnEntityThatIsSourceOfTheEvent()
-        {
-            Assert.That(true, Is.False);
-        }
-
-        [Test]
         public void LastEventInformation_IsAvailableOnReplay()
         {
             string lastEventId = Account.LastEventID;
