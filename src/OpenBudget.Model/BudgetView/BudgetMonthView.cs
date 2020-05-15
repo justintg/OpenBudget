@@ -15,6 +15,7 @@ namespace OpenBudget.Model.BudgetView
         private BudgetModel _model;
         private IncomeCategory _incomeCategory;
         public DateTime Date { get; private set; }
+        private Budget _internalBudget;
 
         private DateTime _lastDayOfMonth;
         private IBudgetViewCache _cache;
@@ -23,11 +24,13 @@ namespace OpenBudget.Model.BudgetView
         {
             _model = model;
             Date = date.FirstDayOfMonth();
+            _internalBudget = _model.GetBudget();
+            _internalBudget.MasterCategories.LoadCollection();
             _lastDayOfMonth = Date.LastDayOfMonth();
-            _incomeCategory = _model.GetBudget().IncomeCategories.GetIncomeCategory(Date);
+            _incomeCategory = _internalBudget.IncomeCategories.GetIncomeCategory(Date);
 
             _masterCategories = new TransformingObservableCollection<MasterCategory, MasterCategoryMonthView>(
-                _model.GetBudget().MasterCategories,
+                _internalBudget.MasterCategories,
                 mc => { return new MasterCategoryMonthView(mc, Date); },
                 mcv => { mcv.Dispose(); });
 

@@ -83,11 +83,11 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
-        /*protected override void AttachToModel(BudgetModel model)
+        protected override void OnAttached(BudgetModel model)
         {
-            base.AttachToModel(model);
+            base.OnAttached(model);
             IncomeCategories.AttachToModel(model);
-        }*/
+        }
 
         public EntityCollection<Account> Accounts { get; private set; }
         public EntityCollection<MasterCategory> MasterCategories { get; private set; }

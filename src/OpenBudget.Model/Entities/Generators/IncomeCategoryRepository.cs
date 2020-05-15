@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace OpenBudget.Model.Entities.Generators
 {
-    internal class IncomeCategoryGenerator : NoCreateEntityGenerator<IncomeCategory>
+    internal class IncomeCategoryRepository : NoCreateEntityRepository<IncomeCategory, IncomeCategorySnapshot>
     {
-        public IncomeCategoryGenerator(BudgetModel model) : base(model)
+        public IncomeCategoryRepository(BudgetModel model) : base(model)
         {
         }
 

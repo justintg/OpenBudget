@@ -35,8 +35,8 @@ namespace OpenBudget.Model
         internal EntityDenormalizer<MasterCategory> BudgetCategoryGenerator { get; private set; }
         internal EntityDenormalizer<Category> BudgetSubCategoryGenerator { get; private set; }
         internal EntityDenormalizer<Payee> PayeeGenerator { get; private set; }
-        internal IncomeCategoryGenerator IncomeCategoryGenerator { get; private set; }
-        internal CategoryMonthGenerator BudgetCategoryMonthGenerator { get; private set; }
+        internal EntityDenormalizer<CategoryMonth> CategoryMonthGenerator { get; private set; }
+        internal EntityDenormalizer<IncomeCategory> IncomeCategoryGenerator { get; private set; }
 
         internal EntityRepository<Budget, BudgetSnapshot> BudgetRepository { get; private set; }
         internal EntityRepository<Account, AccountSnapshot> AccountRepository { get; private set; }
@@ -45,6 +45,8 @@ namespace OpenBudget.Model
         internal EntityRepository<Category, CategorySnapshot> CategoryRepository { get; private set; }
         internal EntityRepository<Payee, PayeeSnapshot> PayeeRepository { get; private set; }
         internal SubEntityRepository<SubTransaction, SubTransactionSnapshot> SubTransactionRepository { get; private set; }
+        internal IncomeCategoryRepository IncomeCategoryRepository { get; private set; }
+        internal CategoryMonthRepository CategoryMonthRepository { get; private set; }
 
         internal EntitySnapshotDenormalizer<Budget, BudgetSnapshot> BudgetSnapshotDenormalizer { get; private set; }
         internal EntitySnapshotDenormalizer<Account, AccountSnapshot> AccountSnapshotDenormalizer { get; private set; }
@@ -53,6 +55,8 @@ namespace OpenBudget.Model
         internal EntitySnapshotDenormalizer<Category, CategorySnapshot> CategorySnapshotDenormalizer { get; private set; }
         internal EntitySnapshotDenormalizer<Payee, PayeeSnapshot> PayeeSnapshotDenormalizer { get; private set; }
         internal SubEntitySnapshotDenormalizer<SubTransaction, SubTransactionSnapshot, Transaction> SubTransactionSnapshotDenormalizer { get; private set; }
+        internal NoCreateEntitySnapshotDenormalizer<CategoryMonth, CategoryMonthSnapshot> CategoryMonthSnapshotDenormalizer { get; private set; }
+        internal NoCreateEntitySnapshotDenormalizer<IncomeCategory, IncomeCategorySnapshot> IncomeCategorySnapshotDenormalizer { get; private set; }
 
 
         private BudgetViewListener _budgetViewListenter;
@@ -104,9 +108,9 @@ namespace OpenBudget.Model
 
         private void InitializeInternals()
         {
+            InitializeRepositories();
             InitializeSnapshotDenormalizers();
             InitializeEntityDenormalizers();
-            InitializeRepositories();
         }
 
         private void InitializeRepositories()
@@ -118,6 +122,8 @@ namespace OpenBudget.Model
             CategoryRepository = RegisterRepository(new EntityRepository<Category, CategorySnapshot>(this));
             PayeeRepository = RegisterRepository(new EntityRepository<Payee, PayeeSnapshot>(this));
             SubTransactionRepository = RegisterRepository(new SubEntityRepository<SubTransaction, SubTransactionSnapshot>(this));
+            IncomeCategoryRepository = (IncomeCategoryRepository)RegisterRepository(new IncomeCategoryRepository(this));
+            CategoryMonthRepository = (CategoryMonthRepository)RegisterRepository(new CategoryMonthRepository(this));
         }
 
         private SubEntityRepository<TEntity, TSnapshot> RegisterRepository<TEntity, TSnapshot>(SubEntityRepository<TEntity, TSnapshot> repository)
@@ -127,8 +133,16 @@ namespace OpenBudget.Model
             return repository;
         }
 
+        private NoCreateEntityRepository<TEntity, TSnapshot> RegisterRepository<TEntity, TSnapshot>(NoCreateEntityRepository<TEntity, TSnapshot> repository)
+        where TEntity : NoCreateEntity where TSnapshot : EntitySnapshot, new()
+        {
+            _entityRepositories[typeof(TEntity)] = repository;
+            _entityRepositoriesStringKey[typeof(TEntity).Name] = repository;
+            return repository;
+        }
+
         private EntityRepository<TEntity, TSnapshot> RegisterRepository<TEntity, TSnapshot>(EntityRepository<TEntity, TSnapshot> repository)
-            where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
+        where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
         {
             _entityRepositories[typeof(TEntity)] = repository;
             _entityRepositoriesStringKey[typeof(TEntity).Name] = repository;
@@ -144,6 +158,8 @@ namespace OpenBudget.Model
             CategorySnapshotDenormalizer = new EntitySnapshotDenormalizer<Category, CategorySnapshot>(this);
             PayeeSnapshotDenormalizer = new EntitySnapshotDenormalizer<Payee, PayeeSnapshot>(this);
             SubTransactionSnapshotDenormalizer = new SubEntitySnapshotDenormalizer<SubTransaction, SubTransactionSnapshot, Transaction>(this);
+            CategoryMonthSnapshotDenormalizer = new NoCreateEntitySnapshotDenormalizer<CategoryMonth, CategoryMonthSnapshot>(this, CategoryMonthRepository);
+            IncomeCategorySnapshotDenormalizer = new NoCreateEntitySnapshotDenormalizer<IncomeCategory, IncomeCategorySnapshot>(this, IncomeCategoryRepository);
         }
 
         private void InitializeEntityDenormalizers()
@@ -155,8 +171,8 @@ namespace OpenBudget.Model
             BudgetCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<MasterCategory>(this));
             BudgetSubCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Category>(this));
             PayeeGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Payee>(this));
-            IncomeCategoryGenerator = (IncomeCategoryGenerator)RegisterEntityDenormalizer(new IncomeCategoryGenerator(this));
-            BudgetCategoryMonthGenerator = (CategoryMonthGenerator)RegisterEntityDenormalizer(new CategoryMonthGenerator(this));
+            CategoryMonthGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<CategoryMonth>(this));
+            IncomeCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<IncomeCategory>(this));
         }
 
         private void InitializeBudgetViewCache()
