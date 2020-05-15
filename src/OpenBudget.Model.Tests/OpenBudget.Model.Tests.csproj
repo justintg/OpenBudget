@@ -74,6 +74,7 @@
     <Compile Include="BudgetViewTests.cs" />
     <Compile Include="EntityBaseTests.cs" />
     <Compile Include="LazyLoadingTests.cs" />
+    <Compile Include="NoCreateEntityTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveLoadTests.cs" />
     <Compile Include="SerializationTests.cs" />

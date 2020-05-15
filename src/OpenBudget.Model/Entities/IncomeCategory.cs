@@ -13,6 +13,10 @@ namespace OpenBudget.Model.Entities
 
     public class IncomeCategory : NoCreateEntity<IncomeCategorySnapshot>
     {
+        internal IncomeCategory(IncomeCategorySnapshot snapshot) : base(snapshot)
+        {
+        }
+
         internal IncomeCategory(string entityId) : base(entityId)
         {
             string regexPattern = @"^(.*)\/([0-9]{4})(0[1-9]|1[0-2])$";

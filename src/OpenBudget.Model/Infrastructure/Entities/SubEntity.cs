@@ -37,7 +37,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        public override bool IsAttached => _parent.IsAttached;
+        public override bool IsAttached => _parent == null ? false : _parent.IsAttached;
 
         public override EntitySaveState SaveState
         {

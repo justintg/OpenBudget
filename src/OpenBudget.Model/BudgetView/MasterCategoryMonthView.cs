@@ -16,6 +16,10 @@ namespace OpenBudget.Model.BudgetView
         public MasterCategoryMonthView(MasterCategory category, DateTime date)
         {
             MasterCategory = category;
+            if (!category.Categories.IsLoaded)
+            {
+                category.Categories.LoadCollection();
+            }
             _date = date.FirstDayOfMonth();
 
             _categories = new TransformingObservableCollection<Category, CategoryMonthView>(MasterCategory.Categories,

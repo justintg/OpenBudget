@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Events;
+﻿using OpenBudget.Model.Entities;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         internal NoCreateEntity(string entityId) : base(entityId)
         {
+        }
+
+        internal NoCreateEntity(TSnapshot snapshot) : base(snapshot.EntityID)
+        {
+            _entityData = snapshot;
+        }
+
+        internal TSnapshot GetSnapshot()
+        {
+            return _entityData;
         }
 
         protected override T GetEntityData<T>(string property)
@@ -64,7 +75,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public override void Delete()
         {
-            throw new NotSupportedException();
+            throw new InvalidBudgetActionException("Entities of this type always exist and cannot be deleted");
         }
     }
 }

@@ -41,10 +41,10 @@ namespace OpenBudget.Model.Entities
 
         public CategoryMonthFinder CategoryMonths { get; private set; }
 
-        /*protected override void OnAttachAttachToModel(BudgetModel model)
+        protected override void OnAttached(BudgetModel model)
         {
-            base.AttachToModel(model);
+            base.OnAttached(model);
             CategoryMonths.AttachToModel(model);
-        }*/
+        }
     }
 }

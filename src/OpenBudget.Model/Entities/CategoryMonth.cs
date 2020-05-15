@@ -14,6 +14,10 @@ namespace OpenBudget.Model.Entities
 
     public class CategoryMonth : NoCreateEntity<CategoryMonthSnapshot>
     {
+        internal CategoryMonth(CategoryMonthSnapshot snapshot) : base(snapshot)
+        {
+        }
+
         internal CategoryMonth(string entityId) : base(entityId)
         {
             string regexPattern = @"^(.*)\/([0-9]{4})(0[1-9]|1[0-2])$";

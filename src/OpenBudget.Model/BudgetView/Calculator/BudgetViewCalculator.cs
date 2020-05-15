@@ -162,7 +162,7 @@ namespace OpenBudget.Model.BudgetView.Calculator
 
         private void AddAmountsBudgeted(CategoryResultsDictionary results)
         {
-            foreach (var categoryMonth in _model.GetBudget().SelectAndLoad(b => b.MasterCategories).SelectManyAndLoad(mc => mc.Categories).SelectMany(c => c.CategoryMonths.GetAllMaterialized()))
+            foreach (var categoryMonth in _model.FindRepository<CategoryMonth>().GetAllEntities())
             {
                 if (categoryMonth.AmountBudgeted == 0M) continue;
 
@@ -185,8 +185,8 @@ namespace OpenBudget.Model.BudgetView.Calculator
         private TransactionDictionary GroupTransactions()
         {
             var groupedTransactions = new Dictionary<CategoryMonthKey, decimal>();
-            
-            foreach (var transaction in _model.GetBudget().SelectAndLoad(b => b.Accounts).SelectManyAndLoad(a => a.Transactions))
+
+            foreach (var transaction in _model.FindRepository<Transaction>().GetAllEntities())
             {
                 if (transaction.TransactionType == TransactionTypes.Normal)
                 {
