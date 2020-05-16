@@ -9,8 +9,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 {
     public class PayeeColumnViewModel : TransactionGridColumnViewModel<EntityBase>
     {
-        ObservableCollection<Payee> _payeeSource;
-        ObservableCollection<Account> _accountSource;
+        EntityCollection<Payee> _payeeSource;
+        EntityCollection<Account> _accountSource;
         Account _currentAccount;
 
         public PayeeColumnViewModel(
@@ -20,8 +20,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             string propertyName,
             int width,
             Account currentAccount,
-            ObservableCollection<Payee> payeeSource,
-            ObservableCollection<Account> accountSource) :
+            EntityCollection<Payee> payeeSource,
+            EntityCollection<Account> accountSource) :
                 base(getter, setter, header, propertyName, width)
         {
             _payeeSource = payeeSource;
@@ -36,7 +36,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             string propertyName,
             int width,
             Account currentAccount,
-            ObservableCollection<Account> accountSource) :
+            EntityCollection<Account> accountSource) :
                 base(getter, setter, header, propertyName, width)
         {
             _accountSource = accountSource;

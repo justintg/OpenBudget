@@ -17,6 +17,7 @@ namespace OpenBudget.Application.ViewModels
         private MainViewModel _mainViewModel;
         private Action<ViewModelBase> _showScreenCallback;
         private INavigationService _navigationService;
+        private Budget _budget;
 
         public BudgetMenuViewModel(MainViewModel mainViewModel, INavigationService navigationService, Action<ViewModelBase> showScreenCallback)
         {
@@ -25,6 +26,7 @@ namespace OpenBudget.Application.ViewModels
             _navigationService = navigationService;
 
             _budgetModel = _mainViewModel.BudgetModel;
+
             _mainViewModel.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.BudgetModel))
@@ -58,6 +60,8 @@ namespace OpenBudget.Application.ViewModels
             private set
             {
                 _budgetModel = value;
+                _budget = _budgetModel.GetBudget();
+                _budget.Accounts.LoadCollection();
                 InitializeAccountItems();
                 RaisePropertyChanged();
             }
@@ -81,7 +85,7 @@ namespace OpenBudget.Application.ViewModels
                 OffBudgetAccounts.Dispose();
             }
 
-            OnBudgetAccounts = new TransformingObservableCollection<Account, AccountMenuItemViewModel>(_budgetModel.Budget.Accounts,
+            OnBudgetAccounts = new TransformingObservableCollection<Account, AccountMenuItemViewModel>(_budget.Accounts,
                 (account) =>
                 {
                     return new AccountMenuItemViewModel(account, account.Name);
@@ -94,7 +98,7 @@ namespace OpenBudget.Application.ViewModels
             OnBudgetAccounts.CollectionChanged += OnBudgetAccounts_CollectionChanged;
             OnBudgetAccounts.ItemPropertyChanged += OnBudgetAccounts_ItemPropertyChanged;
 
-            OffBudgetAccounts = new TransformingObservableCollection<Account, AccountMenuItemViewModel>(_budgetModel.Budget.Accounts,
+            OffBudgetAccounts = new TransformingObservableCollection<Account, AccountMenuItemViewModel>(_budget.Accounts,
                 (account) =>
                 {
                     return new AccountMenuItemViewModel(account, account.Name);

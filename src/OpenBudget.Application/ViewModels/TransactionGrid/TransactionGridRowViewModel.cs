@@ -218,7 +218,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             else if (IsEditing)
             {
                 IsEditing = false;
-                Transaction.CancelCurrentChanges();
+                Transaction.Model.CancelChanges();
             }
         }
 

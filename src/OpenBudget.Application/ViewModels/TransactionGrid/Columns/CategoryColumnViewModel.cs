@@ -10,7 +10,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 {
     public class CategoryColumnViewModel : TransactionGridColumnViewModel<EntityBase>
     {
-        private ObservableCollection<MasterCategory> _categorySource;
+        private EntityCollection<MasterCategory> _categorySource;
         private IncomeCategoryFinder _incomeCategorySource;
 
         public CategoryColumnViewModel(
@@ -19,7 +19,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             string header,
             string propertyName,
             int width,
-            ObservableCollection<MasterCategory> categorySource,
+            EntityCollection<MasterCategory> categorySource,
             IncomeCategoryFinder incomeCategorySource)
             : base(getter, setter, header, propertyName, width)
         {
@@ -33,7 +33,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             string header,
             string propertyName,
             int width,
-            ObservableCollection<MasterCategory> categorySource,
+            EntityCollection<MasterCategory> categorySource,
             IncomeCategoryFinder incomeCategorySource)
             : base(getter, setter, header, propertyName, width)
         {

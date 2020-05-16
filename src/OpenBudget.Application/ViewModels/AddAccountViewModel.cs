@@ -170,13 +170,14 @@ namespace OpenBudget.Application.ViewModels
         public void AddAccount()
         {
             var budgetModel = _mainViewModel.BudgetModel;
+            var budget = budgetModel.GetBudget();
 
             if (_initialBalance != 0)
             {
                 Transaction initialTransaction = new Transaction();
                 initialTransaction.Amount = _initialBalance;
                 initialTransaction.TransactionDate = DateTime.Today;
-                initialTransaction.IncomeCategory = budgetModel.Budget.IncomeCategories.GetIncomeCategory(initialTransaction.TransactionDate);
+                initialTransaction.IncomeCategory = budget.IncomeCategories.GetIncomeCategory(initialTransaction.TransactionDate);
                 initialTransaction.Payee = new Payee() { Name = "Initial Balance" };
 
                 Account.Transactions.Add(initialTransaction);
@@ -185,7 +186,7 @@ namespace OpenBudget.Application.ViewModels
             Account.AccountType = SelectedAccountType.Value;
             Account.BudgetingType = SelectedBudgetingType.Value;
 
-            budgetModel.Budget.Accounts.Add(_account);
+            budget.Accounts.Add(_account);
             budgetModel.SaveChanges();
 
             _navigationService.NavigateBack();

@@ -10,8 +10,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
 {
     public class PayeeCellViewModel : ResultsCellViewModel
     {
-        public ObservableCollection<Payee> PayeeSource { get; private set; }
-        public ObservableCollection<Account> AccountSource { get; private set; }
+        public EntityCollection<Payee> PayeeSource { get; private set; }
+        public EntityCollection<Account> AccountSource { get; private set; }
         public Account CurrentAccount { get; private set; }
 
         public PayeeCellViewModel(
@@ -19,8 +19,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             TransactionGridRowViewModel row,
             Transaction transaction,
             Account currentAccount,
-            ObservableCollection<Payee> payeeSource,
-            ObservableCollection<Account> accountSource)
+            EntityCollection<Payee> payeeSource,
+            EntityCollection<Account> accountSource)
             : base(column, row, transaction)
         {
             CurrentAccount = currentAccount;
@@ -35,7 +35,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
             SubTransactionRowViewModel subTransactionRow,
             SubTransaction subTransaction,
             Account currentAccount,
-            ObservableCollection<Account> accountSource)
+            EntityCollection<Account> accountSource)
             : base(column, row, transaction, subTransactionRow, subTransaction)
         {
             CurrentAccount = currentAccount;

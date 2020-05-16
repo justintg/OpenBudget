@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
+using OpenBudget.Model.Entities;
 
 namespace OpenBudget.Application.ViewModels
 {
@@ -85,14 +86,15 @@ namespace OpenBudget.Application.ViewModels
 
             try
             {
-                BudgetModel budget = _budgetLoader.LoadBudget(budgetPath);
-                BudgetStub stub = new BudgetStub() { BudgetName = budget.Budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };
+                BudgetModel budgetModel = _budgetLoader.LoadBudget(budgetPath);
+                Budget budget = budgetModel.GetBudget();
+                BudgetStub stub = new BudgetStub() { BudgetName = budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };
 
                 var deviceSettings = _settingsProvider.Get<Device>();
                 deviceSettings.AddRecentBudgetToTop(stub);
                 deviceSettings.Save();
 
-                _mainViewModel.MountBudget(budget);
+                _mainViewModel.MountBudget(budgetModel);
                 _navigationService.NavigateTo<MainBudgetViewModel>();
             }
             catch (Exception)
