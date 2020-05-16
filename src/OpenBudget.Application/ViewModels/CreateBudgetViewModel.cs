@@ -99,14 +99,14 @@ namespace OpenBudget.Application.ViewModels
 
             InitializeDefaultCategories();
 
-            BudgetModel budget = _budgetLoader.CreateNewBudget(budgetPath, Budget);
+            BudgetModel budgetModel = _budgetLoader.CreateNewBudget(budgetPath, Budget);
 
             var deviceSettings = _settingsProvider.Get<Device>();
-            BudgetStub budgetStub = new BudgetStub() { BudgetName = budget.Budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };
+            BudgetStub budgetStub = new BudgetStub() { BudgetName = Budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };
             deviceSettings.AddRecentBudgetToTop(budgetStub);
             deviceSettings.Save();
 
-            _mainViewModel.MountBudget(budget);
+            _mainViewModel.MountBudget(budgetModel);
             _budget.ErrorsChanged -= Budget_ErrorsChanged;
             _navigationService.NavigateTo<MainBudgetViewModel>();
         }

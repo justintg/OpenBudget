@@ -77,17 +77,19 @@ namespace OpenBudget.Application.ViewModels
         {
             //Set thread culture before updating the Budget so when bindings refresh the appropriate culture
             //is used for display.
+            var budget = budgetModel.GetBudget();
+
             try
             {
-                if (!string.IsNullOrWhiteSpace(budgetModel.Budget.CurrencyCulture))
+                if (!string.IsNullOrWhiteSpace(budget.CurrencyCulture))
                 {
-                    Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(budgetModel.Budget.CurrencyCulture);
+                    Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(budget.CurrencyCulture);
                 }
             }
             catch (Exception) { }
 
             BudgetModel = budgetModel;
-            this.Header = $"OpenBudget - {budgetModel.Budget.Name}";
+            this.Header = $"OpenBudget - {budget.Name}";
         }
 
         public void Initialize()

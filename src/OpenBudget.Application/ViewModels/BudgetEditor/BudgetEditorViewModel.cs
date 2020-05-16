@@ -14,14 +14,17 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
     public class BudgetEditorViewModel : ViewModelBase, IDisposable
     {
         private BudgetModel _budgetModel;
+        private Budget _budget;
         private BudgetMonthViewModel _selectedMonth;
 
         public BudgetEditorViewModel(BudgetModel budgetModel)
         {
             _budgetModel = budgetModel;
+            _budget = _budgetModel.GetBudget();
+            _budget.MasterCategories.LoadCollection();
             InitializeMonthViews();
             _masterCategories = new TransformingObservableCollection<MasterCategory, MasterCategoryRowViewModel>(
-                _budgetModel.Budget.MasterCategories,
+                _budget.MasterCategories,
                 (mc) => { return new MasterCategoryRowViewModel(mc, this); },
                 mcvm => { mcvm.Dispose(); });
         }

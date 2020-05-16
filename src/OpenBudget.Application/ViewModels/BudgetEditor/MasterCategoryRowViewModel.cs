@@ -13,6 +13,10 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         {
             _masterCategory = masterCategory;
             _budgetEditor = budgetEditor;
+
+            if (!_masterCategory.Categories.IsLoaded)
+                _masterCategory.Categories.LoadCollection();
+
             _categories = new TransformingObservableCollection<Category, CategoryRowViewModel>(
                 masterCategory.Categories,
                 c => { return new CategoryRowViewModel(this, c, _budgetEditor); },

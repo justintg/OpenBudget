@@ -14,12 +14,17 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
     {
         private const double MAX_MEMO_COLUMN_WIDTH = 400.0;
         private BudgetModel _model;
+        private Budget _budget;
         private double _visibleWidth;
 
         public TransactionGridViewModel(Account account)
         {
             _account = account;
             _model = account.Model;
+            _budget = _model.GetBudget();
+            _budget.Accounts.LoadCollection();
+            _budget.MasterCategories.LoadCollection();
+            _budget.Payees.LoadCollection();
 
             AddTransactionCommand = new RelayCommand(AddTransaction);
 
@@ -108,8 +113,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             ObservableCollection<TransactionGridColumnViewModel> columns = new ObservableCollection<TransactionGridColumnViewModel>();
             columns.Add(new DateColumnViewModel(t => t.TransactionDate, (t, val) => { t.TransactionDate = val; }, "Date", nameof(Transaction.TransactionDate), 100));
-            columns.Add(new PayeeColumnViewModel(t => t.PayeeOrAccount, (t, val) => { t.PayeeOrAccount = val; }, "Payee", nameof(Transaction.Payee), 200, _account, _model.Budget.Payees, _model.Budget.Accounts));
-            columns.Add(new CategoryColumnViewModel((Transaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(Transaction.Category), 200, _model.Budget.MasterCategories, _model.Budget.IncomeCategories));
+            columns.Add(new PayeeColumnViewModel(t => t.PayeeOrAccount, (t, val) => { t.PayeeOrAccount = val; }, "Payee", nameof(Transaction.Payee), 200, _account, _budget.Payees, _budget.Accounts));
+            columns.Add(new CategoryColumnViewModel((Transaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(Transaction.Category), 200, _budget.MasterCategories, _budget.IncomeCategories));
             columns.Add(new StringColumnViewModel((Transaction t) => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(Transaction.Memo), 150));
             columns.Add(new DecimalColumnViewModel((Transaction t) =>
             {
@@ -133,8 +138,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _subTransactionColumns = subTransactionColumns;
 
             subTransactionColumns.Add(new CommandColumnViewModel("Delete", 10, (st) => st.DeleteSubTransactionCommand));
-            subTransactionColumns.Add(new PayeeColumnViewModel((SubTransaction t) => t.TransferAccount, (t, val) => { t.TransferAccount = val as Account; }, "Payee", nameof(SubTransaction.TransferAccount), 200, _account, _model.Budget.Accounts));
-            subTransactionColumns.Add(new CategoryColumnViewModel((SubTransaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(SubTransaction.Category), 200, _model.Budget.MasterCategories, _model.Budget.IncomeCategories));
+            subTransactionColumns.Add(new PayeeColumnViewModel((SubTransaction t) => t.TransferAccount, (t, val) => { t.TransferAccount = val as Account; }, "Payee", nameof(SubTransaction.TransferAccount), 200, _account, _budget.Accounts));
+            subTransactionColumns.Add(new CategoryColumnViewModel((SubTransaction t) => t.Category, (t, val) => { t.Category = val; }, "Category", nameof(SubTransaction.Category), 200, _budget.MasterCategories, _budget.IncomeCategories));
             subTransactionColumns.Add(new StringColumnViewModel((SubTransaction t) => t.Memo, (t, val) => { t.Memo = val; }, "Memo", nameof(SubTransaction.Memo), 300));
             subTransactionColumns.Add(new DecimalColumnViewModel((SubTransaction t) =>
             {
