@@ -255,6 +255,12 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void ParentsAndChildrenInTree_ResolveToActualEntityAndNotCopy()
+        {
+            Assert.That(true, Is.False);
+        }
+
+        [Test]
         public void CanUnloadChildEntityCollection()
         {
             Assert.That(true, Is.False);

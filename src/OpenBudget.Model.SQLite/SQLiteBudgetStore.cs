@@ -12,12 +12,14 @@ namespace OpenBudget.Model.SQLite
     {
         private SQLiteConnection _connection;
         private SQLiteEventStore _eventStore;
+        private MemorySnapshotStore _snapshotStore;
 
         public SQLiteBudgetStore(Guid deviceId, string dbPath)
         {
             _connection = new SQLiteConnection(dbPath);
             EnsureTablesInitialized();
             _eventStore = new SQLiteEventStore(_connection);
+            _snapshotStore = new MemorySnapshotStore();
         }
 
         private void EnsureTablesInitialized()
@@ -35,7 +37,7 @@ namespace OpenBudget.Model.SQLite
 
         public IEventStore EventStore => _eventStore;
 
-        public ISnapshotStore SnapshotStore => throw new NotImplementedException();
+        public ISnapshotStore SnapshotStore => _snapshotStore;
 
         public TExtension TryGetExtension<TExtension>() where TExtension : class
         {

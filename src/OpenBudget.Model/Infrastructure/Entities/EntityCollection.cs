@@ -69,6 +69,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             var repository = _model.FindRepository<T>();
             var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID).Where(e => !e.IsDeleted).ToList();
+
             if (entities.Count > 0)
                 AddRangeInternal(entities);
 
