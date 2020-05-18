@@ -46,6 +46,14 @@ namespace OpenBudget.Model.Entities.Generators
             }
         }
 
+        protected void UpdateAllAccountBalances()
+        {
+            foreach (var accountId in _registrations.Keys)
+            {
+                UpdateAccountBalance(accountId);
+            }
+        }
+
         protected IEnumerable<Account> EnumerateRegistrations(string entityId)
         {
             List<WeakReference<Account>> entityRegistrations = null;
@@ -86,15 +94,25 @@ namespace OpenBudget.Model.Entities.Generators
         public void Handle(EntityUpdatedEvent message)
         {
             if (message.Changes.ContainsKey(nameof(Transaction.Amount))
-                && message.Changes.ContainsKey(nameof(Transaction.Parent)))
+                && !message.Changes.ContainsKey(nameof(Transaction.Parent)))
             {
-                if (message.Changes.TryGetValue(nameof(Transaction.Parent), out FieldChange parentFieldChange)
-                    && parentFieldChange is TypedFieldChange<EntityReference> typedParentFieldChange)
+                var transactionSnapshot = _budgetModel.BudgetStore.SnapshotStore.GetSnapshot<TransactionSnapshot>(message.EntityID);
+                UpdateAccountBalance(transactionSnapshot.Parent.EntityID);
+            }
+            else if (message.Changes.TryGetValue(nameof(Transaction.Parent), out FieldChange fieldChange))
+            {
+                if (fieldChange is TypedFieldChange<EntityReference> typedFieldChange)
                 {
-                    EntityReference parentReference = typedParentFieldChange.TypedNewValue;
-                    if (parentReference.EntityType == nameof(Account))
+                    if (typedFieldChange.TypedPreviousValue == null)
                     {
-                        UpdateAccountBalance(parentReference.EntityID);
+                        UpdateAllAccountBalances();
+                    }
+                    else
+                    {
+                        EntityReference previousParent = typedFieldChange.TypedPreviousValue;
+                        EntityReference newParent = typedFieldChange.TypedNewValue;
+                        UpdateAccountBalance(previousParent.EntityID);
+                        UpdateAccountBalance(newParent.EntityID);
                     }
                 }
             }

@@ -55,5 +55,30 @@ namespace OpenBudget.Model.Tests
             Account accountCopy = TestBudget.BudgetModel.FindEntity<Account>(account.EntityID);
             Assert.That(accountCopy.Balance, Is.EqualTo(-100M));
         }
+
+        [Test]
+        public void AccountBalance_MovingTransactionUpdatesBalanceOfBothAccounts()
+        {
+            var account = TestBudget.Budget.Accounts[0];
+            var account2 = TestBudget.Budget.Accounts[1];
+            var category = TestBudget.Budget.MasterCategories[0].Categories[0];
+
+            Transaction transaction = new Transaction();
+            transaction.TransactionDate = DateTime.Today;
+            transaction.TransactionCategory = category;
+            transaction.Amount = -100M;
+
+            account.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            Assert.That(account.Balance, Is.EqualTo(-100M));
+            Assert.That(account2.Balance, Is.EqualTo(0M));
+
+            account2.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            Assert.That(account.Balance, Is.EqualTo(0M));
+            Assert.That(account2.Balance, Is.EqualTo(-100M));
+        }
     }
 }
