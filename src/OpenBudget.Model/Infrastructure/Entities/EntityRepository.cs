@@ -11,9 +11,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
     public class EntityRepository<TEntity, TSnapshot> : IEntityRepository<TEntity>
         where TEntity : EntityBase where TSnapshot : EntitySnapshot, new()
     {
-        private readonly BudgetModel _budgetModel;
-        private readonly ISnapshotStore _snapshotStore;
-        private readonly Func<TSnapshot, TEntity> _entitySnapshotConstructor;
+        protected readonly BudgetModel _budgetModel;
+        protected readonly ISnapshotStore _snapshotStore;
+        protected readonly Func<TSnapshot, TEntity> _entitySnapshotConstructor;
 
         internal EntityRepository(BudgetModel budgetModel)
         {
@@ -31,7 +31,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _entitySnapshotConstructor = Expression.Lambda<Func<TSnapshot, TEntity>>(constructExp, snapshotParam).Compile();
         }
 
-        private TEntity LoadEntityFromSnapshot(TSnapshot snapshot)
+        protected virtual TEntity LoadEntityFromSnapshot(TSnapshot snapshot)
         {
             TEntity entity = _entitySnapshotConstructor(snapshot);
             _budgetModel.AttachToModel(entity);

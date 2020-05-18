@@ -14,5 +14,7 @@ namespace OpenBudget.Model.BudgetStore
         IEnumerable<TSnapshot> GetAllSnapshots<TSnapshot>() where TSnapshot : EntitySnapshot;
         void StoreSnapshot<TSnapshot>(TSnapshot snapshot) where TSnapshot : EntitySnapshot;
         void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots);
+
+        decimal GetAccountBalance(string accountId);
     }
 }
