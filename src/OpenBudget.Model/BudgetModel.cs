@@ -2,6 +2,7 @@
 using OpenBudget.Model.BudgetView;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Entities.Generators;
+using OpenBudget.Model.Entities.Repositories;
 using OpenBudget.Model.Events;
 using OpenBudget.Model.EventStream;
 using OpenBudget.Model.Infrastructure;
@@ -37,6 +38,8 @@ namespace OpenBudget.Model
         internal EntityDenormalizer<Payee> PayeeGenerator { get; private set; }
         internal EntityDenormalizer<CategoryMonth> CategoryMonthGenerator { get; private set; }
         internal EntityDenormalizer<IncomeCategory> IncomeCategoryGenerator { get; private set; }
+
+        internal AccountBalanceDenormalizer AccountBalanceDenormalizer { get; private set; }
 
         internal EntityRepository<Budget, BudgetSnapshot> BudgetRepository { get; private set; }
         internal EntityRepository<Account, AccountSnapshot> AccountRepository { get; private set; }
@@ -116,7 +119,7 @@ namespace OpenBudget.Model
         private void InitializeRepositories()
         {
             BudgetRepository = RegisterRepository(new EntityRepository<Budget, BudgetSnapshot>(this));
-            AccountRepository = RegisterRepository(new EntityRepository<Account, AccountSnapshot>(this));
+            AccountRepository = RegisterRepository(new AccountRepository(this));
             TransactionRepository = RegisterRepository(new EntityRepository<Transaction, TransactionSnapshot>(this));
             MasterCategoryRepository = RegisterRepository(new EntityRepository<MasterCategory, MasterCategorySnapshot>(this));
             CategoryRepository = RegisterRepository(new EntityRepository<Category, CategorySnapshot>(this));
@@ -173,6 +176,8 @@ namespace OpenBudget.Model
             PayeeGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Payee>(this));
             CategoryMonthGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<CategoryMonth>(this));
             IncomeCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<IncomeCategory>(this));
+
+            AccountBalanceDenormalizer = new AccountBalanceDenormalizer(this);
         }
 
         private void InitializeBudgetViewCache()
@@ -270,6 +275,22 @@ namespace OpenBudget.Model
 
         internal void AttachToModel(EntityBase entity)
         {
+            AttachToModelBase(entity);
+            switch (entity.GetType().Name)
+            {
+                case nameof(Account):
+                    AttachAccountToModel((Account)entity);
+                    break;
+            }
+        }
+
+        private void AttachAccountToModel(Account account)
+        {
+            AccountBalanceDenormalizer.RegisterForChanges(account);
+        }
+
+        private void AttachToModelBase(EntityBase entity)
+        {
             if (entity.IsAttached && entity.Model != this)
             {
                 throw new InvalidOperationException("You can't attach the same entity to multiple models.");
@@ -303,8 +324,7 @@ namespace OpenBudget.Model
             {
                 model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
             }
-            //model.Budget = (Budget)model.BudgetGenerator.GetAll().Single();
-            //model.Budget.AttachToModel(model);
+
             model.BudgetViewCache.RecalculateCache();
             return model;
         }

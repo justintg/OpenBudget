@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.Infrastructure.Entities;
 
 namespace OpenBudget.Model.BudgetStore
@@ -67,6 +68,13 @@ namespace OpenBudget.Model.BudgetStore
         private ISnapshotStorage<TSnapshot> GetOrCreateSnapshotStorage<TSnapshot>() where TSnapshot : EntitySnapshot
         {
             return (ISnapshotStorage<TSnapshot>)GetOrCreateSnapshotStorage(typeof(TSnapshot));
+        }
+
+        public decimal GetAccountBalance(string accountId)
+        {
+            var storage = GetOrCreateSnapshotStorage<TransactionSnapshot>();
+            var transactionSnapshots = storage.GetSnapshotsByParent(nameof(Account), accountId);
+            return transactionSnapshots.Sum(ts => ts.Amount);
         }
     }
 }

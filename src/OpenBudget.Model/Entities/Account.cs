@@ -91,36 +91,16 @@ namespace OpenBudget.Model.Entities
         {
             get
             {
-                if (!_balanceCalculated) CalculateBalance();
                 return _balance;
             }
-        }
-
-        private void CalculateBalance()
-        {
-            if (Transactions.IsLoaded)
+            internal set
             {
-                _balanceCalculated = true;
-                _balance = Transactions.Sum(t => t.Amount);
+                _balance = value; RaisePropertyChanged();
             }
         }
-
-        private void BalanceChanged()
-        {
-            if (_balanceCalculated) CalculateBalance();
-            RaisePropertyChanged(nameof(Balance));
-        }
-
-        //private PropertyChangedMessageFilter<Transaction> _amountUpdatedFilter;
 
         protected override void OnAttached(BudgetModel model)
         {
-            /*var balanceChanged = model.MessageBus.EntityCreatedOrUpdated
-                .Where(e => e.EntityType == nameof(Transaction)
-                && Transactions.Select(t => t.EntityID).Contains(e.EntityID)
-                && e.Changes.ContainsKey(nameof(Transaction.Amount)));
-
-            model.MessageBus.ObservableContainer.RegisterObservable(balanceChanged, this, (a, e) => a.BalanceChanged());*/
         }
 
         public EntityCollection<Transaction> Transactions { get; private set; }
