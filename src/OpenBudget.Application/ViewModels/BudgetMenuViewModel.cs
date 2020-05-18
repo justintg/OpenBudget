@@ -26,6 +26,9 @@ namespace OpenBudget.Application.ViewModels
             _navigationService = navigationService;
 
             _budgetModel = _mainViewModel.BudgetModel;
+            _budget = _budgetModel?.GetBudget();
+            _budget?.Accounts?.EnsureCollectionLoaded();
+
 
             _mainViewModel.PropertyChanged += (sender, e) =>
             {

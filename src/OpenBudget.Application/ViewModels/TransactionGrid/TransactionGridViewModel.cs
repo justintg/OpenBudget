@@ -162,6 +162,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 Rows.Dispose();
             }
             _account = account;
+            _account.Transactions.EnsureCollectionLoaded();
             Rows = new TransformingObservableCollection<Transaction, TransactionGridRowViewModel>(
                 _account.Transactions,
                 (transaction) =>

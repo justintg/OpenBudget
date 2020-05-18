@@ -106,6 +106,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid.Columns
         {
             foreach (MasterCategory masterCategory in _masterCategorySource)
             {
+                masterCategory.Categories.EnsureCollectionLoaded();
                 var matchingCategories = masterCategory.Categories.Where(c => c.Name.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase)).ToList();
                 if (matchingCategories.Count == 0) continue;
 

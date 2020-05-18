@@ -21,9 +21,11 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             _categoryMonthViews = new TransformingObservableCollection<BudgetMonthViewModel, CategoryMonthViewModel>(
                 _budgetEditor.VisibleMonthViews, v =>
                 {
+                    //BudgetMonthView holds it's own copy of the Budget and Categories so you have to match them up based on entityId
+                    //instead of ReferenceEquals on the instance
                     BudgetMonthView view = v.BudgetMonthView;
-                    MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory == category.Parent).Single();
-                    return new CategoryMonthViewModel(v, masterView.Categories.Where(c => c.Category == _category).Single());
+                    MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory.EntityID == category.Parent.EntityID).Single();
+                    return new CategoryMonthViewModel(v, masterView.Categories.Where(c => c.Category.EntityID == _category.EntityID).Single());
                 },
                 cmv => { cmv.Dispose(); });
         }
