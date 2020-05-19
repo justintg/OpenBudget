@@ -233,7 +233,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         internal void NotifyLoadedFromChild(EntityBase child)
         {
             var childCollection = GetChildCollection(child);
-            childCollection.EnsureMaterializedChild(child);
+            childCollection?.EnsureContainsMaterializedChild(child);
         }
 
         internal void NotifyAttachedToBudget(BudgetModel model)
