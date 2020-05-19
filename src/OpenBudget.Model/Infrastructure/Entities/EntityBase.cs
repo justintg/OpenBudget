@@ -128,7 +128,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public virtual EntityBase Parent
         {
-            get { return ResolveEntityReference<EntityBase>(); }
+            get { return ResolveEntityReference<EntityBase>(isLoadingParent: true); }
             internal set { SetEntityReference<EntityBase>(value); }
         }
 
@@ -229,6 +229,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         internal bool IsBeingSaved { get; private set; }
         internal bool RegisteredForChanges { get; private set; }
+
+        internal void NotifyLoadedFromChild(EntityBase child)
+        {
+            var childCollection = GetChildCollection(child);
+            childCollection.EnsureMaterializedChild(child);
+        }
 
         internal void NotifyAttachedToBudget(BudgetModel model)
         {
@@ -538,7 +544,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             reference.ResolveToEntity(entity);
         }
 
-        protected T ResolveEntityReference<T>([CallerMemberName]string property = null) where T : EntityBase
+        protected T ResolveEntityReference<T>([CallerMemberName]string property = null, bool isLoadingParent = false) where T : EntityBase
         {
             EntityReference reference = GetProperty<EntityReference>(property);
             if (reference == null)
@@ -555,7 +561,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 if (this.IsAttached)
                 {
-                    return reference.Resolve<T>(_model);
+                    T resolvedEntity = reference.Resolve<T>(_model);
+                    if (isLoadingParent)
+                    {
+                        resolvedEntity.NotifyLoadedFromChild(this);
+                    }
+                    return resolvedEntity;
                 }
                 else
                     throw new InvalidOperationException("Cannot Resolve an Unresolved EntityReference when the reference entity is not attached to a model");

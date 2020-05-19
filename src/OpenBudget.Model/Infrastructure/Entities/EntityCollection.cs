@@ -23,6 +23,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private ObservableCollection<T> _loadedEntities = new ObservableCollection<T>();
         private HashSet<string> _loadedEntityIds = new HashSet<string>();
+        private Dictionary<string, T> _knownMaterializedChildren = new Dictionary<string, T>();
 
         private List<Tuple<T, int>> _pendingDeletions;
 
@@ -69,11 +70,26 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             var repository = _model.FindRepository<T>();
             var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID).Where(e => !e.IsDeleted).ToList();
+            ReplaceChildrenWithKnownChildren(entities);
 
             if (entities.Count > 0)
                 AddRangeInternal(entities);
 
             IsLoaded = true;
+        }
+
+        private void ReplaceChildrenWithKnownChildren(List<T> entities)
+        {
+            foreach (var child in entities.ToList())
+            {
+                if (_knownMaterializedChildren.TryGetValue(child.EntityID, out T knownChild))
+                {
+                    int index = entities.IndexOf(child);
+                    entities[index] = knownChild;
+                }
+            }
+
+            _knownMaterializedChildren.Clear();
         }
 
         private void AddRangeInternal(IEnumerable<T> entities)
@@ -357,6 +373,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
         IEnumerable<EntityBase> IEntityCollection.EnumerateUnattachedEntities()
         {
             return _loadedEntities.Where(e => e.SaveState == EntitySaveState.Unattached);
+        }
+
+        void IEntityCollection.EnsureMaterializedChild(EntityBase child)
+        {
+            if (_knownMaterializedChildren.ContainsKey(child.EntityID))
+            {
+                throw new InvalidBudgetActionException("More than one copy of an entity cannot be registered as a known child.");
+            }
+
+            _knownMaterializedChildren.Add(child.EntityID, (T)child);
         }
     }
 }
