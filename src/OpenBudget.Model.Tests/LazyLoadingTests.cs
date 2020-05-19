@@ -19,8 +19,6 @@ namespace OpenBudget.Model.Tests
     [TestFixture]
     public class LazyLoadingTests
     {
-        TestBudget TestBudget;
-
         public static Budget CreateInitialBudget()
         {
             Budget initialBudget = new Budget();
@@ -30,11 +28,6 @@ namespace OpenBudget.Model.Tests
 
             return initialBudget;
         }
-        /*[SetUp]
-        public void Setup()
-        {
-            TestBudget = BudgetSetup.CreateBudget();
-        }*/
 
         [Test]
         public void InitialBudget_IsAttachedAfterCreate()
@@ -255,9 +248,23 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
-        public void ParentsAndChildrenInTree_ResolveToActualEntityAndNotCopy()
+        public void EntitiesInTree_ResolveToRightEntityAndNotAnotherCopy()
         {
-            Assert.That(true, Is.False);
+            //First Case: Parent To Child
+            Budget initialBudget = CreateInitialBudget();
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            var budget = model.GetBudget();
+            budget.Accounts.EnsureCollectionLoaded();
+
+            var account = budget.Accounts[0];
+            Assert.That(account.Parent, Is.EqualTo(budget));
+
+            //Second Case: Child To Parent
+            account = model.FindEntity<Account>(account.EntityID);
+            budget = (Budget)account.Parent;
+            Assert.That(budget.Accounts.IsLoaded, Is.False);
+            budget.Accounts.EnsureCollectionLoaded();
+            Assert.That(budget.Accounts, Has.Member(account));
         }
 
         [Test]
@@ -269,7 +276,21 @@ namespace OpenBudget.Model.Tests
         [Test]
         public void ChildEntityCollections_EntitiesInsideAreAttached()
         {
-            Assert.That(true, Is.False);
+            Budget initialBudget = CreateInitialBudget();
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+            var budget = model.GetBudget();
+            budget.Accounts.EnsureCollectionLoaded();
+
+            Assert.That(budget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+
+            Account account = new Account();
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.Unattached));
+
+            budget.Accounts.Add(account);
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.UnattachedRegistered));
+            
+            model.SaveChanges();
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
     }
 }
