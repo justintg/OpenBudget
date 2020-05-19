@@ -375,7 +375,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return _loadedEntities.Where(e => e.SaveState == EntitySaveState.Unattached);
         }
 
-        void IEntityCollection.EnsureMaterializedChild(EntityBase child)
+        void IEntityCollection.EnsureContainsMaterializedChild(EntityBase child)
         {
             if (_knownMaterializedChildren.ContainsKey(child.EntityID))
             {

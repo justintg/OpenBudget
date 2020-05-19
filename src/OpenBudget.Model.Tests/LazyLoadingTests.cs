@@ -268,12 +268,6 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
-        public void CanUnloadChildEntityCollection()
-        {
-            Assert.That(true, Is.False);
-        }
-
-        [Test]
         public void ChildEntityCollections_EntitiesInsideAreAttached()
         {
             Budget initialBudget = CreateInitialBudget();
