@@ -74,7 +74,7 @@ namespace OpenBudget.Model.BudgetStore
         {
             var storage = GetOrCreateSnapshotStorage<TransactionSnapshot>();
             var transactionSnapshots = storage.GetSnapshotsByParent(nameof(Account), accountId);
-            return transactionSnapshots.Sum(ts => ts.Amount);
+            return transactionSnapshots.Where(t => !t.IsDeleted).Sum(ts => ts.Amount);
         }
     }
 }

@@ -95,13 +95,27 @@ namespace OpenBudget.Model.Entities.Generators
             }
         }
 
+        private bool IsDeleteMessage(FieldChangeEvent message)
+        {
+            if (message.Changes.TryGetValue(nameof(EntityBase.IsDeleted), out FieldChange fieldChange))
+            {
+                return (bool)fieldChange.NewValue;
+            }
+
+            return false;
+        }
+
         public void Handle(EntityUpdatedEvent message)
         {
+            bool balanceUpdated = false;
+            bool deleteMessage = IsDeleteMessage(message);
+
             if (message.Changes.ContainsKey(nameof(Transaction.Amount))
                 && !message.Changes.ContainsKey(nameof(Transaction.Parent)))
             {
                 var transactionSnapshot = _budgetModel.BudgetStore.SnapshotStore.GetSnapshot<TransactionSnapshot>(message.EntityID);
                 UpdateAccountBalance(transactionSnapshot.Parent.EntityID);
+                balanceUpdated = true;
             }
             else if (message.Changes.TryGetValue(nameof(Transaction.Parent), out FieldChange fieldChange))
             {
@@ -118,7 +132,14 @@ namespace OpenBudget.Model.Entities.Generators
                         UpdateAccountBalance(previousParent.EntityID);
                         UpdateAccountBalance(newParent.EntityID);
                     }
+                    balanceUpdated = true;
                 }
+            }
+
+            if (deleteMessage && !balanceUpdated)
+            {
+                var transactionSnapshot = _budgetModel.BudgetStore.SnapshotStore.GetSnapshot<TransactionSnapshot>(message.EntityID);
+                UpdateAccountBalance(transactionSnapshot.Parent.EntityID);
             }
         }
 

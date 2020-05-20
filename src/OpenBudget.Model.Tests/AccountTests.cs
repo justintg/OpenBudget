@@ -38,6 +38,29 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void AccountBalance_IsUpdatedAfterTransactionDeleted()
+        {
+            var account = TestBudget.Budget.Accounts[0];
+            var category = TestBudget.Budget.MasterCategories[0].Categories[0];
+            Assert.That(account.Balance, Is.EqualTo(0M));
+
+            Transaction transaction = new Transaction();
+            transaction.TransactionDate = DateTime.Today;
+            transaction.TransactionCategory = category;
+            transaction.Amount = -100M;
+
+            account.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            Assert.That(account.Balance, Is.EqualTo(-100M));
+
+            transaction.Delete();
+            TestBudget.SaveChanges();
+
+            Assert.That(account.Balance, Is.EqualTo(0M));
+        }
+
+        [Test]
         public void AccountBalance_CopyOfAccountStartsWithCorrectBalance()
         {
             var account = TestBudget.Budget.Accounts[0];
