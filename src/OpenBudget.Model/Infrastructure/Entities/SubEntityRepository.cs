@@ -35,7 +35,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
         private TEntity LoadEntityFromSnapshot(TSnapshot snapshot)
         {
             TEntity entity = _entitySnapshotConstructor(snapshot);
-            _budgetModel.AttachToModel(entity);
             return entity;
         }
 

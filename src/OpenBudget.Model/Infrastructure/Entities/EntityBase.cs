@@ -158,7 +158,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private BudgetModel _model;
 
-        public BudgetModel Model
+        public virtual BudgetModel Model
         {
             get { return _model; }
             internal set { _model = value; }
@@ -550,7 +550,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             if (reference == null)
                 return null;
 
-            if (reference.IsReferenceResolved(_model))
+            if (reference.IsReferenceResolved(Model))
             {
                 if (reference.ReferencedEntity is T)
                     return (T)reference.ReferencedEntity;
@@ -561,7 +561,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 if (this.IsAttached)
                 {
-                    T resolvedEntity = reference.Resolve<T>(_model);
+                    T resolvedEntity = reference.Resolve<T>(Model);
                     if (isLoadingParent)
                     {
                         resolvedEntity.NotifyLoadedFromChild(this);
@@ -569,7 +569,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
                     return resolvedEntity;
                 }
                 else
+                {
+                    if (reference.ReferencedEntity != null)
+                    {
+                        return reference.ReferencedEntity as T;
+                    }
                     throw new InvalidOperationException("Cannot Resolve an Unresolved EntityReference when the reference entity is not attached to a model");
+                }
             }
         }
 
@@ -591,13 +597,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 return;
             }
 
-            if (this.IsAttached && value.IsAttached && (_model != value.Model))
+            if (this.IsAttached && value.IsAttached && this.Model != null && (this.Model != value.Model))
                 throw new InvalidOperationException("You cannot set an entity reference to an Entity attached to a different model");
 
             //Entity may not be attached to a model yet but it references an entity from this model, when the entity becomes 
             //attached if the model doesn't match it will throw an exception
-            if (_model == null && value.IsAttached)
-                _model = value.Model;
+            if (this.Model == null && value.IsAttached)
+                this.Model = value.Model;
 
             SetProperty<EntityReference>(value.ToEntityReference(), property);
         }

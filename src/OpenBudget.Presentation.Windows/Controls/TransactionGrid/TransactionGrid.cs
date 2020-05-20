@@ -156,6 +156,15 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         private void TransactionGrid_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             ResetScrollValues();
+            SyncWidthToViewModel();
+        }
+
+        private void SyncWidthToViewModel()
+        {
+            if (_contentScrollViewer != null && this.DataContext is TransactionGridViewModel viewModel)
+            {
+                viewModel.SetVisibleWidth(_contentScrollViewer.ActualWidth);
+            }
         }
 
         public override void OnApplyTemplate()
@@ -173,10 +182,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
 
         private void ContentScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (this.DataContext is TransactionGridViewModel viewModel)
-            {
-                viewModel.SetVisibleWidth(e.NewSize.Width);
-            }
+            SyncWidthToViewModel();
         }
 
         private void ResetScrollValues()

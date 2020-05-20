@@ -79,7 +79,7 @@ namespace OpenBudget.Application.ViewModels
 
                 if (_selectedAccount != null)
                 {
-                    var transactionGrid = new TransactionGridViewModel(_selectedAccount);
+                    var transactionGrid = new TransactionGridViewModel(BudgetModel, _selectedAccount.EntityID);
                     CurrentScreen = transactionGrid;
                 }
 

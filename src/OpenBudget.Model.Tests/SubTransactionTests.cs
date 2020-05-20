@@ -27,6 +27,110 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void CreatedSubTransaction_FromAttachedTransaction_IsAttached()
+        {
+            var account = TestBudget.Budget.Accounts[0];
+            var category = TestBudget.Budget.MasterCategories[0].Categories[0];
+
+            var transaction = new Transaction();
+            transaction.Amount = -100;
+            transaction.TransactionDate = DateTime.Today;
+            transaction.TransactionCategory = category;
+
+            account.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            transaction.MakeSplitTransaction();
+            var subTransaction = transaction.SubTransactions.Create();
+
+            Assert.That(subTransaction.IsAttached, Is.True);
+            Assert.That(subTransaction.Model, Is.EqualTo(TestBudget.BudgetModel));
+
+            TestBudget.SaveChanges();
+        }
+
+        [Test]
+        public void CreatedSubTransaction_FromUnAttachedTransaction_IsAttachedAfterTransactionIsAttached()
+        {
+            var account = TestBudget.Budget.Accounts[0];
+            var category = TestBudget.Budget.MasterCategories[0].Categories[0];
+
+            var transaction = new Transaction();
+            transaction.Amount = -100;
+            transaction.TransactionDate = DateTime.Today;
+
+            transaction.MakeSplitTransaction();
+            var subTransaction = transaction.SubTransactions.Create();
+
+            Assert.That(subTransaction.IsAttached, Is.False);
+            Assert.That(subTransaction.Model, Is.Null);
+
+            account.Transactions.Add(transaction);
+
+            Assert.That(subTransaction.IsAttached, Is.False);
+            Assert.That(subTransaction.Model, Is.EqualTo(TestBudget.BudgetModel));
+
+            TestBudget.SaveChanges();
+
+            Assert.That(subTransaction.IsAttached, Is.True);
+            Assert.That(subTransaction.Model, Is.EqualTo(TestBudget.BudgetModel));
+        }
+
+        /// <summary>
+        /// Passes if no exception is thrown.
+        /// </summary>
+        [Test]
+        public void CanSetSubTransactionCategory_OnAttachedTransactionParent()
+        {
+            var account = TestBudget.Budget.Accounts[0];
+            var category = TestBudget.Budget.MasterCategories[0].Categories[0];
+
+            var transaction = new Transaction();
+            transaction.Amount = -100;
+            transaction.TransactionDate = DateTime.Today;
+            transaction.TransactionCategory = category;
+
+            account.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            transaction.MakeSplitTransaction();
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = -100;
+            subTransaction.TransactionCategory = category;
+
+            Assert.That(subTransaction.TransactionCategory, Is.EqualTo(category));
+
+            TestBudget.SaveChanges();
+
+            Assert.That(subTransaction.TransactionCategory, Is.EqualTo(category));
+        }
+
+        /// <summary>
+        /// Passes if no exception is thrown.
+        /// </summary>
+        [Test]
+        public void CanSetSubTransactionCategory_OnUnAttachedTransactionParent()
+        {
+            var account = TestBudget.Budget.Accounts[0];
+            var category = TestBudget.Budget.MasterCategories[0].Categories[0];
+
+            var transaction = new Transaction();
+            transaction.Amount = -100;
+            transaction.TransactionDate = DateTime.Today;
+
+            transaction.MakeSplitTransaction();
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = -100;
+            subTransaction.TransactionCategory = category;
+
+            Assert.That(subTransaction.TransactionCategory, Is.EqualTo(category));
+
+            account.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+        }
+
+
+        [Test]
         public void CanChange_Attached_SubTransaction()
         {
             Account Account = TestBudget.Budget.Accounts[0];

@@ -17,6 +17,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("OpenBudget.Model.Tests")]
+[assembly: InternalsVisibleTo("OpenBudget.Model.SQLite.Tests")]
 
 namespace OpenBudget.Model
 {
@@ -32,7 +33,6 @@ namespace OpenBudget.Model
         internal EntityDenormalizer<Budget> BudgetGenerator { get; private set; }
         internal EntityDenormalizer<Account> AccountGenerator { get; private set; }
         internal EntityDenormalizer<Transaction> TransactionGenerator { get; private set; }
-        internal EntityDenormalizer<SubTransaction> SubTransactionGenerator { get; private set; }
         internal EntityDenormalizer<MasterCategory> BudgetCategoryGenerator { get; private set; }
         internal EntityDenormalizer<Category> BudgetSubCategoryGenerator { get; private set; }
         internal EntityDenormalizer<Payee> PayeeGenerator { get; private set; }
@@ -170,7 +170,6 @@ namespace OpenBudget.Model
             BudgetGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Budget>(this));
             AccountGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Account>(this));
             TransactionGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Transaction>(this));
-            SubTransactionGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<SubTransaction>(this));
             BudgetCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<MasterCategory>(this));
             BudgetSubCategoryGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Category>(this));
             PayeeGenerator = RegisterEntityDenormalizer(new EntityDenormalizer<Payee>(this));

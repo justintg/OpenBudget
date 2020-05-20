@@ -282,9 +282,35 @@ namespace OpenBudget.Model.Tests
 
             budget.Accounts.Add(account);
             Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.UnattachedRegistered));
-            
+
             model.SaveChanges();
             Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
+        }
+
+        [Test]
+        public void EntityCollection_ParentEventHasNoEffectWhenCollectionNotLoaded()
+        {
+            Budget initialBudget = CreateInitialBudget();
+            var model = BudgetModel.CreateNew(Guid.NewGuid(), new MemoryBudgetStore(), initialBudget);
+
+            var budgetCopy = model.GetBudget();
+            //budgetCopy.Accounts.EnsureCollectionLoaded();
+
+            Account account = new Account();
+            Transaction transaction = new Transaction();
+            account.Transactions.Add(transaction);
+            initialBudget.Accounts.Add(account);
+            model.SaveChanges();
+
+            //Check for a bug where EntityCollection loaded an entity when collection was not in
+            //loaded state and then a subsequent load would throw an exception.
+            Assert.That(() =>
+            {
+                budgetCopy.Accounts.EnsureCollectionLoaded();
+            }, Throws.Nothing);
+
+            Assert.That(budgetCopy.Accounts.Count, Is.EqualTo(2));
+            Assert.That(budgetCopy.Accounts[1].EntityID, Is.EqualTo(account.EntityID));
         }
     }
 }

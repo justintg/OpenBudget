@@ -17,10 +17,14 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         private Budget _budget;
         private double _visibleWidth;
 
-        public TransactionGridViewModel(Account account)
+        public TransactionGridViewModel(BudgetModel model, string accountId)
         {
-            _account = account;
-            _model = account.Model;
+            _model = model;
+            _account = _model.FindEntity<Account>(accountId);
+            if (_account == null)
+                throw new ArgumentException("Cannot find Account in BudgetModel", nameof(accountId));
+
+            //Load collections for use in Payee/Category lookup
             _budget = _model.GetBudget();
             _budget.Accounts.LoadCollection();
             _budget.MasterCategories.LoadCollection();

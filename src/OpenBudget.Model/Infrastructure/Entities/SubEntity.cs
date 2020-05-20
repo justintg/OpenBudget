@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.Events;
 using OpenBudget.Model.Util;
 
@@ -38,6 +39,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
         }
 
         public override bool IsAttached => _parent == null ? false : _parent.IsAttached;
+
+        public override BudgetModel Model
+        {
+            get => _parent.Model == null ? null : _parent.Model;
+            internal set { }
+        }
 
         public override EntitySaveState SaveState
         {

@@ -191,6 +191,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private void HandleDeletedEvent(EntityUpdatedEvent message)
         {
+            if (!IsLoaded)
+                return;
+
             FieldChange fieldChange;
             if (message.Changes.TryGetValue("IsDeleted", out fieldChange))
             {
@@ -207,6 +210,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private void HandleParentEvent(FieldChangeEvent message, bool noRemove)
         {
+            if (!IsLoaded)
+                return;
+
             FieldChange fieldChange;
             if (!message.Changes.TryGetValue("Parent", out fieldChange)) return;
 

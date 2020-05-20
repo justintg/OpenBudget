@@ -177,7 +177,7 @@ namespace OpenBudget.Application.ViewModels
                     break;
                 case MenuItemTypes.Account:
                     Account account = menuItem.Payload as Account;
-                    var transactionGrid = new TransactionGridViewModel(account);
+                    var transactionGrid = new TransactionGridViewModel(BudgetModel, account.EntityID);
                     _showScreenCallback(transactionGrid);
                     break;
             }

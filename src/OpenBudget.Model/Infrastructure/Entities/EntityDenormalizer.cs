@@ -23,6 +23,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
             RegisterForMessages();
         }
 
+        internal bool ContainsEntity(T entity)
+        {
+            foreach (var registeredEntity in EnumerateRegistrations(entity.EntityID))
+            {
+                if (registeredEntity == entity) return true;
+            }
+
+            return false;
+        }
+
         void IEntityDenormalizer.RegisterForChanges(EntityBase entity)
         {
             this.RegisterForChanges(entity);

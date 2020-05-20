@@ -8,7 +8,10 @@ using System.Text;
 
 namespace OpenBudget.Model.Entities.Generators
 {
-    internal class AccountBalanceDenormalizer : IHandler<EntityUpdatedEvent>, IHandler<EntityCreatedEvent>
+    internal class AccountBalanceDenormalizer :
+        IHandler<EntityUpdatedEvent>,
+        IHandler<EntityCreatedEvent>,
+        IHandler<GroupedFieldChangeEvent>
     {
         private readonly BudgetModel _budgetModel;
         protected Dictionary<string, List<WeakReference<Account>>> _registrations = new Dictionary<string, List<WeakReference<Account>>>();
@@ -24,6 +27,7 @@ namespace OpenBudget.Model.Entities.Generators
         {
             _budgetModel.MessageBus.RegisterForMessages<EntityCreatedEvent>(nameof(Transaction), this);
             _budgetModel.MessageBus.RegisterForMessages<EntityUpdatedEvent>(nameof(Transaction), this);
+            _budgetModel.MessageBus.RegisterForMessages<GroupedFieldChangeEvent>(nameof(Transaction), this);
         }
 
         public void RegisterForChanges(Account account)
@@ -113,6 +117,24 @@ namespace OpenBudget.Model.Entities.Generators
                         EntityReference newParent = typedFieldChange.TypedNewValue;
                         UpdateAccountBalance(previousParent.EntityID);
                         UpdateAccountBalance(newParent.EntityID);
+                    }
+                }
+            }
+        }
+
+        public void Handle(GroupedFieldChangeEvent message)
+        {
+            foreach (var groupedEvent in message.GroupedEvents)
+            {
+                if (groupedEvent.EntityType == nameof(Transaction))
+                {
+                    if (groupedEvent is EntityCreatedEvent entityCreatedEvent)
+                    {
+                        this.Handle(entityCreatedEvent);
+                    }
+                    else if (groupedEvent is EntityUpdatedEvent entityUpdatedEvent)
+                    {
+                        this.Handle(entityUpdatedEvent);
                     }
                 }
             }
