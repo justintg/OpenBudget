@@ -12,6 +12,11 @@ namespace OpenBudget.Model.SQLite.Serialization
 {
     public class SQLiteContractResolver : CustomResolver
     {
+        protected override JsonContract CreateContract(Type objectType)
+        {
+            var contract = base.CreateContract(objectType);
+            return contract;
+        }
         protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
             if (!typeof(ModelEvent).IsAssignableFrom(type))
@@ -46,9 +51,10 @@ namespace OpenBudget.Model.SQLite.Serialization
         public class GroupedEventsConverter : JsonConverter
         {
             JsonSerializer _defaultSerializer = null;
+
             public GroupedEventsConverter()
             {
-                _defaultSerializer = new Serializer().GetJsonSerializer();
+                _defaultSerializer = new Serializer(new GroupedEventsContractResolver()).GetJsonSerializer();
             }
 
             public override bool CanRead => true;
@@ -66,6 +72,27 @@ namespace OpenBudget.Model.SQLite.Serialization
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
                 _defaultSerializer.Serialize(writer, value);
+            }
+
+            public class GroupedEventsContractResolver : CustomResolver
+            {
+                protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+                {
+                    if (!typeof(ModelEvent).IsAssignableFrom(type))
+                    {
+                        return base.CreateProperties(type, memberSerialization);
+                    }
+
+                    var properties = base.CreateProperties(type, memberSerialization);
+
+                    string[] ignoredProperties = new[] { "DeviceID", "EventVector" };
+                    foreach (var prop in properties.Where(p => ignoredProperties.Contains(p.PropertyName)))
+                    {
+                        prop.Ignored = true;
+                    }
+
+                    return properties;
+                }
             }
         }
     }

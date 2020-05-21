@@ -49,8 +49,8 @@ namespace OpenBudget.Model.SQLite.Tests
 
                 Assert.That(groupedEvent.EntityID, Is.EqualTo(originalEvent.EntityID));
                 Assert.That(groupedEvent.EntityType, Is.EqualTo(originalEvent.EntityType));
-                Assert.That(groupedEvent.EventVector, Is.EqualTo(originalEvent.EventVector));
-                Assert.That(groupedEvent.DeviceID, Is.EqualTo(originalEvent.DeviceID));
+                Assert.That(groupedEvent.EventVector, Is.EqualTo(null));
+                Assert.That(groupedEvent.DeviceID, Is.EqualTo(default(Guid)));
                 Assert.That(groupedEvent.EventID, Is.EqualTo(originalEvent.EventID));
 
                 foreach (var change in groupedEvent.Changes)

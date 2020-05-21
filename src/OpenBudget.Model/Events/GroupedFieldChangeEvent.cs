@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
+using OpenBudget.Model.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace OpenBudget.Model.Events
 {
@@ -31,5 +31,15 @@ namespace OpenBudget.Model.Events
 
         [IgnoreDataMember]
         public IReadOnlyList<FieldChangeEvent> GroupedEvents => _groupedEvents.AsReadOnly();
+
+        internal override void StampEvent(Guid deviceId, VectorClock vector)
+        {
+            base.StampEvent(deviceId, vector);
+
+            foreach (var groupedEvent in _groupedEvents)
+            {
+                groupedEvent.StampEvent(deviceId, vector);
+            }
+        }
     }
 }

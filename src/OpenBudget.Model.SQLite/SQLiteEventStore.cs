@@ -12,12 +12,27 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Numerics;
 using System.Text;
 
 namespace OpenBudget.Model.SQLite
 {
     public class SQLiteEventStore : IEventStore
     {
+        private static Action<ModelEvent, Guid, VectorClock> StampEvent;
+
+        static SQLiteEventStore()
+        {
+            var method = typeof(ModelEvent).GetMethod("StampEvent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var evt = Expression.Parameter(typeof(ModelEvent), "evt");
+            var deviceId = Expression.Parameter(typeof(Guid), "deviceId");
+            var eventVector = Expression.Parameter(typeof(VectorClock), "eventVector");
+            var methodBody = Expression.Call(evt, method, deviceId, eventVector);
+            var expr = Expression.Lambda<Action<ModelEvent, Guid, VectorClock>>(methodBody, evt, deviceId, eventVector);
+            StampEvent = expr.Compile();
+        }
+
         Serializer _serializer = new Serializer(new SQLiteContractResolver());
         string _connectionString;
 
@@ -128,8 +143,7 @@ namespace OpenBudget.Model.SQLite
             _modelEventProperties.SetEntityData<Guid>(modelEvent, evt.EventID, nameof(ModelEvent.EventID));
             _modelEventProperties.SetEntityData<string>(modelEvent, evt.EntityType, nameof(ModelEvent.EntityType));
             _modelEventProperties.SetEntityData<string>(modelEvent, evt.EntityID, nameof(ModelEvent.EntityID));
-            _modelEventProperties.SetEntityData<VectorClock>(modelEvent, new VectorClock(evt.VectorClock), nameof(ModelEvent.EventVector));
-            _modelEventProperties.SetEntityData<Guid>(modelEvent, evt.DeviceID, nameof(ModelEvent.DeviceID));
+            StampEvent(modelEvent, evt.DeviceID, new VectorClock(evt.VectorClock));
             return modelEvent;
         }
 

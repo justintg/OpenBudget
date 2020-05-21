@@ -11,6 +11,7 @@ namespace OpenBudget.Model.BudgetStore
     public class MemorySnapshotStore : ISnapshotStore
     {
         private Dictionary<Type, object> _snapshotStorage = new Dictionary<Type, object>();
+        private VectorClock _lastVectorClock = null;
 
         public IEnumerable<TSnapshot> GetAllSnapshots<TSnapshot>() where TSnapshot : EntitySnapshot
         {
@@ -35,6 +36,10 @@ namespace OpenBudget.Model.BudgetStore
         {
             var storage = GetOrCreateSnapshotStorage<TSnapshot>();
             storage.StoreSnapshot(snapshot);
+
+            if (snapshot.LastEventVector == null)
+                throw new ArgumentException("Null LastEventVector on snapshot.", nameof(snapshot));
+            _lastVectorClock = snapshot.LastEventVector;
         }
 
         public void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots)
@@ -80,7 +85,7 @@ namespace OpenBudget.Model.BudgetStore
 
         public VectorClock GetLastVectorClock()
         {
-            return null;
+            return _lastVectorClock;
         }
     }
 }

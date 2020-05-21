@@ -319,9 +319,16 @@ namespace OpenBudget.Model
         public static BudgetModel Load(Guid deviceId, IBudgetStore budgetStore)
         {
             BudgetModel model = new BudgetModel(deviceId, budgetStore, false);
-            foreach (var evt in model.EventStore.GetEvents())
+
+            VectorClock eventVector = budgetStore.EventStore.GetMaxVectorClock();
+            VectorClock snapshotVector = budgetStore.SnapshotStore.GetLastVectorClock();
+
+            if (eventVector.CompareTo(snapshotVector) != 0)
             {
-                model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
+                foreach (var evt in model.EventStore.GetEvents())
+                {
+                    model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
+                }
             }
 
             model.BudgetViewCache.RecalculateCache();

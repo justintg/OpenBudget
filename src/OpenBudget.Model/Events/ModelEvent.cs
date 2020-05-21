@@ -33,7 +33,7 @@ namespace OpenBudget.Model.Events
             EntityID = entityId;
         }
 
-        internal void StampEvent(Guid deviceId, VectorClock vector)
+        internal virtual void StampEvent(Guid deviceId, VectorClock vector)
         {
             if (deviceId == null)
                 throw new ArgumentNullException(nameof(deviceId));
