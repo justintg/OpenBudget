@@ -12,6 +12,9 @@ namespace OpenBudget.Model.BudgetStore
         IEnumerable<TChildSnapshot> GetChildSnapshots<TChildSnapshot>(string parentType, string parentId)
             where TChildSnapshot : EntitySnapshot;
 
+        IDictionary<EntityReference, List<TChildSnapshot>> GetChildSnapshots<TChildSnapshot>(IReadOnlyList<EntityReference> parents)
+            where TChildSnapshot : EntitySnapshot;
+
         IEnumerable<TSnapshot> GetAllSnapshots<TSnapshot>() where TSnapshot : EntitySnapshot;
         void StoreSnapshot<TSnapshot>(TSnapshot snapshot) where TSnapshot : EntitySnapshot;
         //void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots);

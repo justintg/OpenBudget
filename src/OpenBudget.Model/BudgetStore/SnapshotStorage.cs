@@ -3,6 +3,7 @@ using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace OpenBudget.Model.BudgetStore
@@ -18,6 +19,7 @@ namespace OpenBudget.Model.BudgetStore
         TSnapshot GetSnapshot(string entityId);
         IEnumerable<TSnapshot> GetSnapshots();
         IEnumerable<TSnapshot> GetSnapshotsByParent(string parentType, string parentId);
+        IDictionary<EntityReference, List<TSnapshot>> GetSnapshotsByParents(IReadOnlyList<EntityReference> parents);
     }
 
     internal class ParentKey : IEquatable<ParentKey>
@@ -145,6 +147,25 @@ namespace OpenBudget.Model.BudgetStore
             }
 
             _identityMap.Remove(snapshot.EntityID);
+        }
+
+        public IDictionary<EntityReference, List<TSnapshot>> GetSnapshotsByParents(IReadOnlyList<EntityReference> parents)
+        {
+            List<TSnapshot> snapshots = new List<TSnapshot>();
+            foreach (var parent in parents)
+            {
+                var children = GetSnapshotsByParent(parent.EntityType, parent.EntityID);
+                snapshots.AddRange(children);
+            }
+
+            if (snapshots.Count > 0)
+            {
+                return snapshots.GroupBy(s => s.Parent).ToDictionary(g => g.Key, g => g.ToList());
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

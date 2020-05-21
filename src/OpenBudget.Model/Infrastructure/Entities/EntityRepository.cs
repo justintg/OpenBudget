@@ -31,12 +31,38 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _entitySnapshotConstructor = Expression.Lambda<Func<TSnapshot, TEntity>>(constructExp, snapshotParam).Compile();
         }
 
-        protected virtual TEntity LoadEntityFromSnapshot(TSnapshot snapshot)
+        protected virtual TEntity LoadEntityFromSnapshot(TSnapshot snapshot, List<EntitySnapshot> subEntities)
         {
             TEntity entity = _entitySnapshotConstructor(snapshot);
             _budgetModel.AttachToModel(entity);
-            entity.LoadSubEntities();
+            if (subEntities == null)
+            {
+                entity.LoadSubEntities();
+            }
+            else
+            {
+                entity.LoadSubEntities(subEntities);
+            }
             return entity;
+        }
+
+        protected virtual IDictionary<EntityReference, List<EntitySnapshot>> FindSubEntitySnapshots(List<EntityReference> parents)
+        {
+            return null;
+        }
+
+        protected IDictionary<EntityReference, List<EntitySnapshot>> GetSubEntitySnapshotLookup(List<TSnapshot> snapshots)
+        {
+            var snapshotReference = snapshots.Select(s => new EntityReference(typeof(TEntity).Name, s.EntityID)).ToList();
+            var subEntitySnapshots = FindSubEntitySnapshots(snapshotReference);
+            if (subEntitySnapshots == null)
+            {
+                return null;
+            }
+            else
+            {
+                return subEntitySnapshots;
+            }
         }
 
         public TEntity GetEntity(string entityId)
@@ -44,7 +70,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(entityId);
             if (snapshot != null)
             {
-                return LoadEntityFromSnapshot(snapshot);
+                return LoadEntityFromSnapshot(snapshot, null);
             }
             else
             {
@@ -54,18 +80,49 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public IEnumerable<TEntity> GetEntitiesByParent(string parentType, string parentId)
         {
-            var snapshots = _snapshotStore.GetChildSnapshots<TSnapshot>(parentType, parentId);
+            var snapshots = _snapshotStore.GetChildSnapshots<TSnapshot>(parentType, parentId).ToList();
+            var subEntitySnapshots = GetSubEntitySnapshotLookup(snapshots);
             foreach (var snapshot in snapshots)
             {
-                yield return LoadEntityFromSnapshot(snapshot);
+                if (subEntitySnapshots == null)
+                {
+                    yield return LoadEntityFromSnapshot(snapshot, null);
+                }
+                else
+                {
+                    EntityReference snapshotReference = new EntityReference(typeof(TEntity).Name, snapshot.EntityID);
+                    List<EntitySnapshot> subEntities = null;
+                    if (!subEntitySnapshots.TryGetValue(snapshotReference, out subEntities))
+                    {
+                        subEntities = new List<EntitySnapshot>();
+                    }
+
+                    yield return LoadEntityFromSnapshot(snapshot, subEntities);
+                }
             }
         }
 
         public IEnumerable<TEntity> GetAllEntities()
         {
-            foreach (var snapshot in _snapshotStore.GetAllSnapshots<TSnapshot>())
+            var snapshots = _snapshotStore.GetAllSnapshots<TSnapshot>().ToList();
+            var subEntitySnapshots = GetSubEntitySnapshotLookup(snapshots);
+            foreach (var snapshot in snapshots)
             {
-                yield return LoadEntityFromSnapshot(snapshot);
+                if (subEntitySnapshots == null)
+                {
+                    yield return LoadEntityFromSnapshot(snapshot, null);
+                }
+                else
+                {
+                    EntityReference snapshotReference = new EntityReference(typeof(TEntity).Name, snapshot.EntityID);
+                    List<EntitySnapshot> subEntities = null;
+                    if (!subEntitySnapshots.TryGetValue(snapshotReference, out subEntities))
+                    {
+                        subEntities = new List<EntitySnapshot>();
+                    }
+
+                    yield return LoadEntityFromSnapshot(snapshot, subEntities);
+                }
             }
         }
 

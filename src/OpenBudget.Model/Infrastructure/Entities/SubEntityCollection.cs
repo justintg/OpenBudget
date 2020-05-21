@@ -19,6 +19,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         void CancelCurrentChanges();
         void DeleteChild(SubEntity childEntity);
         void LoadCollection();
+        void LoadCollection(List<EntitySnapshot> snapshots);
     }
 
     public class SubEntityCollection<T> : IReadOnlyList<T>, INotifyCollectionChanged, ISubEntityCollection where T : SubEntity
@@ -200,6 +201,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             BudgetModel model = _parent.Model;
             var repo = model.FindSubEntityRepository<T>();
             var subEntities = repo.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID);
+            AttachSubEntities(subEntities);
+        }
+
+        private void AttachSubEntities(IEnumerable<T> subEntities)
+        {
             foreach (var subEntity in subEntities)
             {
                 _identityMap.Add(subEntity.EntityID, subEntity);
@@ -208,6 +214,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 if (!subEntity.IsDeleted)
                     _collection.Add(subEntity);
             }
+        }
+
+        public void LoadCollection(List<EntitySnapshot> snapshots)
+        {
+            BudgetModel model = _parent.Model;
+            var repo = model.FindSubEntityRepository<T>();
+            var subEntities = repo.CreateEntitiesFromSnapshot(snapshots);
+            AttachSubEntities(subEntities);
         }
     }
 }

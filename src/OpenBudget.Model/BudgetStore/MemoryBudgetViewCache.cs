@@ -69,7 +69,7 @@ namespace OpenBudget.Model.BudgetStore
 
         public void RecalculateCache()
         {
-            BudgetViewCalculator calculator = new BudgetViewCalculator(_model);
+            BudgetViewCalculator calculator = new BudgetViewCalculator(_model, _model.BudgetStore);
             _lastResult = calculator.Calculate();
 
             RaiseCacheUpdated();

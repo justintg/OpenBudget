@@ -1,5 +1,7 @@
-﻿using OpenBudget.Model.BudgetView.Model;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.BudgetView.Model;
 using OpenBudget.Model.Entities;
+using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
@@ -12,10 +14,14 @@ namespace OpenBudget.Model.BudgetView.Calculator
     public class BudgetViewCalculator
     {
         private BudgetModel _model;
+        private readonly IBudgetStore _budgetStore;
+        private readonly ISnapshotStore _snapshotStore;
 
-        public BudgetViewCalculator(BudgetModel budgetModel)
+        public BudgetViewCalculator(BudgetModel budgetModel, IBudgetStore budgetStore)
         {
-            _model = budgetModel;
+            _model = budgetModel ?? throw new ArgumentNullException(nameof(budgetModel));
+            _budgetStore = budgetStore ?? throw new ArgumentNullException(nameof(budgetStore));
+            _snapshotStore = _budgetStore.SnapshotStore;
         }
 
         public BudgetViewCalculatorResult Calculate()
@@ -162,11 +168,12 @@ namespace OpenBudget.Model.BudgetView.Calculator
 
         private void AddAmountsBudgeted(CategoryResultsDictionary results)
         {
-            foreach (var categoryMonth in _model.FindRepository<CategoryMonth>().GetAllEntities())
+            var categoryMonths = _snapshotStore.GetAllSnapshots<CategoryMonthSnapshot>();
+            foreach (var categoryMonth in categoryMonths)
             {
                 if (categoryMonth.AmountBudgeted == 0M) continue;
 
-                CategoryMonthKey monthKey = new CategoryMonthKey(categoryMonth.Parent as Category, categoryMonth.Month);
+                CategoryMonthKey monthKey = new CategoryMonthKey(categoryMonth.Parent, categoryMonth.Month);
                 BudgetViewCategoryMonth monthResult = null;
 
                 BudgetViewCategoryMonth monthValues = null;
@@ -185,8 +192,11 @@ namespace OpenBudget.Model.BudgetView.Calculator
         private TransactionDictionary GroupTransactions()
         {
             var groupedTransactions = new Dictionary<CategoryMonthKey, decimal>();
+            var transacations = _snapshotStore.GetAllSnapshots<TransactionSnapshot>().Where(t => !t.IsDeleted).ToList();
+            var transactionReferences = transacations.Select(t => new EntityReference(nameof(Transaction), t.EntityID)).ToList();
+            var subTransactionsLookup = _snapshotStore.GetChildSnapshots<SubTransactionSnapshot>(transactionReferences)?.ToDictionary(kvp => kvp.Key.EntityID, kvp => kvp.Value);
 
-            foreach (var transaction in _model.FindRepository<Transaction>().GetAllEntities())
+            foreach (var transaction in transacations)
             {
                 if (transaction.TransactionType == TransactionTypes.Normal)
                 {
@@ -204,18 +214,22 @@ namespace OpenBudget.Model.BudgetView.Calculator
                 }
                 else if (transaction.TransactionType == TransactionTypes.SplitTransaction)
                 {
-                    foreach (var subTransaction in transaction.SubTransactions)
+                    if (subTransactionsLookup != null
+                        && subTransactionsLookup.TryGetValue(transaction.EntityID, out List<SubTransactionSnapshot> subTransactions))
                     {
-                        CategoryMonthKey category = GetCategoryMonthKey(transaction, subTransaction);
-                        if (category == null) continue;
+                        foreach (var subTransaction in subTransactions)
+                        {
+                            CategoryMonthKey category = GetCategoryMonthKey(transaction, subTransaction);
+                            if (category == null) continue;
 
-                        if (groupedTransactions.ContainsKey(category))
-                        {
-                            groupedTransactions[category] += subTransaction.Amount;
-                        }
-                        else
-                        {
-                            groupedTransactions[category] = subTransaction.Amount;
+                            if (groupedTransactions.ContainsKey(category))
+                            {
+                                groupedTransactions[category] += subTransaction.Amount;
+                            }
+                            else
+                            {
+                                groupedTransactions[category] = subTransaction.Amount;
+                            }
                         }
                     }
                 }
@@ -224,34 +238,18 @@ namespace OpenBudget.Model.BudgetView.Calculator
             return groupedTransactions;
         }
 
-        private CategoryMonthKey GetCategoryMonthKey(Transaction transaction)
+        private CategoryMonthKey GetCategoryMonthKey(TransactionSnapshot transaction)
         {
-            CategoryMonthKey category = null;
-            if (transaction.TransactionCategory != null)
-            {
-                category = new CategoryMonthKey(transaction.TransactionCategory, transaction.TransactionDate);
-            }
-            else if (transaction.IncomeCategory != null)
-            {
-                category = new CategoryMonthKey(transaction.IncomeCategory);
-            }
+            if (transaction.Category == null) return null;
 
-            return category;
+            return new CategoryMonthKey(transaction.Category, transaction.TransactionDate);
         }
 
-        private CategoryMonthKey GetCategoryMonthKey(Transaction transaction, SubTransaction subTransaction)
+        private CategoryMonthKey GetCategoryMonthKey(TransactionSnapshot transaction, SubTransactionSnapshot subTransaction)
         {
-            CategoryMonthKey category = null;
-            if (subTransaction.TransactionCategory != null)
-            {
-                category = new CategoryMonthKey(subTransaction.TransactionCategory, transaction.TransactionDate);
-            }
-            else if (subTransaction.IncomeCategory != null)
-            {
-                category = new CategoryMonthKey(subTransaction.IncomeCategory);
-            }
+            if (subTransaction.Category == null) return null;
 
-            return category;
+            return new CategoryMonthKey(subTransaction.Category, transaction.TransactionDate);
         }
     }
 

@@ -11,9 +11,9 @@ namespace OpenBudget.Model.Entities.Repositories
         {
         }
 
-        protected override Account LoadEntityFromSnapshot(AccountSnapshot snapshot)
+        protected override Account LoadEntityFromSnapshot(AccountSnapshot snapshot, List<EntitySnapshot> subEntities)
         {
-            Account account = base.LoadEntityFromSnapshot(snapshot);
+            Account account = base.LoadEntityFromSnapshot(snapshot, subEntities);
             if (account != null)
             {
                 account.Balance = _budgetModel.BudgetStore.SnapshotStore.GetAccountBalance(account.EntityID);

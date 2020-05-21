@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Transactions;
 
 namespace OpenBudget.Application.ViewModels
 {
@@ -100,6 +101,29 @@ namespace OpenBudget.Application.ViewModels
             InitializeDefaultCategories();
 
             BudgetModel budgetModel = _budgetLoader.CreateNewBudget(budgetPath, Budget);
+
+            Account manyTransactions = new Account();
+            manyTransactions.AccountType = AccountTypes.Checking;
+            manyTransactions.BudgetingType = BudgetingTypes.OnBudget;
+            manyTransactions.Name = "Many Transactions";
+
+            Payee payee = new Payee();
+            payee.Name = "Subway";
+
+            Budget.Payees.Add(payee);
+
+            for (int i = 1; i <= 5000; i++)
+            {
+                OpenBudget.Model.Entities.Transaction transaction = new OpenBudget.Model.Entities.Transaction();
+                transaction.Amount = -i;
+                transaction.Category = Budget.MasterCategories[0].Categories[0];
+                transaction.TransactionDate = DateTime.Today;
+                transaction.Payee = payee;
+                manyTransactions.Transactions.Add(transaction);
+            }
+
+            Budget.Accounts.Add(manyTransactions);
+            budgetModel.SaveChanges();
 
             var deviceSettings = _settingsProvider.Get<Device>();
             BudgetStub budgetStub = new BudgetStub() { BudgetName = Budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };

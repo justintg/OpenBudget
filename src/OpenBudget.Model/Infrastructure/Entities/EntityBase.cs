@@ -856,6 +856,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
         }
 
+        internal void LoadSubEntities(List<EntitySnapshot> subEntitySnapshots)
+        {
+            foreach (var subEntity in _subEntities.Values)
+            {
+                subEntity.LoadCollection(subEntitySnapshots);
+            }
+        }
+
         internal void LoadSubEntities()
         {
             foreach (var subEntity in _subEntities.Values)

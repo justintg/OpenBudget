@@ -1,4 +1,5 @@
 ﻿using OpenBudget.Model.Entities;
+using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,24 @@ namespace OpenBudget.Model.BudgetView.Model
             EntityType = entityType;
             EntityID = entityId;
             FirstDayOfMonth = date.FirstDayOfMonth();
+        }
+
+        public CategoryMonthKey(EntityReference reference, DateTime transactionDate)
+        {
+            if (reference.EntityType != nameof(IncomeCategory) && reference.EntityType != nameof(Category))
+                throw new ArgumentException("Must pass a reference to a IncomeCategory or Category", nameof(reference));
+
+            EntityType = reference.EntityType;
+            EntityID = reference.EntityID;
+
+            if (EntityType == nameof(IncomeCategory))
+            {
+                FirstDayOfMonth = IncomeCategory.ParseMonth(EntityID);
+            }
+            else
+            {
+                FirstDayOfMonth = transactionDate.FirstDayOfMonth();
+            }
         }
 
         public CategoryMonthKey(Category category, DateTime date)

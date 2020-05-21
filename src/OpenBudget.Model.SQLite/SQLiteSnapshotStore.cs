@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Infrastructure;
@@ -7,6 +8,7 @@ using OpenBudget.Model.SQLite.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Numerics;
 using System.Text;
 
@@ -136,6 +138,33 @@ namespace OpenBudget.Model.SQLite
                 {
                     return new VectorClock(currentClock.Data);
                 }
+            }
+        }
+
+        public IDictionary<EntityReference, List<TChildSnapshot>> GetChildSnapshots<TChildSnapshot>(IReadOnlyList<EntityReference> parents) where TChildSnapshot : EntitySnapshot
+        {
+            var parentTypes = parents.GroupBy(p => p.EntityType).ToDictionary(g => g.Key, g => g.Select(r => r.EntityID).ToList());
+            Expression<Func<TChildSnapshot, bool>> whereExpr = null;
+            foreach (var parentType in parentTypes)
+            {
+                var entityIds = parentType.Value;
+                Expression<Func<TChildSnapshot, bool>> expr = s => s.Parent.EntityType == parentType.Key && entityIds.Contains(s.Parent.EntityID);
+                if (whereExpr == null)
+                {
+                    whereExpr = expr;
+                }
+                else
+                {
+                    var snapshotParam = whereExpr.Parameters.Single();
+                    var body = Expression.OrElse(whereExpr.Body, expr.Body);
+                    whereExpr = Expression.Lambda<Func<TChildSnapshot, bool>>(body, snapshotParam);
+                }
+            }
+
+            using (var context = GetContext())
+            {
+                var snapshotSet = context.Set<TChildSnapshot>();
+                return snapshotSet.Where(whereExpr).AsEnumerable().GroupBy(s => s.Parent).ToDictionary(g => g.Key, g => g.ToList());
             }
         }
     }

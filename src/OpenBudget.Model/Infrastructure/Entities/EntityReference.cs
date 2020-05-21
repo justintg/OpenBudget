@@ -7,7 +7,7 @@ using System.Text;
 namespace OpenBudget.Model.Infrastructure.Entities
 {
     [DataContract]
-    public class EntityReference
+    public class EntityReference : IEquatable<EntityReference>
     {
         [DataMember]
         public string EntityType { get; private set; }
@@ -18,13 +18,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
         [IgnoreDataMember]
         public EntityBase ReferencedEntity { get; private set; }
 
-        internal EntityReference(string entityType, string entityId)
+        public EntityReference(string entityType, string entityId)
         {
             this.EntityType = entityType;
             this.EntityID = entityId;
         }
 
-        internal EntityReference(EntityBase entity)
+        public EntityReference(EntityBase entity)
         {
             this.EntityType = entity.GetType().Name;
             this.EntityID = entity.EntityID;
@@ -64,6 +64,25 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 throw new InvalidOperationException("Entity/EntityReference type or ID mismatch");
 
             ReferencedEntity = entity;
+        }
+
+        public bool Equals(EntityReference other)
+        {
+            if (other == null) return false;
+            if (ReferenceEquals(other, this)) return true;
+            return this.EntityType == other.EntityType && this.EntityID == other.EntityID;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj as EntityReference);
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = EntityType.GetHashCode();
+            hashCode = (hashCode * 397) ^ (EntityID.GetHashCode());
+            return hashCode;
         }
     }
 }

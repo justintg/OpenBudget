@@ -87,5 +87,11 @@ namespace OpenBudget.Model.BudgetStore
         {
             return _lastVectorClock;
         }
+
+        public IDictionary<EntityReference, List<TChildSnapshot>> GetChildSnapshots<TChildSnapshot>(IReadOnlyList<EntityReference> parents) where TChildSnapshot : EntitySnapshot
+        {
+            var storage = GetOrCreateSnapshotStorage<TChildSnapshot>();
+            return storage.GetSnapshotsByParents(parents);
+        }
     }
 }

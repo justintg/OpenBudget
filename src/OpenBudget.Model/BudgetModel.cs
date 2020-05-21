@@ -120,7 +120,7 @@ namespace OpenBudget.Model
         {
             BudgetRepository = RegisterRepository(new EntityRepository<Budget, BudgetSnapshot>(this));
             AccountRepository = RegisterRepository(new AccountRepository(this));
-            TransactionRepository = RegisterRepository(new EntityRepository<Transaction, TransactionSnapshot>(this));
+            TransactionRepository = RegisterRepository(new TransactionRepository(this));
             MasterCategoryRepository = RegisterRepository(new EntityRepository<MasterCategory, MasterCategorySnapshot>(this));
             CategoryRepository = RegisterRepository(new EntityRepository<Category, CategorySnapshot>(this));
             PayeeRepository = RegisterRepository(new EntityRepository<Payee, PayeeSnapshot>(this));

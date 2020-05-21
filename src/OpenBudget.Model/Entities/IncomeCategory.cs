@@ -13,19 +13,22 @@ namespace OpenBudget.Model.Entities
 
     public class IncomeCategory : NoCreateEntity<IncomeCategorySnapshot>
     {
-        internal IncomeCategory(IncomeCategorySnapshot snapshot) : base(snapshot)
-        {
-        }
-
-        internal IncomeCategory(string entityId) : base(entityId)
+        public static DateTime ParseMonth(string entityId)
         {
             string regexPattern = @"^(.*)\/([0-9]{4})(0[1-9]|1[0-2])$";
             var match = Regex.Match(entityId, regexPattern);
             string id = match.Groups[1].Value;
             int year = int.Parse(match.Groups[2].Value);
             int month = int.Parse(match.Groups[3].Value);
+            return new DateTime(year, month, 1);
+        }
+        internal IncomeCategory(IncomeCategorySnapshot snapshot) : base(snapshot)
+        {
+        }
 
-            SetEntityData(new DateTime(year, month, 1), "Month");
+        internal IncomeCategory(string entityId) : base(entityId)
+        {
+            SetEntityData(ParseMonth(entityId), "Month");
         }
 
         public DateTime Month

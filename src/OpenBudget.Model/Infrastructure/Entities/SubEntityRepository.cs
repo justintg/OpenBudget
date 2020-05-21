@@ -1,6 +1,7 @@
 ﻿using OpenBudget.Model.BudgetStore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -42,6 +43,15 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             var snapshots = _snapshotStore.GetChildSnapshots<TSnapshot>(parentType, parentId);
             foreach (var snapshot in snapshots)
+            {
+                yield return LoadEntityFromSnapshot(snapshot);
+            }
+        }
+
+        public IEnumerable<TEntity> CreateEntitiesFromSnapshot(List<EntitySnapshot> snapshots)
+        {
+            var typedSnapshots = snapshots.Where(s => s is TSnapshot).Select(s => (TSnapshot)s).ToList();
+            foreach (var snapshot in typedSnapshots)
             {
                 yield return LoadEntityFromSnapshot(snapshot);
             }
