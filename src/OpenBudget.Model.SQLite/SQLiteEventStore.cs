@@ -1,4 +1,6 @@
-﻿using OpenBudget.Model.BudgetStore;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.Events;
 using OpenBudget.Model.EventStream;
 using OpenBudget.Model.Infrastructure;
@@ -6,7 +8,6 @@ using OpenBudget.Model.Serialization;
 using OpenBudget.Model.SQLite.Serialization;
 using OpenBudget.Model.SQLite.Tables;
 using OpenBudget.Model.Util;
-using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,35 +19,49 @@ namespace OpenBudget.Model.SQLite
     public class SQLiteEventStore : IEventStore
     {
         Serializer _serializer = new Serializer(new SQLiteContractResolver());
-        SQLiteConnection _db;
+        string _connectionString;
 
-        internal SQLiteEventStore(SQLiteConnection connection)
+        internal SQLiteEventStore(string connectionString)
         {
-            _db = connection;
+            _connectionString = connectionString;
+        }
+
+        private SqliteContext GetContext()
+        {
+            return new SqliteContext(_connectionString);
         }
 
         public IEnumerable<ModelEvent> GetEvents()
         {
-            var evts = _db.Table<SQLiteEvent>().ToList();
-            foreach (var evt in evts)
+            using (var context = GetContext())
             {
-                yield return ConvertToEvent(evt);
+                var evts = context.Events.ToList();
+                foreach (var evt in evts)
+                {
+                    yield return ConvertToEvent(evt);
+                }
             }
         }
 
         public VectorClock GetMaxVectorClock()
         {
-            var vectorClock = _db.Table<Info>().Where(i => i.Key == "MaxVectorClock").SingleOrDefault();
-            if (vectorClock == null)
-                return null;
-            else
-                return new VectorClock(vectorClock.Data);
+            using (var context = GetContext())
+            {
+                var vectorClock = context.Info.SingleOrDefault(i => i.Key == "MaxVectorClock");
+                if (vectorClock == null)
+                    return null;
+                else
+                    return new VectorClock(vectorClock.Data);
+            }
         }
 
         public HashSet<Guid> GetStoredEventIDSet()
         {
-            var ids = _db.Query<SQLiteEvent>(@"select EventID from SQLiteEvent").Select(e => e.EventID).ToList();
-            return new HashSet<Guid>(ids);
+            using (var context = GetContext())
+            {
+                var ids = context.Events.Select(e => e.EventID).ToList();
+                return new HashSet<Guid>(ids);
+            }
         }
 
         public IEnumerable<ModelEvent> GetUnpublishedEvents(HashSet<Guid> publishedEventSet)
@@ -67,24 +82,10 @@ namespace OpenBudget.Model.SQLite
 
         private List<SQLiteEvent> GetManyEvents(IEnumerable<Guid> ids)
         {
-            string sql =
-                @"select * from SQLiteEvent
-                where SQLiteEvent.EventID
-                in
-                (";
-
-            StringBuilder sb = new StringBuilder(sql);
-
-            foreach (var id in ids)
+            using (var context = GetContext())
             {
-                sb.Append($"\"{id.ToString()}\",");
+                return context.Events.Where(e => ids.Contains(e.EventID)).ToList();
             }
-            sb.Remove(sb.Length - 1, 1);
-            sb.Append(") order by rowid asc");
-
-            var events = _db.Query<SQLiteEvent>(sb.ToString()).ToList();
-
-            return events;
         }
 
         public void MergeEventStreamClock(IEventStream eventStream)
@@ -102,16 +103,20 @@ namespace OpenBudget.Model.SQLite
 
         public void SetMaxVectorClock(VectorClock vectorClock)
         {
-            var currentClock = _db.Table<Info>().Where(i => i.Key == "MaxVectorClock").SingleOrDefault();
-            if (currentClock == null)
+            using (var context = GetContext())
             {
-                var vcInfo = new Info() { Key = "MaxVectorClock", Data = vectorClock.ToByteArray() };
-                _db.Insert(vcInfo);
-            }
-            else
-            {
-                currentClock.Data = vectorClock.ToByteArray();
-                _db.Update(currentClock);
+                var currentClock = context.Info.SingleOrDefault(i => i.Key == "MaxVectorClock");
+                if (currentClock == null)
+                {
+                    var vcInfo = new Info() { Key = "MaxVectorClock", Data = vectorClock.ToByteArray() };
+                    context.Info.Add(vcInfo);
+                }
+                else
+                {
+                    currentClock.Data = vectorClock.ToByteArray();
+                    context.Update(currentClock);
+                }
+                context.SaveChanges();
             }
         }
 
@@ -143,66 +148,78 @@ namespace OpenBudget.Model.SQLite
 
         public void StoreEvents(IEnumerable<ModelEvent> events)
         {
-            _db.RunInTransaction(() =>
+            using (var context = GetContext())
             {
                 foreach (var evt in events)
                 {
 
                     SQLiteEvent sqlEvent = ConvertToStore(evt);
-                    _db.Insert(sqlEvent);
+                    context.Add(sqlEvent);
                 }
-            });
+                context.SaveChanges();
+            }
         }
 
         public VectorClock GetMaxVectorForEntity(string entityType, string entityId)
         {
-            var maxEvent = _db.Query<SQLiteEvent>(
-                @"select VectorClock from SQLiteEvent
-                where EntityType = ? and EntityID = ?
+            using (var context = GetContext())
+            {
+
+                var maxEvent = context.Events.FromSqlRaw(
+                    @"select VectorClock from Events
+                where EntityType = {0} and EntityID = {1}
                 and IsIgnored = 0
                 order by rowid desc
                 limit 1
                 ", entityType, entityId).Single();
 
-
-            return new VectorClock(maxEvent.VectorClock);
+                return new VectorClock(maxEvent.VectorClock);
+            }
         }
 
         public IEnumerable<ModelEvent> GetEntityEvents(string entityType, string entityId)
         {
-            var evts = _db.Query<SQLiteEvent>(
-                @"select * from SQLiteEvent
-                where EntityType = ? and EntityID = ?
+            using (var context = GetContext())
+            {
+                var evts = context.Events.FromSqlRaw(
+                    @"select * from Events
+                where EntityType = {0} and EntityID = {1}
                 and IsIgnored = 0
                 order by rowid asc",
-                entityType, entityId);
+                    entityType, entityId);
 
-            foreach (var evt in evts)
-            {
-                yield return ConvertToEvent(evt);
+                foreach (var evt in evts)
+                {
+                    yield return ConvertToEvent(evt);
+                }
             }
         }
 
         public IEnumerable<EventVector> GetEntityEventVectors(string entityType, string entityId)
         {
-            return _db.Query<SQLiteEvent>(@"select EventID, VectorClock from SQLiteEvent
-                where EntityType = ? and EntityID = ?
+            using (var context = GetContext())
+            {
+                return context.Events.FromSqlRaw(@"select EventID, VectorClock from Events
+                where EntityType = {0} and EntityID = {1}
                 order by rowid asc", entityType, entityId).Select(
-                e =>
-                new EventVector(
-                    e.EventID,
-                    new VectorClock(e.VectorClock)));
+                    e =>
+                    new EventVector(
+                        e.EventID,
+                        new VectorClock(e.VectorClock))).ToList();
+            }
         }
 
         public void IgnoreEvents(IEnumerable<Guid> eventIds)
         {
-            _db.RunInTransaction(() =>
+            using (var context = GetContext())
+            using (var transaction = context.Database.BeginTransaction())
             {
                 foreach (var id in eventIds)
                 {
-                    _db.Execute("update SQLiteEvent set IsIgnored = ? where EventID = ?", true, id.ToString());
+                    context.Database.ExecuteSqlRaw("update Events set IsIgnored = ? where EventID = ?", true, id.ToString());
                 }
-            });
+                transaction.Commit();
+            }
         }
     }
 }

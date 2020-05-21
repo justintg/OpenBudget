@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Infrastructure.Entities;
+﻿using OpenBudget.Model.Infrastructure;
+using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,8 +14,9 @@ namespace OpenBudget.Model.BudgetStore
 
         IEnumerable<TSnapshot> GetAllSnapshots<TSnapshot>() where TSnapshot : EntitySnapshot;
         void StoreSnapshot<TSnapshot>(TSnapshot snapshot) where TSnapshot : EntitySnapshot;
-        void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots);
+        //void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots);
 
         decimal GetAccountBalance(string accountId);
+        VectorClock GetLastVectorClock();
     }
 }

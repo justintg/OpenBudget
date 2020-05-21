@@ -1,6 +1,6 @@
-﻿using OpenBudget.Model.BudgetStore;
+﻿using Microsoft.Data.Sqlite;
+using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.SQLite.Tables;
-using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,26 +8,43 @@ using System.Text;
 
 namespace OpenBudget.Model.SQLite
 {
-    public class SQLiteBudgetStore : IBudgetStore
+    public class SQLiteBudgetStore : IBudgetStore, IDisposable
     {
-        private SQLiteConnection _connection;
+        private string _connectionString;
         private SQLiteEventStore _eventStore;
-        private MemorySnapshotStore _snapshotStore;
+        private SQLiteSnapshotStore _snapshotStore;
 
         public SQLiteBudgetStore(Guid deviceId, string dbPath)
         {
-            _connection = new SQLiteConnection(dbPath);
+            _connectionString = DBPathToConnectionString(dbPath);
+
             EnsureTablesInitialized();
-            _eventStore = new SQLiteEventStore(_connection);
-            _snapshotStore = new MemorySnapshotStore();
+
+            _eventStore = new SQLiteEventStore(_connectionString);
+            _snapshotStore = new SQLiteSnapshotStore(_connectionString);
+        }
+
+        private static string DBPathToConnectionString(string dbPath)
+        {
+            SqliteConnectionStringBuilder connectionStringBuilder = new SqliteConnectionStringBuilder();
+            connectionStringBuilder.DataSource = dbPath;
+
+            return connectionStringBuilder.ToString();
+        }
+
+        private SqliteContext GetContext()
+        {
+            return new SqliteContext(_connectionString);
         }
 
         private void EnsureTablesInitialized()
         {
             try
             {
-                _connection.CreateTable<SQLiteEvent>();
-                _connection.CreateTable<Info>();
+                using (var context = GetContext())
+                {
+                    context.Database.EnsureCreated();
+                }
             }
             catch (Exception e)
             {
@@ -51,11 +68,12 @@ namespace OpenBudget.Model.SQLite
 
             try
             {
-                using (SQLiteConnection db = new SQLiteConnection(path))
+                using (SqliteConnection db = new SqliteConnection(DBPathToConnectionString(path)))
                 {
+                    db.Open();
                     EnsureIsSQLiteDatabase(db);
-                    EnsureTableExists(db, nameof(SQLiteEvent));
-                    EnsureTableExists(db, nameof(Info));
+                    EnsureTableExists(db, "Events");
+                    EnsureTableExists(db, "Info");
                 }
             }
             catch (Exception)
@@ -66,16 +84,26 @@ namespace OpenBudget.Model.SQLite
             return true;
         }
 
-        private static void EnsureIsSQLiteDatabase(SQLiteConnection db)
+        private static void EnsureIsSQLiteDatabase(SqliteConnection db)
         {
-            db.ExecuteScalar<int>(@"select count(*) from sqlite_master");
+            var cmd = db.CreateCommand();
+            cmd.CommandText = @"select count(*) from sqlite_master";
+            cmd.ExecuteScalar();
         }
 
-        private static void EnsureTableExists(SQLiteConnection db, string TableName)
+        private static void EnsureTableExists(SqliteConnection db, string TableName)
         {
-            int tableCount = db.ExecuteScalar<int>(@"select count(*) from sqlite_master where type = 'table' and name = ?", TableName);
+            var cmd = db.CreateCommand();
+            cmd.CommandText = @"select count(*) from sqlite_master where type = 'table' and name = @TableName";
+            cmd.Parameters.AddWithValue(@"TableName", TableName);
+            object scalar = cmd.ExecuteScalar();
+            long tableCount = (long)scalar;
             if (tableCount != 1)
                 throw new InvalidBudgetStoreException();
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

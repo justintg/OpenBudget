@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -16,7 +17,7 @@ namespace OpenBudget.Model.Infrastructure
         /// </summary>
         public VectorClock()
         {
-            this.Vector = new Dictionary<Guid, int>();
+            this.Vector = new ReadOnlyDictionary<Guid, int>(new Dictionary<Guid, int>());
             this.Timestamp = DateTime.UtcNow;
         }
 
@@ -42,15 +43,15 @@ namespace OpenBudget.Model.Infrastructure
         /// </summary>
         /// <param name="vector">Initial vector</param>
         /// <param name="copyVector">If the vector should be copied</param>
-        private VectorClock(Dictionary<Guid, int> vector, bool copyVector)
+        private VectorClock(Dictionary<Guid, int> vector, bool copyVector, DateTime? timeStamp = null)
         {
-            this.Vector = vector;
             if (copyVector)
             {
-                this.Vector = this.CopyVector();
+                vector = CopyVector(vector);
             }
 
-            this.Timestamp = DateTime.UtcNow;
+            this.Vector = new ReadOnlyDictionary<Guid, int>(vector);
+            this.Timestamp = timeStamp == null ? DateTime.UtcNow : timeStamp.Value;
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace OpenBudget.Model.Infrastructure
         /// Gets or sets the Vector.
         /// </summary>
         [DataMember]
-        private Dictionary<Guid, int> Vector { get; set; }
+        private ReadOnlyDictionary<Guid, int> Vector { get; set; }
 
         /// <summary>
         /// Gets the value for a particular device.
@@ -271,7 +272,7 @@ namespace OpenBudget.Model.Infrastructure
         /// <returns>A copy of the current VectorClock</returns>
         public VectorClock Copy()
         {
-            return new VectorClock(this.CopyVector(), false);
+            return new VectorClock(this.CopyVector(), false, this.Timestamp);
         }
 
         /// <summary>
@@ -307,7 +308,12 @@ namespace OpenBudget.Model.Infrastructure
         /// <returns>Copy of the vector</returns>
         private Dictionary<Guid, int> CopyVector()
         {
-            return this.Vector.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return CopyVector(this.Vector);
+        }
+
+        private static Dictionary<Guid, int> CopyVector(IDictionary<Guid, int> vector)
+        {
+            return vector.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
         private const int GUID_LENGTH = 16;

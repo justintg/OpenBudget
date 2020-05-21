@@ -1,5 +1,4 @@
-﻿using SQLite;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,13 +6,10 @@ namespace OpenBudget.Model.SQLite.Tables
 {
     public class SQLiteEvent
     {
-        [PrimaryKey]
         public Guid EventID { get; set; }
 
-        [Indexed(Name = "Entity_Lookup_Index")]
         public string EntityID { get; set; }
 
-        [Indexed(Name = "Entity_Lookup_Index")]
         public string EntityType { get; set; }
 
         public Guid DeviceID { get; set; }

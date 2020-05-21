@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OpenBudget.Model.Entities;
+using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 
 namespace OpenBudget.Model.BudgetStore
@@ -75,6 +76,11 @@ namespace OpenBudget.Model.BudgetStore
             var storage = GetOrCreateSnapshotStorage<TransactionSnapshot>();
             var transactionSnapshots = storage.GetSnapshotsByParent(nameof(Account), accountId);
             return transactionSnapshots.Where(t => !t.IsDeleted).Sum(ts => ts.Amount);
+        }
+
+        public VectorClock GetLastVectorClock()
+        {
+            return null;
         }
     }
 }
