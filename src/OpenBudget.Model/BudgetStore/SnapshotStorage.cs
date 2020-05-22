@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Serialization;
 using System;
@@ -19,6 +20,7 @@ namespace OpenBudget.Model.BudgetStore
         TSnapshot GetSnapshot(string entityId);
         IEnumerable<TSnapshot> GetSnapshots();
         IEnumerable<TSnapshot> GetSnapshotsByParent(string parentType, string parentId);
+        IEnumerable<EntityReference> GetSnapshotReferencesByParent(string parentType, string parentId);
         IDictionary<EntityReference, List<TSnapshot>> GetSnapshotsByParents(IReadOnlyList<EntityReference> parents);
     }
 
@@ -165,6 +167,20 @@ namespace OpenBudget.Model.BudgetStore
             else
             {
                 return null;
+            }
+        }
+
+        public IEnumerable<EntityReference> GetSnapshotReferencesByParent(string parentType, string parentId)
+        {
+            ParentKey parentKey = new ParentKey(parentType, parentId);
+
+            List<TSnapshot> childSnapshot = null;
+            if (_parentMap.TryGetValue(parentKey, out childSnapshot))
+            {
+                foreach (var snapshot in childSnapshot)
+                {
+                    yield return new EntityReference(EntityTypeLookups.GetEntityType(typeof(TSnapshot)).Name, snapshot.EntityID);
+                }
             }
         }
     }

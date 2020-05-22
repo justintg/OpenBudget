@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.Entities;
@@ -165,6 +166,29 @@ namespace OpenBudget.Model.SQLite
             {
                 var snapshotSet = context.Set<TChildSnapshot>();
                 return snapshotSet.Where(whereExpr).AsEnumerable().GroupBy(s => s.Parent).ToDictionary(g => g.Key, g => g.ToList());
+            }
+        }
+
+        public IEnumerable<TSnapshot> GetSnapshots<TSnapshot>(IReadOnlyList<string> entityIds) where TSnapshot : EntitySnapshot
+        {
+            List<string> entityIdsCopy = entityIds.ToList();
+            using (var context = GetContext())
+            {
+                var snapshotSet = context.Set<TSnapshot>();
+                return snapshotSet.Where(e => entityIdsCopy.Contains(e.EntityID)).ToList();
+            }
+        }
+
+        public IEnumerable<EntityReference> GetChildSnapshotReferences<TChildSnapshot>(string parentType, string parentId) where TChildSnapshot : EntitySnapshot
+        {
+            using (var context = GetContext())
+            {
+                var snapshotSet = context.GetSnapshotSet<TChildSnapshot>();
+                string childType = EntityTypeLookups.GetEntityType(typeof(TChildSnapshot)).Name;
+                return snapshotSet.Where(e => e.Parent.EntityType == parentType && e.Parent.EntityID == parentId)
+                    .Select(e => e.EntityID)
+                    .ToList()
+                    .Select(id => new EntityReference(childType, id));
             }
         }
     }

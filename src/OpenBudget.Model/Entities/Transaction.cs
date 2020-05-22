@@ -93,7 +93,10 @@ namespace OpenBudget.Model.Entities
 
         public EntityBase PayeeOrAccount
         {
-            get { return ResolveEntityReference<EntityBase>(); }
+            get
+            {
+                return ResolveEntityReference<EntityBase>();
+            }
             set
             {
                 IEnumerable<Type> ValidTypes = (new Type[] { typeof(Payee), typeof(Account) });
@@ -171,7 +174,10 @@ namespace OpenBudget.Model.Entities
 
         public EntityBase Category
         {
-            get { return ResolveEntityReference<EntityBase>(); }
+            get
+            {
+                return ResolveEntityReference<EntityBase>();
+            }
             set
             {
                 IEnumerable<Type> ValidTypes = (new Type[] { typeof(IncomeCategory), typeof(Category) });

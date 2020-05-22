@@ -25,7 +25,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 throw new ArgumentException("Cannot find Account in BudgetModel", nameof(accountId));
 
             //Load collections for use in Payee/Category lookup
-            _budget = _model.GetBudget();
+            _budget = _account.GetParentBudget();
             _budget.Accounts.LoadCollection();
             _budget.MasterCategories.LoadCollection();
             _budget.Payees.LoadCollection();

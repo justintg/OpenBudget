@@ -69,7 +69,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 return;
 
             var repository = _model.FindRepository<T>();
-            var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID).Where(e => !e.IsDeleted).ToList();
+            var entities = repository.GetEntitiesByParent(_parent.GetType().Name, _parent.EntityID, _parent.LookupRoot).Where(e => !e.IsDeleted).ToList();
             ForceResolveParent(entities);
             ReplaceChildrenWithKnownChildren(entities);
 
@@ -81,7 +81,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         private void ForceResolveParent(List<T> entities)
         {
-            foreach(var entity in entities)
+            foreach (var entity in entities)
             {
                 entity.ForceResolveEntityReference(nameof(EntityBase.Parent), _parent);
             }

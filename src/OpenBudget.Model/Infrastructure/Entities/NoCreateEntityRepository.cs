@@ -94,5 +94,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             return GetEntity(entityId);
         }
+
+        public IEnumerable<TEntity> GetEntitiesByParent(string parentType, string parentId, EntityLookupRoot lookupRoot)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

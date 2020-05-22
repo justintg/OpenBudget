@@ -130,5 +130,53 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             return GetEntity(entityId);
         }
+
+        public IEnumerable<TEntity> GetEntitiesByParent(string parentType, string parentId, EntityLookupRoot lookupRoot)
+        {
+            List<TEntity> cachedEntities = new List<TEntity>();
+            List<string> missingEntityIds = new List<string>();
+            var references = _snapshotStore.GetChildSnapshotReferences<TSnapshot>(parentType, parentId);
+            foreach (var reference in references)
+            {
+                if (lookupRoot.TryGetValue(reference, out TEntity entity))
+                {
+                    cachedEntities.Add(entity);
+                }
+                else
+                {
+                    missingEntityIds.Add(reference.EntityID);
+                }
+            }
+
+            List<TEntity> missingEntiies = new List<TEntity>();
+            var snapshots = _snapshotStore.GetSnapshots<TSnapshot>(missingEntityIds).ToList();
+            var subEntitySnapshots = GetSubEntitySnapshotLookup(snapshots);
+            foreach (var snapshot in snapshots)
+            {
+                if (subEntitySnapshots == null)
+                {
+                    TEntity entity = LoadEntityFromSnapshot(snapshot, null);
+                    entity.LookupRoot = lookupRoot;
+                    lookupRoot.Add(entity);
+                    missingEntiies.Add(entity);
+                }
+                else
+                {
+                    EntityReference snapshotReference = new EntityReference(typeof(TEntity).Name, snapshot.EntityID);
+                    List<EntitySnapshot> subEntities = null;
+                    if (!subEntitySnapshots.TryGetValue(snapshotReference, out subEntities))
+                    {
+                        subEntities = new List<EntitySnapshot>();
+                    }
+
+                    TEntity entity = LoadEntityFromSnapshot(snapshot, subEntities);
+                    entity.LookupRoot = lookupRoot;
+                    lookupRoot.Add(entity);
+                    missingEntiies.Add(entity);
+                }
+            }
+
+            return cachedEntities.Concat(missingEntiies);
+        }
     }
 }

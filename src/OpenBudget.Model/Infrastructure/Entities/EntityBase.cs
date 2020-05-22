@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Events;
+﻿using OpenBudget.Model.Entities;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.UnitOfWork;
 using OpenBudget.Model.Util;
 using System;
@@ -126,10 +127,23 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
+        internal EntityLookupRoot LookupRoot { get; set; } = new EntityLookupRoot();
+
         public virtual EntityBase Parent
         {
             get { return ResolveEntityReference<EntityBase>(isLoadingParent: true); }
             internal set { SetEntityReference<EntityBase>(value); }
+        }
+
+        public Budget GetParentBudget()
+        {
+            var parent = Parent;
+            if (parent == null)
+            {
+                return (Budget)this;
+            }
+
+            return parent.GetParentBudget();
         }
 
         protected EntityBase(string entityId)
@@ -561,7 +575,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 if (this.IsAttached)
                 {
-                    T resolvedEntity = reference.Resolve<T>(Model);
+                    T resolvedEntity = LookupRoot.ResolveEntity<T>(_model, reference);
                     if (isLoadingParent)
                     {
                         resolvedEntity.NotifyLoadedFromChild(this);

@@ -93,5 +93,20 @@ namespace OpenBudget.Model.BudgetStore
             var storage = GetOrCreateSnapshotStorage<TChildSnapshot>();
             return storage.GetSnapshotsByParents(parents);
         }
+
+        public IEnumerable<TSnapshot> GetSnapshots<TSnapshot>(IReadOnlyList<string> entityIds) where TSnapshot : EntitySnapshot
+        {
+            var storage = GetOrCreateSnapshotStorage<TSnapshot>();
+            foreach (var entityId in entityIds)
+            {
+                yield return storage.GetSnapshot(entityId);
+            }
+        }
+
+        public IEnumerable<EntityReference> GetChildSnapshotReferences<TChildSnapshot>(string parentType, string parentId) where TChildSnapshot : EntitySnapshot
+        {
+            var storage = GetOrCreateSnapshotStorage<TChildSnapshot>();
+            return storage.GetSnapshotReferencesByParent(parentType, parentId);
+        }
     }
 }
