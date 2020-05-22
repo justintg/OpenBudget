@@ -15,6 +15,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         }
 
+        public EntityLookupRoot(EntityBase initialEntity)
+        {
+            Add(initialEntity);
+        }
+
+
         public bool TryGetValue<TEntity>(EntityReference reference, out TEntity entity)
             where TEntity : EntityBase
         {

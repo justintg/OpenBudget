@@ -127,7 +127,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
         }
 
-        internal EntityLookupRoot LookupRoot { get; set; } = new EntityLookupRoot();
+        internal EntityLookupRoot LookupRoot { get; set; }
 
         public virtual EntityBase Parent
         {
@@ -155,6 +155,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             EntityID = entityId;
             RegisterValidations();
             RegisterDependencies();
+            LookupRoot = new EntityLookupRoot(this);
         }
 
         protected EntityBase(EntityCreatedEvent evt)
@@ -166,6 +167,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             SaveState = EntitySaveState.AttachedNoChanges;
             RegisterValidations();
             RegisterDependencies();
+            LookupRoot = new EntityLookupRoot(this);
         }
 
         public FieldChangeEvent CurrentEvent { get; protected set; }

@@ -34,6 +34,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         protected virtual TEntity LoadEntityFromSnapshot(TSnapshot snapshot, List<EntitySnapshot> subEntities)
         {
             TEntity entity = _entitySnapshotConstructor(snapshot);
+
             _budgetModel.AttachToModel(entity);
             if (subEntities == null)
             {
