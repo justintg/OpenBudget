@@ -577,7 +577,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 if (this.IsAttached)
                 {
-                    T resolvedEntity = LookupRoot.ResolveEntity<T>(_model, reference);
+                    T resolvedEntity = LookupRoot.ResolveEntity<T>(Model, reference);
                     if (isLoadingParent)
                     {
                         resolvedEntity.NotifyLoadedFromChild(this);

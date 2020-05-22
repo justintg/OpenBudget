@@ -131,6 +131,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
             _loadedEntities.Add(entity);
             _loadedEntityIds.Add(entity.EntityID);
+
+            if (entity.LookupRoot != _parent.LookupRoot)
+            {
+                entity.LookupRoot = _parent.LookupRoot;
+            }
         }
 
         private IMessenger<ModelEvent> _messenger;
