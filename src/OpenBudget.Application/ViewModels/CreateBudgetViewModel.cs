@@ -107,22 +107,36 @@ namespace OpenBudget.Application.ViewModels
             manyTransactions.BudgetingType = BudgetingTypes.OnBudget;
             manyTransactions.Name = "Many Transactions";
 
+            Account manyMoreTransactions = new Account();
+            manyMoreTransactions.AccountType = AccountTypes.Checking;
+            manyMoreTransactions.BudgetingType = BudgetingTypes.OnBudget;
+            manyMoreTransactions.Name = "Many More Transactions";
+
             Payee payee = new Payee();
             payee.Name = "Subway";
 
             Budget.Payees.Add(payee);
+            budgetModel.SaveChanges();
 
-            for (int i = 1; i <= 5000; i++)
+            for (int i = 1; i <= 50000; i++)
             {
                 OpenBudget.Model.Entities.Transaction transaction = new OpenBudget.Model.Entities.Transaction();
                 transaction.Amount = -i;
                 transaction.Category = Budget.MasterCategories[0].Categories[0];
                 transaction.TransactionDate = DateTime.Today;
                 transaction.Payee = payee;
-                manyTransactions.Transactions.Add(transaction);
+                if (i % 2 == 0)
+                {
+                    manyTransactions.Transactions.Add(transaction);
+                }
+                else
+                {
+                    manyMoreTransactions.Transactions.Add(transaction);
+                }
             }
 
             Budget.Accounts.Add(manyTransactions);
+            Budget.Accounts.Add(manyMoreTransactions);
             budgetModel.SaveChanges();
 
             var deviceSettings = _settingsProvider.Get<Device>();

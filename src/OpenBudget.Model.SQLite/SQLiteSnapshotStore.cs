@@ -1,16 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore.Storage;
 using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.SQLite.Tables;
+using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace OpenBudget.Model.SQLite
@@ -18,15 +22,31 @@ namespace OpenBudget.Model.SQLite
     internal class SQLiteSnapshotStore : ISnapshotStore
     {
         private readonly string _connectionString;
+        private readonly SqliteConnection _connection;
+        private bool _isBatching = false;
+        private IDbContextTransaction _transaction;
+        private SqliteContext _batchContext;
+        private VectorClock _lastVectorClockCache;
 
         public SQLiteSnapshotStore(string connectionString)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            _connection = new SqliteConnection(_connectionString);
+            _connection.Open();
         }
 
         private SqliteContext GetContext()
         {
-            return new SqliteContext(_connectionString);
+            if (_isBatching)
+            {
+                var context = new SqliteContext(_connection);
+                context.Database.UseTransaction(_transaction.GetDbTransaction());
+                return context;
+            }
+            else
+            {
+                return new SqliteContext(_connection);
+            }
         }
 
         public decimal GetAccountBalance(string accountId)
@@ -104,6 +124,18 @@ namespace OpenBudget.Model.SQLite
         }
 
         private void SetLastVectorClock(VectorClock vectorClock)
+        {
+            if (_isBatching)
+            {
+                _lastVectorClockCache = vectorClock;
+            }
+            else
+            {
+                SetLastVectorClockImpl(vectorClock);
+            }
+        }
+
+        private void SetLastVectorClockImpl(VectorClock vectorClock)
         {
             using (var context = GetContext())
             {
@@ -190,6 +222,35 @@ namespace OpenBudget.Model.SQLite
                     .ToList()
                     .Select(id => new EntityReference(childType, id));
             }
+        }
+
+        public IDisposable StartSnapshotStoreBatch()
+        {
+            if (_isBatching) throw new InvalidOperationException("Cannot start batching while batching is already started");
+            _batchContext = GetContext();
+            _transaction = _batchContext.Database.BeginTransaction();
+            _isBatching = true;
+            return Disposable.Create(StopBatching);
+        }
+
+        private void StopBatching()
+        {
+            if (!_isBatching) throw new InvalidOperationException("Cannot stop batching while batching is not started");
+
+            if (_lastVectorClockCache != null)
+                SetLastVectorClockImpl(_lastVectorClockCache);
+
+            _transaction.Commit();
+            _transaction.Dispose();
+            _batchContext.Dispose();
+            _transaction = null;
+            _batchContext = null;
+            _lastVectorClockCache = null;
+            _isBatching = false;
+
+            var cmd = _connection.CreateCommand();
+            cmd.CommandText = "PRAGMA wal_checkpoint;";
+            cmd.ExecuteNonQuery();
         }
     }
 }

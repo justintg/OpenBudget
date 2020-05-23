@@ -108,5 +108,18 @@ namespace OpenBudget.Model.BudgetStore
             var storage = GetOrCreateSnapshotStorage<TChildSnapshot>();
             return storage.GetSnapshotReferencesByParent(parentType, parentId);
         }
+
+        public IDisposable StartSnapshotStoreBatch()
+        {
+            return new EmptyDisposable();
+        }
+
+        private class EmptyDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+
+            }
+        }
     }
 }

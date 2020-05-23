@@ -37,7 +37,7 @@ namespace OpenBudget.Model.SQLite
             }
         }
 
-        private readonly string _connectionString;
+        private readonly SqliteConnection _connection;
 
         public DbSet<SQLiteEvent> Events { get; set; }
         public DbSet<Info> Info { get; set; }
@@ -51,9 +51,9 @@ namespace OpenBudget.Model.SQLite
         public DbSet<SubTransactionSnapshot> SubTransactions { get; set; }
         public DbSet<TransactionSnapshot> Transactions { get; set; }
 
-        public SqliteContext(string connectionString)
+        public SqliteContext(SqliteConnection connection)
         {
-            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
         public DbSet<TSnapshotType> GetSnapshotSet<TSnapshotType>() where TSnapshotType : EntitySnapshot
@@ -68,7 +68,7 @@ namespace OpenBudget.Model.SQLite
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(_connectionString);
+            optionsBuilder.UseSqlite(_connection);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

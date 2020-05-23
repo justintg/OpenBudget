@@ -28,5 +28,6 @@ namespace OpenBudget.Model.BudgetStore
 
         decimal GetAccountBalance(string accountId);
         VectorClock GetLastVectorClock();
+        IDisposable StartSnapshotStoreBatch();
     }
 }

@@ -623,17 +623,29 @@ namespace OpenBudget.Model
             _unitOfWork = new UnitOfWork();
         }
 
+        private IDisposable StartUpdateBatch()
+        {
+            return Disposable.Create(
+                    BudgetStore.SnapshotStore.StartSnapshotStoreBatch(),
+                    AccountBalanceDenormalizer.StartBatch(),
+                    _budgetViewListenter.StartBatch()
+                );
+        }
+
         private void UpdateModelState(List<EventSaveInfo> changes)
         {
-            foreach (var change in changes)
+            using (StartUpdateBatch())
             {
-                change.EventSavedCallback(change);
-                if (change.NeedsAttach)
+                foreach (var change in changes)
                 {
-                    AttachToModel(change.Entity);
+                    change.EventSavedCallback(change);
+                    if (change.NeedsAttach)
+                    {
+                        AttachToModel(change.Entity);
+                    }
+                    InternalMessageBus.PublishEvent(change.Event.EntityType, change.Event);
+                    MessageBus.PublishEvent(change.Event.EntityType, change.Event);
                 }
-                InternalMessageBus.PublishEvent(change.Event.EntityType, change.Event);
-                MessageBus.PublishEvent(change.Event.EntityType, change.Event);
             }
         }
 

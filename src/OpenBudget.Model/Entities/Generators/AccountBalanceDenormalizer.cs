@@ -1,6 +1,7 @@
 ﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Infrastructure.Messaging;
+using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,42 @@ namespace OpenBudget.Model.Entities.Generators
         private readonly BudgetModel _budgetModel;
         protected Dictionary<string, List<WeakReference<Account>>> _registrations = new Dictionary<string, List<WeakReference<Account>>>();
 
+        private bool _isBatching = false;
+        private HashSet<string> _batchedAccounts = new HashSet<string>();
+        private bool _batchAll = false;
+
         public AccountBalanceDenormalizer(BudgetModel budgetModel)
         {
             _budgetModel = budgetModel ?? throw new ArgumentNullException(nameof(budgetModel));
 
             RegisterForMessages();
+        }
+
+        public IDisposable StartBatch()
+        {
+            _batchedAccounts.Clear();
+            _batchAll = false;
+            _isBatching = true;
+            return Disposable.Create(StopBatch);
+        }
+
+        private void StopBatch()
+        {
+            if (_batchAll)
+            {
+                UpdateAllAccountBalancesImpl();
+            }
+            else
+            {
+                foreach (var account in _batchedAccounts)
+                {
+                    UpdateAccountBalanceImpl(account);
+                }
+            }
+
+            _batchedAccounts.Clear();
+            _batchAll = false;
+            _isBatching = false;
         }
 
         private void RegisterForMessages()
@@ -41,7 +73,7 @@ namespace OpenBudget.Model.Entities.Generators
             entityReferences.Add(new WeakReference<Account>(account));
         }
 
-        protected void UpdateAccountBalance(string accountId)
+        protected void UpdateAccountBalanceImpl(string accountId)
         {
             decimal accountBalance = _budgetModel.BudgetStore.SnapshotStore.GetAccountBalance(accountId);
             foreach (var account in EnumerateRegistrations(accountId))
@@ -50,11 +82,35 @@ namespace OpenBudget.Model.Entities.Generators
             }
         }
 
-        protected void UpdateAllAccountBalances()
+        protected void UpdateAccountBalance(string accountId)
+        {
+            if (_isBatching)
+            {
+                _batchedAccounts.Add(accountId);
+            }
+            else
+            {
+                UpdateAccountBalanceImpl(accountId);
+            }
+        }
+
+        protected void UpdateAllAccountBalancesImpl()
         {
             foreach (var accountId in _registrations.Keys)
             {
-                UpdateAccountBalance(accountId);
+                UpdateAccountBalanceImpl(accountId);
+            }
+        }
+
+        protected void UpdateAllAccountBalances()
+        {
+            if (_isBatching)
+            {
+                _batchAll = true;
+            }
+            else
+            {
+                UpdateAllAccountBalancesImpl();
             }
         }
 

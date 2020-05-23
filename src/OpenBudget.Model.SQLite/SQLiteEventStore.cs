@@ -33,17 +33,17 @@ namespace OpenBudget.Model.SQLite
             StampEvent = expr.Compile();
         }
 
-        Serializer _serializer = new Serializer(new SQLiteContractResolver());
-        string _connectionString;
+        private Serializer _serializer = new Serializer(new SQLiteContractResolver());
+        private SqliteConnection _connection;
 
-        internal SQLiteEventStore(string connectionString)
+        internal SQLiteEventStore(SqliteConnection connection)
         {
-            _connectionString = connectionString;
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
         private SqliteContext GetContext()
         {
-            return new SqliteContext(_connectionString);
+            return new SqliteContext(_connection);
         }
 
         public IEnumerable<ModelEvent> GetEvents()

@@ -11,16 +11,17 @@ namespace OpenBudget.Model.SQLite
     public class SQLiteBudgetStore : IBudgetStore, IDisposable
     {
         private string _connectionString;
+        private SqliteConnection _connection;
         private SQLiteEventStore _eventStore;
         private SQLiteSnapshotStore _snapshotStore;
 
         public SQLiteBudgetStore(Guid deviceId, string dbPath)
         {
             _connectionString = DBPathToConnectionString(dbPath);
-
+            _connection = new SqliteConnection(_connectionString);
             EnsureTablesInitialized();
 
-            _eventStore = new SQLiteEventStore(_connectionString);
+            _eventStore = new SQLiteEventStore(_connection);
             _snapshotStore = new SQLiteSnapshotStore(_connectionString);
         }
 
@@ -34,7 +35,7 @@ namespace OpenBudget.Model.SQLite
 
         private SqliteContext GetContext()
         {
-            return new SqliteContext(_connectionString);
+            return new SqliteContext(_connection);
         }
 
         private void EnsureTablesInitialized()
@@ -104,6 +105,7 @@ namespace OpenBudget.Model.SQLite
 
         public void Dispose()
         {
+            _connection.Dispose();
         }
     }
 }
