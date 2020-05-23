@@ -54,20 +54,23 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Handle(EntityUpdatedEvent message)
         {
-            var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(message.EntityID);
-            TEntity entity;
-            if (snapshot != null)
+            if (!_budgetModel.IsSavingLocally)
             {
-                entity = _createEntityFromSnapshot(snapshot);
-            }
-            else
-            {
-                entity = _repository.MaterializeNewEntityCopy(message.EntityID);
-            }
+                var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(message.EntityID);
+                TEntity entity;
+                if (snapshot != null)
+                {
+                    entity = _createEntityFromSnapshot(snapshot);
+                }
+                else
+                {
+                    entity = _repository.MaterializeNewEntityCopy(message.EntityID);
+                }
 
-            entity.ReplayEvents(message.Yield());
-            snapshot = entity.GetSnapshot();
-            _snapshotStore.StoreSnapshot(snapshot);
+                entity.ReplayEvents(message.Yield());
+                snapshot = entity.GetSnapshot();
+                _snapshotStore.StoreSnapshot(snapshot);
+            }
         }
     }
 }

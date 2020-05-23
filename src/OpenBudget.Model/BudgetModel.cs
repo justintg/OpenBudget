@@ -61,6 +61,10 @@ namespace OpenBudget.Model
         internal NoCreateEntitySnapshotDenormalizer<CategoryMonth, CategoryMonthSnapshot> CategoryMonthSnapshotDenormalizer { get; private set; }
         internal NoCreateEntitySnapshotDenormalizer<IncomeCategory, IncomeCategorySnapshot> IncomeCategorySnapshotDenormalizer { get; private set; }
 
+        internal bool IsSavingLocally { get; private set; } = false;
+
+
+
 
         private BudgetViewListener _budgetViewListenter;
         private Dictionary<Type, IEntityDenormalizer> _entityDenormalizers = new Dictionary<Type, IEntityDenormalizer>();
@@ -325,13 +329,17 @@ namespace OpenBudget.Model
 
             if (eventVector.CompareTo(snapshotVector) != 0)
             {
-                foreach (var evt in model.EventStore.GetEvents())
+                using (model.StartUpdateBatch(false))
                 {
-                    model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
+                    foreach (var evt in model.EventStore.GetEvents())
+                    {
+                        model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
+                    }
                 }
+
+                model.BudgetViewCache.RecalculateCache();
             }
 
-            model.BudgetViewCache.RecalculateCache();
             return model;
         }
 
@@ -623,18 +631,31 @@ namespace OpenBudget.Model
             _unitOfWork = new UnitOfWork();
         }
 
-        private IDisposable StartUpdateBatch()
+        private IDisposable StartUpdateBatch(bool localSave)
         {
-            return Disposable.Create(
-                    BudgetStore.SnapshotStore.StartSnapshotStoreBatch(),
-                    AccountBalanceDenormalizer.StartBatch(),
-                    _budgetViewListenter.StartBatch()
-                );
+            if (localSave)
+            {
+                IsSavingLocally = true;
+                return Disposable.Create(
+                        BudgetStore.SnapshotStore.StartSnapshotStoreBatch(),
+                        AccountBalanceDenormalizer.StartBatch(),
+                        _budgetViewListenter.StartBatch(),
+                        Disposable.Create(() => { IsSavingLocally = false; })
+                    );
+            }
+            else
+            {
+                return Disposable.Create(
+                        BudgetStore.SnapshotStore.StartSnapshotStoreBatch(),
+                        AccountBalanceDenormalizer.StartBatch(),
+                        _budgetViewListenter.StartBatch()
+                    );
+            }
         }
 
         private void UpdateModelState(List<EventSaveInfo> changes)
         {
-            using (StartUpdateBatch())
+            using (StartUpdateBatch(true))
             {
                 foreach (var change in changes)
                 {
@@ -642,6 +663,14 @@ namespace OpenBudget.Model
                     if (change.NeedsAttach)
                     {
                         AttachToModel(change.Entity);
+                    }
+                    var changeSnapshots = change.GetSnapshots();
+                    if (changeSnapshots != null)
+                    {
+                        foreach (var changeSnapshot in changeSnapshots)
+                        {
+                            EntityTypeLookups.StoreSnapshot(BudgetStore.SnapshotStore, changeSnapshot);
+                        }
                     }
                     InternalMessageBus.PublishEvent(change.Event.EntityType, change.Event);
                     MessageBus.PublishEvent(change.Event.EntityType, change.Event);

@@ -35,41 +35,47 @@ namespace OpenBudget.Model.SQLite
             _connection.Open();
         }
 
-        private SqliteContext GetContext()
+        private IDisposable GetContext(out SqliteContext context)
         {
             if (_isBatching)
             {
-                var context = new SqliteContext(_connection);
-                context.Database.UseTransaction(_transaction.GetDbTransaction());
-                return context;
+                _batchContext.SaveChanges();
+                context = _batchContext;
+                return Disposable.CreateEmpty();
             }
             else
             {
-                return new SqliteContext(_connection);
+                context = new SqliteContext(_connection);
+                return context;
             }
         }
 
         public decimal GetAccountBalance(string accountId)
         {
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
-                var amounts = context.Transactions.Where(t => t.Parent.EntityType == nameof(Account) && t.Parent.EntityID == accountId && !t.IsDeleted).Select(t => t.Amount).ToList();
+                var amounts = context.Transactions
+                    .AsNoTracking()
+                    .Where(t => t.Parent.EntityType == nameof(Account)
+                    && t.Parent.EntityID == accountId
+                    && !t.IsDeleted)
+                    .Select(t => t.Amount).ToList();
                 return amounts.Sum();
             }
         }
 
         public IEnumerable<TSnapshot> GetAllSnapshots<TSnapshot>() where TSnapshot : EntitySnapshot
         {
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var snapshotSet = context.GetSnapshotSet<TSnapshot>();
-                return snapshotSet.ToList();
+                return snapshotSet.AsNoTracking().ToList();
             }
         }
 
         public IEnumerable<TChildSnapshot> GetChildSnapshots<TChildSnapshot>(string parentType, string parentId) where TChildSnapshot : EntitySnapshot
         {
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var snapshotSet = context.GetSnapshotSet<TChildSnapshot>();
                 return snapshotSet.Where(e => e.Parent.EntityType == parentType && e.Parent.EntityID == parentId).ToList();
@@ -78,7 +84,7 @@ namespace OpenBudget.Model.SQLite
 
         public TSnapshot GetSnapshot<TSnapshot>(string entityId) where TSnapshot : EntitySnapshot
         {
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var snapshotSet = context.GetSnapshotSet<TSnapshot>();
                 return snapshotSet.SingleOrDefault(s => s.EntityID == entityId);
@@ -87,10 +93,56 @@ namespace OpenBudget.Model.SQLite
 
         public void StoreSnapshot<TSnapshot>(TSnapshot snapshot) where TSnapshot : EntitySnapshot
         {
-            using (var context = GetContext())
+            if (_isBatching)
             {
-                var snapshotSet = context.GetSnapshotSet<TSnapshot>();
-                if (snapshotSet.Any(e => e.EntityID == snapshot.EntityID))
+                StoreSnapshotImpl(_batchContext, snapshot);
+            }
+            else
+            {
+                using (GetContext(out SqliteContext context))
+                {
+                    StoreSnapshotImpl(context, snapshot);
+                    context.SaveChanges();
+                }
+            }
+            SetLastVectorClock(snapshot.LastEventVector);
+        }
+
+        private void StoreSnapshotImpl<TSnapshot>(SqliteContext context, TSnapshot snapshot) where TSnapshot : EntitySnapshot
+        {
+            var snapshotSet = context.GetSnapshotSet<TSnapshot>();
+            if (snapshotSet.Any(e => e.EntityID == snapshot.EntityID))
+            {
+                context.Update(snapshot);
+            }
+            else
+            {
+                context.Add(snapshot);
+            }
+        }
+
+        public void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots)
+        {
+            if (_isBatching)
+            {
+                StoreSnapshotsImpl(_batchContext, snapshots);
+            }
+            else
+            {
+                using (GetContext(out SqliteContext context))
+                {
+                    StoreSnapshotsImpl(context, snapshots);
+                    context.SaveChanges();
+                }
+            }
+        }
+
+        private void StoreSnapshotsImpl(SqliteContext context, IEnumerable<EntitySnapshot> snapshots)
+        {
+            foreach (var snapshot in snapshots)
+            {
+                var dbSnapshot = context.Find(snapshot.GetType(), snapshot.EntityID);
+                if (dbSnapshot != null)
                 {
                     context.Update(snapshot);
                 }
@@ -98,28 +150,6 @@ namespace OpenBudget.Model.SQLite
                 {
                     context.Add(snapshot);
                 }
-                context.SaveChanges();
-            }
-            SetLastVectorClock(snapshot.LastEventVector);
-        }
-
-        public void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots)
-        {
-            using (var context = GetContext())
-            {
-                foreach (var snapshot in snapshots)
-                {
-                    var dbSnapshot = context.Find(snapshot.GetType(), snapshot.EntityID);
-                    if (dbSnapshot != null)
-                    {
-                        context.Update(snapshot);
-                    }
-                    else
-                    {
-                        context.Add(snapshot);
-                    }
-                }
-                context.SaveChanges();
             }
         }
 
@@ -137,7 +167,7 @@ namespace OpenBudget.Model.SQLite
 
         private void SetLastVectorClockImpl(VectorClock vectorClock)
         {
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var currentClock = context.Info.SingleOrDefault(i => i.Key == "LastSnapshotVector");
                 if (currentClock == null)
@@ -160,7 +190,7 @@ namespace OpenBudget.Model.SQLite
 
         public VectorClock GetLastVectorClock()
         {
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var currentClock = context.Info.SingleOrDefault(i => i.Key == "LastSnapshotVector");
                 if (currentClock == null)
@@ -194,7 +224,7 @@ namespace OpenBudget.Model.SQLite
                 }
             }
 
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var snapshotSet = context.Set<TChildSnapshot>();
                 return snapshotSet.Where(whereExpr).AsEnumerable().GroupBy(s => s.Parent).ToDictionary(g => g.Key, g => g.ToList());
@@ -204,7 +234,7 @@ namespace OpenBudget.Model.SQLite
         public IEnumerable<TSnapshot> GetSnapshots<TSnapshot>(IReadOnlyList<string> entityIds) where TSnapshot : EntitySnapshot
         {
             List<string> entityIdsCopy = entityIds.ToList();
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var snapshotSet = context.Set<TSnapshot>();
                 return snapshotSet.Where(e => entityIdsCopy.Contains(e.EntityID)).ToList();
@@ -213,7 +243,7 @@ namespace OpenBudget.Model.SQLite
 
         public IEnumerable<EntityReference> GetChildSnapshotReferences<TChildSnapshot>(string parentType, string parentId) where TChildSnapshot : EntitySnapshot
         {
-            using (var context = GetContext())
+            using (GetContext(out SqliteContext context))
             {
                 var snapshotSet = context.GetSnapshotSet<TChildSnapshot>();
                 string childType = EntityTypeLookups.GetEntityType(typeof(TChildSnapshot)).Name;
@@ -227,7 +257,7 @@ namespace OpenBudget.Model.SQLite
         public IDisposable StartSnapshotStoreBatch()
         {
             if (_isBatching) throw new InvalidOperationException("Cannot start batching while batching is already started");
-            _batchContext = GetContext();
+            GetContext(out _batchContext);
             _transaction = _batchContext.Database.BeginTransaction();
             _isBatching = true;
             return Disposable.Create(StopBatching);
@@ -236,6 +266,8 @@ namespace OpenBudget.Model.SQLite
         private void StopBatching()
         {
             if (!_isBatching) throw new InvalidOperationException("Cannot stop batching while batching is not started");
+
+            _batchContext.SaveChanges();
 
             if (_lastVectorClockCache != null)
                 SetLastVectorClockImpl(_lastVectorClockCache);

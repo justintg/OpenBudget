@@ -43,6 +43,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return _entityData;
         }
 
+        protected override EntitySnapshot GetSnapshotInternal()
+        {
+            return _entityData;
+        }
+
         protected override T GetEntityData<T>(string property)
         {
             return _snapshotProperties.GetEntityData<T>(_entityData, property);
@@ -145,6 +150,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
             return parent.GetParentBudget();
         }
+
+        protected abstract EntitySnapshot GetSnapshotInternal();
 
         protected EntityBase(string entityId)
         {
@@ -301,6 +308,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
                 NeedsAttach = needsAttach,
                 Event = evt,
                 EventSavedCallback = NotifyEventSaved,
+                Snapshot = GetSnapshotInternal(),
                 SubEntityEvents = subEntityEvents
             };
         }
@@ -338,7 +346,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             if (groupedChanges.Count > 0 && !groupChangesPublished)
             {
                 GroupedFieldChangeEvent groupedEvent = new GroupedFieldChangeEvent(this.GetType().Name, EntityID, groupedChanges);
-                yield return ConvertToCallback(groupedEvent);
+                yield return ConvertToCallback(groupedEvent, subEntityEvents);
             }
 
             /*foreach (var child in _childEntityCollections)

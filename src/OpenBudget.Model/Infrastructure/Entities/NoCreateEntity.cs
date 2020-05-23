@@ -35,6 +35,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return _entityData;
         }
 
+        protected override EntitySnapshot GetSnapshotInternal()
+        {
+            return _entityData;
+        }
+
         protected override T GetEntityData<T>(string property)
         {
             return _snapshotProperties.GetEntityData<T>(_entityData, property);

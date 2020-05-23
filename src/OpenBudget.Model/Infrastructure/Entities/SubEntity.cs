@@ -74,6 +74,11 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return _entityData;
         }
 
+        protected override EntitySnapshot GetSnapshotInternal()
+        {
+            return _entityData;
+        }
+
         public override EntityBase Parent
         {
             get => base.Parent;

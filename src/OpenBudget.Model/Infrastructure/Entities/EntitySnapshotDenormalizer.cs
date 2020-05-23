@@ -70,35 +70,45 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Handle(EntityCreatedEvent message)
         {
-            var snapshot = _createEntityFromEvent(message).GetSnapshot();
-            _snapshotStore.StoreSnapshot(snapshot);
+            if (!_budgetModel.IsSavingLocally)
+            {
+                var snapshot = _createEntityFromEvent(message).GetSnapshot();
+                _snapshotStore.StoreSnapshot(snapshot);
+            }
         }
 
         public void Handle(EntityUpdatedEvent message)
         {
-            var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(message.EntityID);
-            var entity = _createEntityFromSnapshot(snapshot);
-            entity.ReplayEvents(message.Yield());
-            snapshot = entity.GetSnapshot();
-            _snapshotStore.StoreSnapshot(snapshot);
+            if (!_budgetModel.IsSavingLocally)
+            {
+                var snapshot = _snapshotStore.GetSnapshot<TSnapshot>(message.EntityID);
+                var entity = _createEntityFromSnapshot(snapshot);
+                entity.ReplayEvents(message.Yield());
+                snapshot = entity.GetSnapshot();
+                _snapshotStore.StoreSnapshot(snapshot);
+            }
         }
 
         public void Handle(GroupedFieldChangeEvent message)
         {
-            foreach (var evt in message.GroupedEvents)
+            if (!_budgetModel.IsSavingLocally)
             {
-                if (evt.EntityType == typeof(TEntity).Name)
+                foreach (var evt in message.GroupedEvents)
                 {
-                    if (evt is EntityCreatedEvent entityCreatedEvent)
+                    if (evt.EntityType == typeof(TEntity).Name)
                     {
-                        Handle(entityCreatedEvent);
-                    }
-                    else if (evt is EntityUpdatedEvent entityUpdatedEvent)
-                    {
-                        Handle(entityUpdatedEvent);
+                        if (evt is EntityCreatedEvent entityCreatedEvent)
+                        {
+                            Handle(entityCreatedEvent);
+                        }
+                        else if (evt is EntityUpdatedEvent entityUpdatedEvent)
+                        {
+                            Handle(entityUpdatedEvent);
+                        }
                     }
                 }
             }
         }
     }
 }
+

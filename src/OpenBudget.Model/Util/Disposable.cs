@@ -20,6 +20,14 @@ namespace OpenBudget.Model.Util
             }
         }
 
+        private class EmptyDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+
+            }
+        }
+
         private class MultiDisposable : IDisposable
         {
             private readonly IDisposable[] _disposables;
@@ -46,6 +54,11 @@ namespace OpenBudget.Model.Util
         public static IDisposable Create(params IDisposable[] disposables)
         {
             return new MultiDisposable(disposables);
+        }
+
+        public static IDisposable CreateEmpty()
+        {
+            return new EmptyDisposable();
         }
     }
 }

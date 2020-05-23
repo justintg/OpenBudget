@@ -27,6 +27,7 @@ namespace OpenBudget.Model.BudgetStore
         //void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots);
 
         decimal GetAccountBalance(string accountId);
+
         VectorClock GetLastVectorClock();
         IDisposable StartSnapshotStoreBatch();
     }
