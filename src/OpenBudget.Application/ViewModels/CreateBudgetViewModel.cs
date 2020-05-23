@@ -11,6 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Transactions;
+using OpenBudget.Model.Events;
+using OpenBudget.Model.EventStream;
+using System.IO;
 
 namespace OpenBudget.Application.ViewModels
 {
@@ -138,6 +141,14 @@ namespace OpenBudget.Application.ViewModels
             Budget.Accounts.Add(manyTransactions);
             Budget.Accounts.Add(manyMoreTransactions);
             budgetModel.SaveChanges();
+
+            List<ModelEvent> events = budgetModel.BudgetStore.EventStore.GetEvents().ToList();
+            EventStreamHeader header = new EventStreamHeader(events[0].EventVector, events.Last().EventVector, default(Guid), default(Guid));
+            using (var stream = File.Create(Path.Combine(Path.GetDirectoryName(budgetPath), "events.json")))
+            using (var writer = new EventStreamWriter(stream, header, true))
+            {
+                writer.WriteEvents(events);
+            }
 
             var deviceSettings = _settingsProvider.Get<Device>();
             BudgetStub budgetStub = new BudgetStub() { BudgetName = Budget.Name, BudgetPath = budgetPath, LastEdited = DateTime.Now };

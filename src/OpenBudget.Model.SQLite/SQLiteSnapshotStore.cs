@@ -25,8 +25,11 @@ namespace OpenBudget.Model.SQLite
         private readonly SqliteConnection _connection;
         private bool _isBatching = false;
         private IDbContextTransaction _transaction;
+        private SqliteContext _parentBatchContext;
         private SqliteContext _batchContext;
+        private int _batchCount = 0;
         private VectorClock _lastVectorClockCache;
+        private const int FLUSH_THRESHOLD = 1000;
 
         public SQLiteSnapshotStore(string connectionString)
         {
@@ -39,7 +42,7 @@ namespace OpenBudget.Model.SQLite
         {
             if (_isBatching)
             {
-                _batchContext.SaveChanges();
+                FlushBatch();
                 context = _batchContext;
                 return Disposable.CreateEmpty();
             }
@@ -96,6 +99,7 @@ namespace OpenBudget.Model.SQLite
             if (_isBatching)
             {
                 StoreSnapshotImpl(_batchContext, snapshot);
+                IncrementAndFlushBatchIfOverthreshold();
             }
             else
             {
@@ -125,7 +129,10 @@ namespace OpenBudget.Model.SQLite
         {
             if (_isBatching)
             {
-                StoreSnapshotsImpl(_batchContext, snapshots);
+                foreach (var snapshot in snapshots)
+                {
+                    EntityTypeLookups.StoreSnapshot(this, snapshot);
+                }
             }
             else
             {
@@ -257,28 +264,57 @@ namespace OpenBudget.Model.SQLite
         public IDisposable StartSnapshotStoreBatch()
         {
             if (_isBatching) throw new InvalidOperationException("Cannot start batching while batching is already started");
-            GetContext(out _batchContext);
-            _transaction = _batchContext.Database.BeginTransaction();
+            _parentBatchContext = new SqliteContext(_connection);
+            _transaction = _parentBatchContext.Database.BeginTransaction();
+
+            _batchContext = new SqliteContext(_connection);
+            _batchContext.Database.UseTransaction(_transaction.GetDbTransaction());
+
             _isBatching = true;
             return Disposable.Create(StopBatching);
+        }
+
+        private void IncrementAndFlushBatchIfOverthreshold()
+        {
+            _batchCount++;
+            if (_batchCount >= FLUSH_THRESHOLD)
+            {
+                FlushBatch();
+            }
+        }
+
+        private void FlushBatch()
+        {
+            _batchContext.SaveChanges();
+            _batchContext.Dispose();
+            _batchContext = new SqliteContext(_connection);
+            _batchContext.Database.UseTransaction(_transaction.GetDbTransaction());
         }
 
         private void StopBatching()
         {
             if (!_isBatching) throw new InvalidOperationException("Cannot stop batching while batching is not started");
 
-            _batchContext.SaveChanges();
+            FlushBatch();
 
             if (_lastVectorClockCache != null)
                 SetLastVectorClockImpl(_lastVectorClockCache);
 
+            _batchContext.SaveChanges();
+            _batchContext.Dispose();
+
             _transaction.Commit();
             _transaction.Dispose();
-            _batchContext.Dispose();
+
+            _parentBatchContext.SaveChanges();
+            _parentBatchContext.Dispose();
+
             _transaction = null;
             _batchContext = null;
+            _parentBatchContext = null;
             _lastVectorClockCache = null;
             _isBatching = false;
+            _batchCount = 0;
 
             var cmd = _connection.CreateCommand();
             cmd.CommandText = "PRAGMA wal_checkpoint;";
