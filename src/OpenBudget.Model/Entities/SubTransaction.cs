@@ -9,7 +9,8 @@ namespace OpenBudget.Model.Entities
 {
     public class SubTransactionSnapshot : EntitySnapshot
     {
-        public decimal Amount { get; set; }
+        public long Amount { get; set; }
+        public int Amount_Denominator { get; set; }
         public string Memo { get; set; }
         public EntityReference TransferAccount { get; set; }
         public EntityReference Category { get; set; }
@@ -29,10 +30,15 @@ namespace OpenBudget.Model.Entities
         {
         }
 
+        protected override void RegisterCurrencyProperties()
+        {
+            RegisterCurrencyProperty(nameof(SubTransaction.Amount));
+        }
+
         public decimal Amount
         {
-            get => GetProperty<decimal>();
-            set => SetProperty(value);
+            get => GetCurrency();
+            set => SetCurrency(value);
         }
 
         public string Memo

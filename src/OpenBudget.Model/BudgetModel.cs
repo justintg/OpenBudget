@@ -28,6 +28,23 @@ namespace OpenBudget.Model
         public BudgetMessageBus MessageBus { get; private set; }
         public IEventStore EventStore { get; private set; }
         public IBudgetStore BudgetStore { get; private set; }
+
+        private int _currencyDecimalPlaces;
+
+        public int CurrencyDecimalPlaces
+        {
+            get
+            {
+                return _currencyDecimalPlaces;
+            }
+            internal set
+            {
+                _currencyDecimalPlaces = value;
+                CurrencyDenominator = CurrencyConverter.GetDenominator(_currencyDecimalPlaces);
+            }
+        }
+        public int CurrencyDenominator { get; private set; }
+
         internal IBudgetViewCache BudgetViewCache { get; private set; }
 
         internal EntityDenormalizer<Budget> BudgetGenerator { get; private set; }
@@ -100,13 +117,14 @@ namespace OpenBudget.Model
             EventStore = BudgetStore.EventStore;
             InternalMessageBus = new BudgetMessageBus();
             MessageBus = new BudgetMessageBus();
+            _unitOfWork = new UnitOfWork(this);
 
             InitializeInternals();
 
             if (createBudget)
             {
-                var budget = new Budget();
-                RegisterHasChanges(budget);
+                var newBudget = new Budget();
+                RegisterHasChanges(newBudget);
                 this.SaveChanges();
             }
 
@@ -336,8 +354,12 @@ namespace OpenBudget.Model
                         model.InternalMessageBus.PublishEvent(evt.EntityType, evt);
                     }
                 }
-
+                model.CurrencyDecimalPlaces = (int)model.GetBudget().CurrencyDecimals;
                 model.BudgetViewCache.RecalculateCache();
+            }
+            else
+            {
+                model.CurrencyDecimalPlaces = (int)model.GetBudget().CurrencyDecimals;
             }
 
             return model;
@@ -597,7 +619,7 @@ namespace OpenBudget.Model
             SaveChangesInternal(null);
         }
 
-        private UnitOfWork _unitOfWork = new UnitOfWork();
+        private UnitOfWork _unitOfWork;
 
         internal UnitOfWork GetCurrentUnitOfWork() => _unitOfWork;
 
@@ -628,7 +650,7 @@ namespace OpenBudget.Model
             if (pendingConflictResolutions != null)
                 RebuildEntities(pendingConflictResolutions);
 
-            _unitOfWork = new UnitOfWork();
+            _unitOfWork = new UnitOfWork(this);
         }
 
         private IDisposable StartUpdateBatch(bool localSave)

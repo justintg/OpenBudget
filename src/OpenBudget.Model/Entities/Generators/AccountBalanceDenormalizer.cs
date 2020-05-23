@@ -75,7 +75,7 @@ namespace OpenBudget.Model.Entities.Generators
 
         protected void UpdateAccountBalanceImpl(string accountId)
         {
-            decimal accountBalance = _budgetModel.BudgetStore.SnapshotStore.GetAccountBalance(accountId);
+            decimal accountBalance = CurrencyConverter.ToDecimalValue(_budgetModel.BudgetStore.SnapshotStore.GetAcountBalanceLongValue(accountId), _budgetModel.CurrencyDenominator);
             foreach (var account in EnumerateRegistrations(accountId))
             {
                 account.Balance = accountBalance;

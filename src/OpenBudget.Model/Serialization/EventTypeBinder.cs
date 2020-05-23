@@ -25,7 +25,10 @@ namespace OpenBudget.Model.Serialization
             [55] = typeof(TypedFieldChange<TransactionTypes>),
             [56] = typeof(TypedFieldChange<bool>),
             [57] = typeof(TypedFieldChange<TransactionStatuses>),
-            [58] = typeof(TypedFieldChange<AccountTypes>)
+            [58] = typeof(TypedFieldChange<AccountTypes>),
+            [59] = typeof(TypedFieldChange<int?>),
+            [60] = typeof(TypedFieldChange<long>),
+            [61] = typeof(TypedFieldChange<int>)
         };
 
         public void BindToName(Type serializedType, out string assemblyName, out string typeName)

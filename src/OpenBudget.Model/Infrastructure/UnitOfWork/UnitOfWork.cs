@@ -11,6 +11,12 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
     {
         private Dictionary<string, EntityBase> _entityIdentityMap = new Dictionary<string, EntityBase>();
         private List<EntityBase> _changedEntities = new List<EntityBase>();
+        private readonly BudgetModel _budgetModel;
+
+        public UnitOfWork(BudgetModel budgetModel)
+        {
+            _budgetModel = budgetModel ?? throw new ArgumentNullException(nameof(budgetModel));
+        }
 
         /// <summary>
         /// Returns true if this instance of the entity is contained in the UnitOfWork.
@@ -90,7 +96,7 @@ namespace OpenBudget.Model.Infrastructure.UnitOfWork
 
             foreach (var entity in _changedEntities.ToList())
             {
-                entity.BeforeSaveChanges();
+                entity.BeforeSaveChanges(_budgetModel);
             }
 
             foreach (var entity in _changedEntities)

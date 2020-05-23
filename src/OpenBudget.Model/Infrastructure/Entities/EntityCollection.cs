@@ -170,13 +170,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
             _messenger = messenger;
         }
 
-        internal void BeforeSaveChanges()
+        /*internal void BeforeSaveChanges()
         {
             foreach (EntityBase entity in this)
             {
                 entity.BeforeSaveChanges();
             }
-        }
+        }*/
 
         public void Handle(EntityUpdatedEvent message)
         {

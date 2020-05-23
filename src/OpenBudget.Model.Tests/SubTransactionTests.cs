@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Events;
+using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -159,7 +160,7 @@ namespace OpenBudget.Model.Tests
             Assert.That(groupedFieldChangeEvent.GroupedEvents, Has.Count.EqualTo(1));
             Assert.That(groupedFieldChangeEvent.GroupedEvents[0].EntityType, Is.EqualTo(nameof(SubTransaction)));
             var change = groupedFieldChangeEvent.GroupedEvents[0].Changes[nameof(SubTransaction.Amount)];
-            Assert.That(change.NewValue, Is.EqualTo(100M));
+            Assert.That(change.NewValue, Is.EqualTo(CurrencyConverter.ToLongValue(100M, subTransaction.GetCurrencyDenominator())));
         }
 
         [Test]
@@ -194,6 +195,47 @@ namespace OpenBudget.Model.Tests
             Assert.That(change.NewValue, Is.True);
 
             Assert.That(transaction.SubTransactions, Has.No.Member(subTransaction));
+        }
+
+        [Test]
+        public void SubTransaction_CurrencyHandlingIsSetCorrectly()
+        {
+            Account account = this.TestBudget.Budget.Accounts[0];
+            this.TestBudget.Budget.Currency = "CAD";
+            this.TestBudget.Budget.CurrencyCulture = "en-ca";
+
+            Assert.That(this.TestBudget.Budget.CurrencyDecimals, Is.EqualTo(2));
+            this.TestBudget.SaveChanges();
+            this.TestBudget.ClearEvents();
+            Assert.That(this.TestBudget.BudgetModel.CurrencyDecimalPlaces, Is.EqualTo(2));
+
+
+            Transaction transaction = new Transaction();
+            transaction.Amount = 100M;
+            transaction.MakeSplitTransaction();
+
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 100M;
+
+            var snapshot = subTransaction.GetSnapshot();
+            Assert.That(snapshot.Amount, Is.EqualTo(100 * Budget.DEFAULT_CURRENCY_DENOMINATOR));
+            Assert.That(snapshot.Amount_Denominator, Is.EqualTo(Budget.DEFAULT_CURRENCY_DENOMINATOR));
+
+            account.Transactions.Add(transaction);
+            TestBudget.SaveChanges();
+
+            Assert.That(snapshot.Amount, Is.EqualTo(100 * 100));
+            Assert.That(snapshot.Amount_Denominator, Is.EqualTo(100));
+
+            var transactionEvent = TestBudget.TestEvents[0] as GroupedFieldChangeEvent;
+            var testEvent = transactionEvent.GroupedEvents[1] as EntityCreatedEvent;
+
+            Assert.That(testEvent.EntityType, Is.EqualTo(nameof(SubTransaction)));
+
+            var amountChange = testEvent.Changes[nameof(SubTransaction.Amount)] as TypedFieldChange<long>;
+            var amountDenominatorChange = testEvent.Changes[nameof(SubTransactionSnapshot.Amount_Denominator)] as TypedFieldChange<int>;
+            Assert.That(amountChange.TypedNewValue, Is.EqualTo(100 * 100));
+            Assert.That(amountDenominatorChange.TypedNewValue, Is.EqualTo(100));
         }
     }
 }

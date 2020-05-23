@@ -5,6 +5,7 @@ using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,10 +17,14 @@ namespace OpenBudget.Model.Entities
         public string Name { get; set; }
         public string Currency { get; set; }
         public string CurrencyCulture { get; set; }
+        public int? CurrencyDecimals { get; set; } = Budget.DEFAULT_CURRENCY_DECIMALS;
     }
 
     public class Budget : EntityBase<BudgetSnapshot>
     {
+        public const int DEFAULT_CURRENCY_DECIMALS = 5;
+        public const int DEFAULT_CURRENCY_DENOMINATOR = 100000;
+
         public Budget()
             : base(Guid.NewGuid().ToString())
         {
@@ -80,7 +85,34 @@ namespace OpenBudget.Model.Entities
         public string CurrencyCulture
         {
             get { return GetProperty<string>(); }
-            set { SetProperty(value); }
+            set
+            {
+                CultureInfo culture = CultureInfo.GetCultureInfo(value);
+                SetProperty(value);
+                if (culture != null)
+                {
+                    CurrencyDecimals = culture.NumberFormat.NumberDecimalDigits;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The number of Decimal places in the CurrencyCulture.
+        /// </summary>
+        public int? CurrencyDecimals
+        {
+            get { return GetProperty<int?>(); }
+            protected set { SetProperty(value); }
+        }
+
+        internal override void BeforeSaveChanges(BudgetModel budgetModel)
+        {
+            base.BeforeSaveChanges(budgetModel);
+            int currencyDecimals = CurrencyDecimals ?? DEFAULT_CURRENCY_DECIMALS;
+            if (budgetModel.CurrencyDecimalPlaces != currencyDecimals)
+            {
+                budgetModel.CurrencyDecimalPlaces = currencyDecimals;
+            }
         }
 
         protected override void OnAttached(BudgetModel model)

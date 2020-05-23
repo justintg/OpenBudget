@@ -6,6 +6,7 @@ using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using CategoryResultsDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Model.CategoryMonthKey, OpenBudget.Model.BudgetView.Model.BudgetViewCategoryMonth>;
 using TransactionDictionary = System.Collections.Generic.Dictionary<OpenBudget.Model.BudgetView.Model.CategoryMonthKey, decimal>;
 
@@ -179,14 +180,29 @@ namespace OpenBudget.Model.BudgetView.Calculator
                 BudgetViewCategoryMonth monthValues = null;
                 if (results.TryGetValue(monthKey, out monthValues))
                 {
-                    monthValues.AmountBudgeted = categoryMonth.AmountBudgeted;
+                    monthValues.AmountBudgeted = GetCategoryMonthAmount(categoryMonth);
                 }
                 else
                 {
-                    monthResult = new BudgetViewCategoryMonth(monthKey.EntityID, monthKey.FirstDayOfMonth) { AmountBudgeted = categoryMonth.AmountBudgeted };
+                    monthResult = new BudgetViewCategoryMonth(monthKey.EntityID, monthKey.FirstDayOfMonth) { AmountBudgeted = GetCategoryMonthAmount(categoryMonth) };
                     results[monthKey] = monthResult;
                 }
             }
+        }
+
+        private decimal GetCategoryMonthAmount(CategoryMonthSnapshot snapshot)
+        {
+            return CurrencyConverter.ToDecimalValue(snapshot.AmountBudgeted, snapshot.AmountBudgeted_Denominator);
+        }
+
+        private decimal GetTransactionAmount(TransactionSnapshot snapshot)
+        {
+            return CurrencyConverter.ToDecimalValue(snapshot.Amount, snapshot.Amount_Denominator);
+        }
+
+        private decimal GetTransactionAmount(SubTransactionSnapshot snapshot)
+        {
+            return CurrencyConverter.ToDecimalValue(snapshot.Amount, snapshot.Amount_Denominator);
         }
 
         private TransactionDictionary GroupTransactions()
@@ -205,11 +221,11 @@ namespace OpenBudget.Model.BudgetView.Calculator
 
                     if (groupedTransactions.ContainsKey(category))
                     {
-                        groupedTransactions[category] += transaction.Amount;
+                        groupedTransactions[category] += GetTransactionAmount(transaction);
                     }
                     else
                     {
-                        groupedTransactions[category] = transaction.Amount;
+                        groupedTransactions[category] = GetTransactionAmount(transaction);
                     }
                 }
                 else if (transaction.TransactionType == TransactionTypes.SplitTransaction)
@@ -224,11 +240,11 @@ namespace OpenBudget.Model.BudgetView.Calculator
 
                             if (groupedTransactions.ContainsKey(category))
                             {
-                                groupedTransactions[category] += subTransaction.Amount;
+                                groupedTransactions[category] += GetTransactionAmount(subTransaction);
                             }
                             else
                             {
-                                groupedTransactions[category] = subTransaction.Amount;
+                                groupedTransactions[category] = GetTransactionAmount(subTransaction);
                             }
                         }
                     }

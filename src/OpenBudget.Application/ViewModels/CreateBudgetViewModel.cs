@@ -121,7 +121,7 @@ namespace OpenBudget.Application.ViewModels
             Budget.Payees.Add(payee);
             budgetModel.SaveChanges();
 
-            for (int i = 1; i <= 50000; i++)
+            for (int i = 1; i <= 1000; i++)
             {
                 OpenBudget.Model.Entities.Transaction transaction = new OpenBudget.Model.Entities.Transaction();
                 transaction.Amount = -i;

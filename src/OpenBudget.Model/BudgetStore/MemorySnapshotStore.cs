@@ -5,6 +5,7 @@ using System.Text;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
+using OpenBudget.Model.Util;
 
 namespace OpenBudget.Model.BudgetStore
 {
@@ -76,7 +77,7 @@ namespace OpenBudget.Model.BudgetStore
             return (ISnapshotStorage<TSnapshot>)GetOrCreateSnapshotStorage(typeof(TSnapshot));
         }
 
-        public decimal GetAccountBalance(string accountId)
+        public long GetAcountBalanceLongValue(string accountId)
         {
             var storage = GetOrCreateSnapshotStorage<TransactionSnapshot>();
             var transactionSnapshots = storage.GetSnapshotsByParent(nameof(Account), accountId);

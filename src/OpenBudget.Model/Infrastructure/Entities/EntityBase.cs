@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
+using System.Reactive.Concurrency;
 using System.Runtime.CompilerServices;
 
 namespace OpenBudget.Model.Infrastructure.Entities
@@ -162,6 +164,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             EntityID = entityId;
             RegisterValidations();
             RegisterDependencies();
+            RegisterCurrencyProperties();
             LookupRoot = new EntityLookupRoot(this);
         }
 
@@ -174,6 +177,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
             SaveState = EntitySaveState.AttachedNoChanges;
             RegisterValidations();
             RegisterDependencies();
+            RegisterCurrencyProperties();
             LookupRoot = new EntityLookupRoot(this);
         }
 
@@ -245,9 +249,13 @@ namespace OpenBudget.Model.Infrastructure.Entities
             return _subEntities[entityType];
         }
 
-        internal virtual void BeforeSaveChanges()
+        internal virtual void BeforeSaveChanges(BudgetModel budgetModel)
         {
-
+            FormatCurrencyProperties(budgetModel);
+            foreach(var subEntity in _subEntities.Values)
+            {
+                subEntity.BeforeSaveChanges(budgetModel);
+            }
         }
 
         internal bool IsBeingSaved { get; private set; }
@@ -518,6 +526,34 @@ namespace OpenBudget.Model.Infrastructure.Entities
         internal T GetProperty<T>([CallerMemberName]string property = null)
         {
             return GetEntityData<T>(property);
+        }
+
+        public int GetCurrencyDenominator()
+        {
+            return this.IsAttached ? Model.CurrencyDenominator : Budget.DEFAULT_CURRENCY_DENOMINATOR; ;
+        }
+
+        protected void SetCurrency(decimal value, [CallerMemberName]string property = null)
+        {
+            int denominator = GetCurrencyDenominator();
+
+            string denominatorProperty = property + "_Denominator";
+
+            long longValue = CurrencyConverter.ToLongValue(value, denominator);
+
+            SetProperty<long>(longValue, property);
+            SetProperty<int>(denominator, denominatorProperty);
+        }
+
+        protected decimal GetCurrency([CallerMemberName]string property = null)
+        {
+            string denominatorProperty = property + "_Denominator";
+            int denominator = GetProperty<int>(denominatorProperty);
+
+            long longValue = GetProperty<long>(property);
+            if (longValue == 0 || denominator == 0) return 0M;
+
+            return CurrencyConverter.ToDecimalValue(longValue, denominator);
         }
 
         protected void SetProperty<T>(T value, [CallerMemberName]string property = null)
@@ -878,6 +914,36 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected virtual void RegisterDependencies()
         {
+        }
+
+        protected virtual void RegisterCurrencyProperties()
+        {
+
+        }
+
+        private List<string> _currencyProperties = new List<string>();
+
+        protected virtual void RegisterCurrencyProperty(string propertyName)
+        {
+            _currencyProperties.Add(propertyName);
+        }
+
+        private void FormatCurrencyProperties(BudgetModel budgetModel)
+        {
+            int budgetDenominator = budgetModel.CurrencyDenominator;
+            foreach (var property in _currencyProperties)
+            {
+                string denominatorProperty = property + "_Denominator";
+                int denominator = GetProperty<int>(denominatorProperty);
+                if (denominator == budgetDenominator) continue;
+                long longValue = GetProperty<long>(property);
+
+                if (longValue != 0)
+                    longValue = CurrencyConverter.ChangeDenominator(longValue, denominator, budgetDenominator);
+
+                SetProperty<long>(longValue, property);
+                SetProperty<int>(budgetDenominator, denominatorProperty);
+            }
         }
 
         internal void LoadSubEntities(List<EntitySnapshot> subEntitySnapshots)

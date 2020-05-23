@@ -9,7 +9,8 @@ namespace OpenBudget.Model.Entities
     public class CategoryMonthSnapshot : EntitySnapshot
     {
         public DateTime Month { get; set; }
-        public decimal AmountBudgeted { get; set; }
+        public long AmountBudgeted { get; set; }
+        public int AmountBudgeted_Denominator { get; set; }
     }
 
     public class CategoryMonth : NoCreateEntity<CategoryMonthSnapshot>
@@ -37,8 +38,8 @@ namespace OpenBudget.Model.Entities
 
         public decimal AmountBudgeted
         {
-            get => GetProperty<decimal>();
-            set => SetProperty(value);
+            get => GetCurrency();
+            set => SetCurrency(value);
         }
     }
 }

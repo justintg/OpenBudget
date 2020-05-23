@@ -1,4 +1,5 @@
 ﻿using OpenBudget.Model.Infrastructure.Entities;
+using OpenBudget.Model.Util;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,7 +17,7 @@ namespace OpenBudget.Model.Entities.Repositories
             Account account = base.LoadEntityFromSnapshot(snapshot, subEntities);
             if (account != null)
             {
-                account.Balance = _budgetModel.BudgetStore.SnapshotStore.GetAccountBalance(account.EntityID);
+                account.Balance = CurrencyConverter.ToDecimalValue(_budgetModel.BudgetStore.SnapshotStore.GetAcountBalanceLongValue(account.EntityID), _budgetModel.CurrencyDenominator);
             }
             return account;
         }

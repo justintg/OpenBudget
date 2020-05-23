@@ -17,7 +17,8 @@ namespace OpenBudget.Model.Entities
     {
         public EntityReference PayeeOrAccount { get; set; }
         public TransactionTypes TransactionType { get; set; }
-        public decimal Amount { get; set; }
+        public long Amount { get; set; }
+        public int Amount_Denominator { get; set; }
         public string Memo { get; set; }
         public DateTime TransactionDate { get; set; }
         public EntityReference Category { get; set; }
@@ -60,6 +61,11 @@ namespace OpenBudget.Model.Entities
         internal Transaction(TransactionSnapshot snapshot) : base(snapshot)
         {
             SubTransactions = RegisterSubEntityCollection(new SubEntityCollection<SubTransaction>(this, SubTransactionInitializer));
+        }
+
+        protected override void RegisterCurrencyProperties()
+        {
+            RegisterCurrencyProperty(nameof(Transaction.Amount));
         }
 
         private SubTransaction SubTransactionInitializer()
@@ -127,13 +133,13 @@ namespace OpenBudget.Model.Entities
 
         public decimal Amount
         {
-            get { return GetProperty<decimal>(); }
+            get { return GetCurrency(); }
             set
             {
                 if (this.TransactionType == TransactionTypes.SplitOtherSide)
                     throw new InvalidBudgetException("This transaction is part of a Split Transaction.  In order to change the Amount you must make the change on the Split Transaction.");
 
-                SetProperty(value);
+                SetCurrency(value);
             }
         }
 
@@ -245,12 +251,12 @@ namespace OpenBudget.Model.Entities
         {
         }
 
-        internal override void BeforeSaveChanges()
+        internal override void BeforeSaveChanges(BudgetModel budgetModel)
         {
             EnsurePayeeSaved();
             EnsureTransferSync();
 
-            base.BeforeSaveChanges();
+            base.BeforeSaveChanges(budgetModel);
         }
 
         private void EnsureTransferSync()

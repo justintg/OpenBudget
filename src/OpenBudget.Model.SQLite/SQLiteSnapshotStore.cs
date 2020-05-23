@@ -53,7 +53,7 @@ namespace OpenBudget.Model.SQLite
             }
         }
 
-        public decimal GetAccountBalance(string accountId)
+        public long GetAcountBalanceLongValue(string accountId)
         {
             using (GetContext(out SqliteContext context))
             {
@@ -62,8 +62,8 @@ namespace OpenBudget.Model.SQLite
                     .Where(t => t.Parent.EntityType == nameof(Account)
                     && t.Parent.EntityID == accountId
                     && !t.IsDeleted)
-                    .Select(t => t.Amount).ToList();
-                return amounts.Sum();
+                    .Sum(t => t.Amount);
+                return amounts;
             }
         }
 
