@@ -403,7 +403,7 @@
                                         <Button Style="{StaticResource EmptyButtonStyle}"
                                                 Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding}">
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding MonthName}" />
+                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding MonthName}" />
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
