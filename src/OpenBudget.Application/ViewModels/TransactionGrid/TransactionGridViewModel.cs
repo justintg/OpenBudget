@@ -262,6 +262,23 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             get { return _selectedRows; }
         }
 
+        private int _selectedCount;
+
+        public int SelectedCount
+        {
+            get { return _selectedCount; }
+            private set { _selectedCount = value; RaisePropertyChanged(); }
+        }
+
+        private decimal _selectedSum;
+
+        public decimal SelectedSum
+        {
+            get { return _selectedSum; }
+            private set { _selectedSum = value; RaisePropertyChanged(); }
+        }
+
+
         private void SelectedRows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (e.NewItems != null)
@@ -275,6 +292,9 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 {
                     row.IsSelected = false;
                 }
+
+            SelectedCount = SelectedRows.Count;
+            SelectedSum = SelectedRows.Sum(r => r.Transaction.Amount);
         }
 
         private TransactionGridRowViewModel _currentEditingTransaction;
@@ -289,6 +309,11 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                     _currentEditingTransaction.CancelEditCommand.Execute(null);
                 }
                 _currentEditingTransaction = value;
+                var rowsToUnselect = SelectedRows.Where(r => r != _currentEditingTransaction).ToList();
+                foreach(var row in rowsToUnselect)
+                {
+                    SelectedRows.Remove(row);
+                }
                 RaisePropertyChanged();
             }
         }

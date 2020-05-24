@@ -136,12 +136,23 @@
                             DataContext="{Binding CurrentAddingTransaction}"
                             Cells="{Binding Cells}"/>
 
-                        <StackPanel
+                        <Grid
                             Visibility="{Binding IsAdding, Converter={StaticResource InvBoolToVis}}"
-                            Grid.Row="2"
-                            HorizontalAlignment="Right">
-                            <Button Content="Add Transaction" Command="{Binding AddTransactionCommand}" />
-                        </StackPanel>
+                            Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Selected: " />
+                                <TextBlock Text="{Binding SelectedCount}" />
+                                <TextBlock Text="  " />
+                                <TextBlock Text="Total: " />
+                                <TextBlock Text="{Binding SelectedSum, StringFormat=C}" />
+                            </StackPanel>
+                            <Button Grid.Column="2" Content="Add Transaction" Command="{Binding AddTransactionCommand}" />
+                        </Grid>
 
                     </Grid>
 
