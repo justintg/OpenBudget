@@ -324,6 +324,16 @@
         </Setter>
     </Style>
 
+    <Style x:Key="EmptyButtonStyle" TargetType="Button">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
@@ -367,9 +377,41 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <ItemsControl Grid.Row="0" Margin="{TemplateBinding CategoryColumnWidth, Converter={StaticResource MarginLeftConverter}}" ItemsSource="{Binding VisibleMonthViews}">
+
+                        <Grid Grid.Row="0"
+                              Margin="{TemplateBinding CategoryColumnWidth, Converter={StaticResource MarginLeftConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="&lt;"></Button>
+                            <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding MonthSelector.Year}" Margin="10 0"/>
+                            <ItemsControl Grid.Column="2"
+                                ItemsSource="{Binding MonthSelector.Months}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="12"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource EmptyButtonStyle}"
+                                                Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding MonthName}" />
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Grid.Column="3" Content="&gt;"></Button>
+                        </Grid>
+
+                        <ItemsControl Grid.Row="1" Margin="{TemplateBinding CategoryColumnWidth, Converter={StaticResource MarginLeftConverter}}" ItemsSource="{Binding VisibleMonthViews}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"></StackPanel>
@@ -388,7 +430,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <ItemsControl Grid.Row="1" x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False">
+                        <ItemsControl Grid.Row="2" x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>

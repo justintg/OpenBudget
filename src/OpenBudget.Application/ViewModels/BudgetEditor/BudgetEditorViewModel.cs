@@ -22,11 +22,20 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             _budgetModel = budgetModel;
             _budget = _budgetModel.GetBudget();
             _budget.MasterCategories.LoadCollection();
+            _monthSelector = new MonthSelectorViewModel();
+            _monthSelector.OnMonthSelected += MonthSelector_OnMonthSelected;
+
             InitializeMonthViews();
             _masterCategories = new TransformingObservableCollection<MasterCategory, MasterCategoryRowViewModel>(
                 _budget.MasterCategories,
                 (mc) => { return new MasterCategoryRowViewModel(mc, this); },
                 mcvm => { mcvm.Dispose(); });
+
+        }
+
+        private void MonthSelector_OnMonthSelected(DateTime month)
+        {
+
         }
 
         public void MakeNumberOfMonthsVisible(int number)
@@ -54,6 +63,12 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 }
             }
             SetFirstVisibleMonthProperty();
+            UpdateMonthSelector();
+        }
+
+        private void UpdateMonthSelector()
+        {
+            MonthSelector.SetMonths(_selectedMonth.BudgetMonthView.Date, _visibleMonthViews.Select(mv => mv.BudgetMonthView.Date).ToList());
         }
 
         private void InitializeMonthViews()
@@ -63,6 +78,7 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             _selectedMonth = new BudgetMonthViewModel(new BudgetMonthView(_budgetModel, DateTime.Today));
             VisibleMonthViews.Add(_selectedMonth);
             SetFirstVisibleMonthProperty();
+            UpdateMonthSelector();
         }
 
         private void SetFirstVisibleMonthProperty()
@@ -96,6 +112,14 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         {
             get { return _visibleMonthViews; }
             set { _visibleMonthViews = value; RaisePropertyChanged(); }
+        }
+
+        private MonthSelectorViewModel _monthSelector;
+
+        public MonthSelectorViewModel MonthSelector
+        {
+            get { return _monthSelector; }
+            private set { _monthSelector = value; RaisePropertyChanged(); }
         }
 
 
