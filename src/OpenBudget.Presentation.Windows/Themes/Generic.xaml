@@ -207,15 +207,16 @@
     <Style TargetType="{x:Type trxGrid:TransactionGridRow}">
         <Style.Triggers>
             <DataTrigger Binding="{Binding Path=(ItemsControl.AlternationIndex), RelativeSource={RelativeSource FindAncestor, AncestorType=ContentPresenter}}" Value="1">
-                <Setter Property="Background" Value="LightBlue" />
+                <Setter Property="Background" Value="#dbf7ff" />
             </DataTrigger>
             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True">
                 <DataTrigger.Setters>
-                    <Setter Property="Background" Value="Orange" />
+                    <Setter Property="Background" Value="#5ec1ff" />
                 </DataTrigger.Setters>
             </DataTrigger>
         </Style.Triggers>
         <Setter Property="Background" Value="White" />
+        <Setter Property="MinHeight" Value="20px" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type trxGrid:TransactionGridRow}">
