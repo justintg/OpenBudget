@@ -9,27 +9,13 @@
         xmlns:vmBudget="clr-namespace:OpenBudget.Application.ViewModels.BudgetEditor;assembly=OpenBudget.Application"
         xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
         mc:Ignorable="d"
-        Title="{Binding Header}" Height="600" Width="885.938">
+        Title="{Binding Header}" WindowState="Maximized" SaveWindowPosition="True">
     <Controls:MetroWindow.Resources>
-        <DataTemplate DataType="{x:Type vm:MainBudgetViewModel}" x:Shared="False">
-            <local:MainBudgetView IsTabStop="False"/>
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type vm:WelcomeViewModel}" x:Shared="False">
-            <local:WelcomeView IsTabStop="False"/>
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type vm:CreateBudgetViewModel}" x:Shared="False">
-            <local:CreateBudgetView IsTabStop="False"/>
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type vmTrx:TransactionGridViewModel}" x:Shared="False">
-            <local:TransactionGridView IsTabStop="False"/>
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type vmBudget:BudgetEditorViewModel}" x:Shared="False">
-            <local:BudgetEditorView IsTabStop="False"/>
-        </DataTemplate>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="MainWindowDataTemplates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Controls:MetroWindow.Resources>
     <Controls:MetroWindow.InputBindings>
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding NewBudgetCommand}" />

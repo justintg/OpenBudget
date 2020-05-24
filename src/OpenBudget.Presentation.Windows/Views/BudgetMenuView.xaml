@@ -8,7 +8,7 @@
              xmlns:vm="clr-namespace:OpenBudget.Application.ViewModels;assembly=OpenBudget.Application"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" d:DataContext="{d:DesignData vm:BudgetMenuViewModel}"
-             Background="{StaticResource WindowTitleColorBrush}">
+             Background="{StaticResource BudgetMenuBrush}">
     <UserControl.Resources>
         <Style TargetType="controls:SelectableButton">
             <Style.Triggers>
@@ -16,7 +16,7 @@
                     <Setter Property="Background" Value="{StaticResource HighlightBrush}" />
                 </Trigger>
             </Style.Triggers>
-            <Setter Property="Background" Value="{StaticResource WindowTitleColorBrush}" />
+            <Setter Property="Background" Value="{StaticResource BudgetMenuBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="controls:SelectableButton">
@@ -39,7 +39,7 @@
                 <TextBlock Text="{Binding Label}" />
             </controls:SelectableButton>
 
-            <Border Background="{StaticResource WindowTitleColorBrush}" BorderThickness="0 1" BorderBrush="Black">
+            <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 1" BorderBrush="Black">
                 <StackPanel>
                     <DockPanel>
                         <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold" />
@@ -64,7 +64,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Background="{StaticResource WindowTitleColorBrush}" BorderThickness="0 0 0 1" BorderBrush="Black">
+            <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 0 0 1" BorderBrush="Black">
                 <StackPanel>
                     <DockPanel>
                         <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold"/>
