@@ -325,10 +325,13 @@
     </Style>
 
     <Style x:Key="EmptyButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <ContentPresenter />
+                    <Border Background="{TemplateBinding Background}">
+                        <ContentPresenter />
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -389,7 +392,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Button Content="&lt;"></Button>
+                            <Button Content="&lt;" Command="{Binding SelectPreviousMonthCommand}"></Button>
                             <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding MonthSelector.Year}" Margin="10 0"/>
                             <ItemsControl Grid.Column="2"
                                 ItemsSource="{Binding MonthSelector.Months}">
@@ -400,15 +403,26 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Style="{StaticResource EmptyButtonStyle}"
-                                                Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+                                        <Button Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource EmptyButtonStyle}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsVisible}" Value="True">
+                                                            <Setter Property="Background" Value="LightGray" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter Property="Background" Value="Red" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
                                             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding MonthName}" />
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button Grid.Column="3" Content="&gt;"></Button>
+                            <Button Grid.Column="3" Content="&gt;" Command="{Binding SelectNextMonthCommand}"></Button>
                         </Grid>
 
                         <ItemsControl Grid.Row="1" Margin="{TemplateBinding CategoryColumnWidth, Converter={StaticResource MarginLeftConverter}}" ItemsSource="{Binding VisibleMonthViews}">

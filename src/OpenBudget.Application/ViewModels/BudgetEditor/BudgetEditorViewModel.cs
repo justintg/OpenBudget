@@ -1,4 +1,5 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using OpenBudget.Model;
 using OpenBudget.Model.BudgetView;
 using OpenBudget.Model.Entities;
@@ -20,6 +21,9 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         public BudgetEditorViewModel(BudgetModel budgetModel)
         {
             _budgetModel = budgetModel;
+
+            InitializeRelayCommands();
+
             _budget = _budgetModel.GetBudget();
             _budget.MasterCategories.LoadCollection();
             _monthSelector = new MonthSelectorViewModel();
@@ -33,9 +37,86 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
 
         }
 
+        private void InitializeRelayCommands()
+        {
+            SelectNextMonthCommand = new RelayCommand(SelectNextMonth);
+            SelectPreviousMonthCommand = new RelayCommand(SelectPreviousMonth);
+        }
+
         private void MonthSelector_OnMonthSelected(DateTime month)
         {
+            SelectMonth(month);
+        }
 
+        public RelayCommand SelectNextMonthCommand { get; private set; }
+
+        private void SelectNextMonth()
+        {
+            var nextMonth = _selectedMonth.BudgetMonthView.Date.AddMonths(1).FirstDayOfMonth();
+            SelectMonth(nextMonth);
+        }
+
+        public RelayCommand SelectPreviousMonthCommand { get; private set; }
+
+        private void SelectPreviousMonth()
+        {
+            var previousMonth = _selectedMonth.BudgetMonthView.Date.AddMonths(-1).FirstDayOfMonth();
+            SelectMonth(previousMonth);
+        }
+
+        private void SelectMonth(DateTime month)
+        {
+            if (_selectedMonth.BudgetMonthView.Date == month) return;
+
+            int visibleMonthsCount = VisibleMonthViews.Count;
+            var desiredMonths = CalculateDesiredMonths(month, visibleMonthsCount);
+            List<BudgetMonthViewModel> monthsToKeep = new List<BudgetMonthViewModel>();
+            for (int i = 0; i < desiredMonths.Count; i++)
+            {
+                var desiredMonth = desiredMonths[i];
+                var monthToKeep = VisibleMonthViews.Where(vm => vm.BudgetMonthView.Date == desiredMonth.desiredMonthDate).SingleOrDefault();
+                if (monthToKeep != null)
+                {
+                    desiredMonth.desiredMonth = monthToKeep;
+                    monthsToKeep.Add(monthToKeep);
+                }
+                else
+                {
+                    desiredMonth.desiredMonth = new BudgetMonthViewModel(new BudgetMonthView(_budgetModel, desiredMonth.desiredMonthDate));
+                }
+                desiredMonths[i] = desiredMonth;
+            }
+
+            var monthsToDispose = VisibleMonthViews.Where(vm => !monthsToKeep.Contains(vm)).ToList();
+            foreach (var monthToDispose in monthsToDispose)
+            {
+                monthToDispose.Dispose();
+            }
+
+            VisibleMonthViews.Clear();
+            for (int i = 0; i < visibleMonthsCount; i++)
+            {
+                VisibleMonthViews.Add(desiredMonths[i].desiredMonth);
+            }
+
+            _selectedMonth = VisibleMonthViews[0];
+            UpdateMonthSelector();
+            SetFirstVisibleMonthProperty();
+        }
+
+        private List<(DateTime desiredMonthDate, BudgetMonthViewModel desiredMonth)> CalculateDesiredMonths(DateTime startDate, int count)
+        {
+            List<ValueTuple<DateTime, BudgetMonthViewModel>> desiredMonths = new List<ValueTuple<DateTime, BudgetMonthViewModel>>();
+            desiredMonths.Add(new ValueTuple<DateTime, BudgetMonthViewModel>(startDate, null));
+            startDate = startDate.FirstDayOfMonth();
+            DateTime nextDate = startDate;
+            for (int i = 1; i < count; i++)
+            {
+                nextDate = nextDate.AddMonths(1);
+                desiredMonths.Add(new ValueTuple<DateTime, BudgetMonthViewModel>(nextDate, null));
+            }
+
+            return desiredMonths;
         }
 
         public void MakeNumberOfMonthsVisible(int number)
@@ -121,8 +202,6 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             get { return _monthSelector; }
             private set { _monthSelector = value; RaisePropertyChanged(); }
         }
-
-
 
         public void Dispose()
         {

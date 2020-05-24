@@ -27,7 +27,10 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                     MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory.EntityID == category.Parent.EntityID).Single();
                     return new CategoryMonthViewModel(v, masterView.Categories.Where(c => c.Category.EntityID == _category.EntityID).Single());
                 },
-                cmv => { cmv.Dispose(); });
+                cmv =>
+                {
+                    cmv.Dispose();
+                });
         }
 
         private Category _category;
