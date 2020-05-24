@@ -27,6 +27,16 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="AccountHeaderButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
     <DockPanel>
         <Button DockPanel.Dock="Bottom" Command="{Binding AddAccountCommand}">Add Account</Button>
@@ -41,12 +51,15 @@
 
             <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 1" BorderBrush="Black">
                 <StackPanel>
-                    <DockPanel>
-                        <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold" />
-                        <TextBlock Text="On-Budget Accounts" FontWeight="Bold" />
-                    </DockPanel>
+                    <Button Command="{Binding ToggleOnBudgetExpandedCommand}" Style="{StaticResource AccountHeaderButtonStyle}">
+                        <DockPanel>
+                            <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold" />
+                            <TextBlock Text="On-Budget" FontWeight="Bold" />
+                        </DockPanel>
+                    </Button>
 
-                    <ItemsControl ItemsSource="{Binding OnBudgetAccounts}">
+                    <ItemsControl ItemsSource="{Binding OnBudgetAccounts}"
+                                  Visibility="{Binding OnBudgetExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <controls:SelectableButton
@@ -66,12 +79,15 @@
 
             <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 0 0 1" BorderBrush="Black">
                 <StackPanel>
-                    <DockPanel>
-                        <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold"/>
-                        <TextBlock Text="Off-Budget Accounts" FontWeight="Bold"/>
-                    </DockPanel>
+                    <Button Command="{Binding ToggleOffBudgetExpandedCommand}" Style="{StaticResource AccountHeaderButtonStyle}">
+                        <DockPanel>
+                            <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold"/>
+                            <TextBlock Text="Off-Budget" FontWeight="Bold"/>
+                        </DockPanel>
+                    </Button>
 
-                    <ItemsControl ItemsSource="{Binding OffBudgetAccounts}">
+                    <ItemsControl ItemsSource="{Binding OffBudgetAccounts}"
+                                  Visibility="{Binding OffBudgetExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <controls:SelectableButton

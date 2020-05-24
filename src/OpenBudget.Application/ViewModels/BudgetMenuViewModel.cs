@@ -53,6 +53,8 @@ namespace OpenBudget.Application.ViewModels
         {
             AddAccountCommand = new RelayCommand(AddAccount);
             SelectMenuItemCommand = new RelayCommand<BudgetMenuItemViewModel>(SelectMenuItem);
+            ToggleOnBudgetExpandedCommand = new RelayCommand(ToggleOnBudgetExpanded);
+            ToggleOffBudgetExpandedCommand = new RelayCommand(ToggleOffBudgetExpanded);
         }
 
         private BudgetModel _budgetModel;
@@ -161,6 +163,7 @@ namespace OpenBudget.Application.ViewModels
 
         private void SelectMenuItem(BudgetMenuItemViewModel menuItem)
         {
+            if (_selectedItemModel == menuItem) return;
             if (_selectedItemModel != null)
             {
                 _selectedItemModel.IsSelected = false;
@@ -191,6 +194,21 @@ namespace OpenBudget.Application.ViewModels
             }
         }
 
+        private bool _onBudgetExpanded = true;
+
+        public bool OnBudgetExpanded
+        {
+            get { return _onBudgetExpanded; }
+            private set { _onBudgetExpanded = value; RaisePropertyChanged(); }
+        }
+
+        public RelayCommand ToggleOnBudgetExpandedCommand { get; private set; }
+
+        private void ToggleOnBudgetExpanded()
+        {
+            OnBudgetExpanded = !OnBudgetExpanded;
+        }
+
         private TransformingObservableCollection<Account, AccountMenuItemViewModel> _onBudgetAccounts;
 
         public TransformingObservableCollection<Account, AccountMenuItemViewModel> OnBudgetAccounts
@@ -205,6 +223,21 @@ namespace OpenBudget.Application.ViewModels
             {
                 return OffBudgetAccounts.Sum(a => a.Balance);
             }
+        }
+
+        private bool _offBudgetExpanded = true;
+
+        public bool OffBudgetExpanded
+        {
+            get { return _offBudgetExpanded; }
+            private set { _offBudgetExpanded = value; RaisePropertyChanged(); }
+        }
+
+        public RelayCommand ToggleOffBudgetExpandedCommand { get; private set; }
+
+        private void ToggleOffBudgetExpanded()
+        {
+            OffBudgetExpanded = !OffBudgetExpanded;
         }
 
         private TransformingObservableCollection<Account, AccountMenuItemViewModel> _offBudgetAccounts;
