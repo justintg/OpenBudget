@@ -6,6 +6,7 @@ using OpenBudget.Model.Entities;
 using OpenBudget.Util.Collections;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 
 namespace OpenBudget.Application.ViewModels.TransactionGrid
@@ -30,7 +31,10 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             _budget.MasterCategories.LoadCollection();
             _budget.Payees.LoadCollection();
 
-            AddTransactionCommand = new RelayCommand(AddTransaction);
+            InitializeCommands();
+
+            _selectedRows = new ObservableCollection<TransactionGridRowViewModel>();
+            _selectedRows.CollectionChanged += SelectedRows_CollectionChanged;
 
             InitializeColumns();
             InitializeGrid(_account);
@@ -251,6 +255,28 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
             set { _rows = value; RaisePropertyChanged(); }
         }
 
+        private ObservableCollection<TransactionGridRowViewModel> _selectedRows;
+
+        public ObservableCollection<TransactionGridRowViewModel> SelectedRows
+        {
+            get { return _selectedRows; }
+        }
+
+        private void SelectedRows_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+                foreach (TransactionGridRowViewModel row in e.NewItems)
+                {
+                    row.IsSelected = true;
+                }
+
+            if (e.OldItems != null)
+                foreach (TransactionGridRowViewModel row in e.OldItems)
+                {
+                    row.IsSelected = false;
+                }
+        }
+
         private TransactionGridRowViewModel _currentEditingTransaction;
 
         public TransactionGridRowViewModel CurrentEditingTransaction
@@ -291,6 +317,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         private void ConnectAddingTransaction(TransactionGridRowViewModel transaction)
         {
             transaction.TransactionAddFinished += OnTransactionAddFinished;
+            RowSelected(transaction);
         }
 
         private void DisconnectAddingTransaction(TransactionGridRowViewModel transaction)
@@ -303,6 +330,45 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
         {
             CurrentAddingTransaction = null;
         }
+
+        private void InitializeCommands()
+        {
+            AddTransactionCommand = new RelayCommand(AddTransaction);
+            RowSelectedCommand = new RelayCommand<TransactionGridRowViewModel>(RowSelected);
+            RowMultiSelectedCommand = new RelayCommand<TransactionGridRowViewModel>(RowMultiSelected);
+            RowUnSelectedCommand = new RelayCommand<TransactionGridRowViewModel>(RowUnSelected);
+        }
+
+        public RelayCommand<TransactionGridRowViewModel> RowSelectedCommand { get; private set; }
+
+        private void RowSelected(TransactionGridRowViewModel row)
+        {
+            var selectedRows = SelectedRows.ToList();
+            foreach (var selectedRow in selectedRows)
+            {
+                SelectedRows.Remove(selectedRow);
+            }
+            SelectedRows.Add(row);
+        }
+
+        public RelayCommand<TransactionGridRowViewModel> RowMultiSelectedCommand { get; private set; }
+
+        private void RowMultiSelected(TransactionGridRowViewModel row)
+        {
+            SelectedRows.Add(row);
+        }
+
+
+        public RelayCommand<TransactionGridRowViewModel> RowUnSelectedCommand { get; private set; }
+
+        private void RowUnSelected(TransactionGridRowViewModel row)
+        {
+            if (SelectedRows.Contains(row))
+            {
+                SelectedRows.Remove(row);
+            }
+        }
+
 
         public RelayCommand AddTransactionCommand { get; private set; }
 

@@ -130,7 +130,9 @@
 
                         <trxGrid:TransactionGridRow 
                             Grid.Row="1"
+                            x:Name="PART_AddTransactionRow"
                             Visibility="{Binding Path=DataContext.IsAdding, Converter={StaticResource BoolToVis}, RelativeSource={RelativeSource TemplatedParent}}" 
+                            IsSelected="{Binding IsSelected, Mode=OneWay}"
                             DataContext="{Binding CurrentAddingTransaction}"
                             Cells="{Binding Cells}"/>
 
@@ -159,7 +161,7 @@
                     <trxGrid:TransactionGridRow
                         x:Name="trxRow"
                         IsEditing="{Binding IsEditing, Mode=OneWay}" 
-                        IsSelected="{Binding IsSelected, Mode=TwoWay}"
+                        IsSelected="{Binding IsSelected, Mode=OneWay}"
                         Cells="{Binding Cells}" 
                         BeginEditCommand="{Binding BeginEditCommand}"/>
                 </DataTemplate>

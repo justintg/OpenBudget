@@ -16,7 +16,11 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <DockPanel>
-        <trxGrid:TransactionGrid TransactionRows="{Binding Rows}">
+        <trxGrid:TransactionGrid TransactionRows="{Binding Rows}"
+                                 SelectedRows="{Binding SelectedRows, Mode=OneWay}"
+                                 RowSelectedCommand="{Binding RowSelectedCommand, Mode=OneWay}"
+                                 RowUnSelectedCommand="{Binding RowUnSelectedCommand, Mode=OneWay}"
+                                 RowMultiSelectedCommand="{Binding RowMultiSelectedCommand, Mode=OneWay}">
             <!--Account="{Binding Account}" CurrentEditingTransaction="{Binding CurrentEditingTransaction, Mode=OneWay}">-->
         </trxGrid:TransactionGrid>
     </DockPanel>

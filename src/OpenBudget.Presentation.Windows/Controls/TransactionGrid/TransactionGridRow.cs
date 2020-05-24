@@ -26,6 +26,17 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
 
         public TransactionGridRow()
         {
+            this.DataContextChanged += (sender, e) => { OnDataContextChanged(e); };
+        }
+
+        public TransactionGridRowViewModel ViewModel { get; private set; }
+
+        private void OnDataContextChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is TransactionGridRowViewModel viewModel)
+            {
+                ViewModel = viewModel;
+            }
         }
 
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
@@ -36,8 +47,6 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             }
             base.OnMouseRightButtonUp(e);
         }
-
-
 
         protected override void OnContextMenuOpening(ContextMenuEventArgs e)
         {
@@ -50,17 +59,33 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
+            bool ctrlPressed = (Keyboard.Modifiers & ModifierKeys.Control) > 0;
             if (!IsSelected)
             {
-                IsSelected = true;
+                if (ctrlPressed)
+                {
+                    RaiseRowMultiSelected();
+                }
+                else
+                {
+                    RaiseRowSelected();
+                }
                 e.Handled = true;
             }
             else if (IsSelected && !IsEditing)
             {
-                if (BeginEditCommand != null)
+                if (ctrlPressed)
                 {
-                    BeginEditCommand.Execute(null);
+                    RaiseRowUnSelected();
                     e.Handled = true;
+                }
+                else
+                {
+                    if (BeginEditCommand != null)
+                    {
+                        BeginEditCommand.Execute(null);
+                        e.Handled = true;
+                    }
                 }
             }
             base.OnMouseLeftButtonUp(e);
@@ -105,11 +130,6 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
 
         private static void OnIsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var row = d as TransactionGridRow;
-            if ((bool)e.NewValue)
-            {
-                row.RaiseRowSelected();
-            }
         }
 
         public static readonly RoutedEvent RowSelectedEvent =
@@ -125,6 +145,38 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         protected virtual void RaiseRowSelected()
         {
             RoutedEventArgs args = new RoutedEventArgs(TransactionGridRow.RowSelectedEvent);
+            RaiseEvent(args);
+        }
+
+        public static readonly RoutedEvent RowUnSelectedEvent =
+           EventManager.RegisterRoutedEvent("RowUnSelected", RoutingStrategy.Bubble,
+           typeof(RoutedEventHandler), typeof(TransactionGridRow));
+
+        public event RoutedEventHandler RowUnSelected
+        {
+            add { AddHandler(RowUnSelectedEvent, value); }
+            remove { RemoveHandler(RowUnSelectedEvent, value); }
+        }
+
+        protected virtual void RaiseRowUnSelected()
+        {
+            RoutedEventArgs args = new RoutedEventArgs(TransactionGridRow.RowUnSelectedEvent);
+            RaiseEvent(args);
+        }
+
+        public static readonly RoutedEvent RowMultiSelectedEvent =
+           EventManager.RegisterRoutedEvent("RowMultiSelected", RoutingStrategy.Bubble,
+           typeof(RoutedEventHandler), typeof(TransactionGridRow));
+
+        public event RoutedEventHandler RowMultiSelected
+        {
+            add { AddHandler(RowSelectedEvent, value); }
+            remove { RemoveHandler(RowSelectedEvent, value); }
+        }
+
+        protected virtual void RaiseRowMultiSelected()
+        {
+            RoutedEventArgs args = new RoutedEventArgs(TransactionGridRow.RowMultiSelectedEvent);
             RaiseEvent(args);
         }
 

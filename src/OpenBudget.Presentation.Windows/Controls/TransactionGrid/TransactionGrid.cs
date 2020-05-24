@@ -1,4 +1,6 @@
-﻿using OpenBudget.Application.ViewModels.TransactionGrid;
+﻿using ControlzEx.Standard;
+using MahApps.Metro.Controls;
+using OpenBudget.Application.ViewModels.TransactionGrid;
 using OpenBudget.Presentation.Windows.Util;
 using System;
 using System.Collections.Generic;
@@ -31,11 +33,14 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         private ScrollViewer _contentScrollViewer;
         private ScrollViewer _headerScrollViewer;
         private ItemsControl _headerRow;
+        private TransactionGridRow _addTransactionRow;
 
         public TransactionGrid()
         {
             this.DataContextChanged += TransactionGrid_DataContextChanged;
             this.AddHandler(TransactionGridRow.RowSelectedEvent, new RoutedEventHandler(OnRowSelected));
+            this.AddHandler(TransactionGridRow.RowMultiSelectedEvent, new RoutedEventHandler(OnRowMultiSelected));
+            this.AddHandler(TransactionGridRow.RowUnSelectedEvent, new RoutedEventHandler(OnRowUnSelected));
             this.KeyDown += TransactionGrid_KeyDown;
         }
 
@@ -43,9 +48,9 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         {
             if (e.Key == Key.Escape)
             {
-                if (SelectedRow != null && SelectedRow.IsEditing)
+                if (SelectedRow?.IsEditing == true)
                 {
-                    SelectedRowViewModel.CancelEditCommand.Execute(null);
+                    SelectedRow.CancelEditCommand.Execute(null);
                 }
             }
         }
@@ -69,12 +74,11 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         private void HandleUpDownNavigation(KeyEventArgs e)
         {
             if (!(e.Key == Key.Down || e.Key == Key.Up)) return;
-            if (SelectedRow == null) return;
-            if (SelectedRow.IsEditing) return;
+            if (SelectedRow?.IsEditing == true) return;
             if (IsAdding) return;
 
             e.Handled = true;
-            int currentIndex = TransactionRows.IndexOf(SelectedRowViewModel);
+            int currentIndex = TransactionRows.IndexOf(SelectedRow);
 
             if (e.Key == Key.Down)
             {
@@ -102,56 +106,86 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             }
         }
 
+        public TransactionGridRowViewModel SelectedRow
+        {
+            get
+            {
+                if (SelectedRows?.Count == 1)
+                {
+                    return SelectedRows[0];
+                }
+
+                return null;
+            }
+        }
+
+        public IList<TransactionGridRowViewModel> SelectedRows
+        {
+            get { return (IList<TransactionGridRowViewModel>)GetValue(SelectedRowsProperty); }
+            set { SetValue(SelectedRowsProperty, value); }
+        }
+
+        public static readonly DependencyProperty SelectedRowsProperty =
+            DependencyProperty.Register("SelectedRows", typeof(IList<TransactionGridRowViewModel>), typeof(TransactionGrid), new PropertyMetadata(null));
+
         public bool IsAdding
         {
             get { return (bool)GetValue(IsAddingProperty); }
             set { SetValue(IsAddingProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for IsAdding.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsAddingProperty =
-            DependencyProperty.Register("IsAdding", typeof(bool), typeof(TransactionGrid), new PropertyMetadata(false));
+            DependencyProperty.Register("IsAdding", typeof(bool), typeof(TransactionGrid), new PropertyMetadata(false, OnIsAddingChanged));
 
-        private static void OnRowSelected(object sender, RoutedEventArgs e)
+        private static void OnIsAddingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var grid = sender as TransactionGrid;
+
+        }
+
+        public ICommand RowSelectedCommand
+        {
+            get { return (ICommand)GetValue(RowSelectedCommandProperty); }
+            set { SetValue(RowSelectedCommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty RowSelectedCommandProperty =
+            DependencyProperty.Register("RowSelectedCommand", typeof(ICommand), typeof(TransactionGrid), new PropertyMetadata(null));
+
+        public ICommand RowMultiSelectedCommand
+        {
+            get { return (ICommand)GetValue(RowMultiSelectedCommandProperty); }
+            set { SetValue(RowMultiSelectedCommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty RowMultiSelectedCommandProperty =
+            DependencyProperty.Register("RowMultiSelectedCommand", typeof(ICommand), typeof(TransactionGrid), new PropertyMetadata(null));
+
+        public ICommand RowUnSelectedCommand
+        {
+            get { return (ICommand)GetValue(RowUnSelectedCommandProperty); }
+            set { SetValue(RowUnSelectedCommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty RowUnSelectedCommandProperty =
+            DependencyProperty.Register("RowUnSelectedCommand", typeof(ICommand), typeof(TransactionGrid), new PropertyMetadata(null));
+
+        private void OnRowMultiSelected(object sender, RoutedEventArgs e)
+        {
             var row = e.OriginalSource as TransactionGridRow;
-            grid.SelectedRow = row;
+            RowMultiSelectedCommand?.Execute(row.ViewModel);
         }
 
-        public TransactionGridRow SelectedRow
+        private void OnRowUnSelected(object sender, RoutedEventArgs e)
         {
-            get { return (TransactionGridRow)GetValue(SelectedRowProperty); }
-            set { SetValue(SelectedRowProperty, value); }
+            var row = e.OriginalSource as TransactionGridRow;
+            RowUnSelectedCommand?.Execute(row.ViewModel);
         }
 
-        // Using a DependencyProperty as the backing store for SelectedRow.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectedRowProperty =
-            DependencyProperty.Register("SelectedRow", typeof(TransactionGridRow), typeof(TransactionGrid), new PropertyMetadata(null, OnSelectedRowChanged));
-
-        private static void OnSelectedRowChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void OnRowSelected(object sender, RoutedEventArgs e)
         {
-            var grid = d as TransactionGrid;
-
-            if (e.OldValue is TransactionGridRow oldRow)
-            {
-                oldRow.IsSelected = false;
-            }
-
-            var newRow = e.NewValue as TransactionGridRow;
-            var newViewModel = newRow.DataContext as TransactionGridRowViewModel;
-            grid.SelectedRowViewModel = newViewModel;
+            var row = e.OriginalSource as TransactionGridRow;
+            RowSelectedCommand?.Execute(row.ViewModel);
         }
-
-        public TransactionGridRowViewModel SelectedRowViewModel
-        {
-            get { return (TransactionGridRowViewModel)GetValue(SelectedRowViewModelProperty); }
-            set { SetValue(SelectedRowViewModelProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for SelectedRowViewModel.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectedRowViewModelProperty =
-            DependencyProperty.Register("SelectedRowViewModel", typeof(TransactionGridRowViewModel), typeof(TransactionGrid), new PropertyMetadata(null));
 
         private void TransactionGrid_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
@@ -175,6 +209,7 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             _headerScrollViewer = GetTemplateChild("PART_HeaderScrollViewer") as ScrollViewer;
             _contentScrollViewer = GetTemplateChild("PART_ContentScrollViewer") as ScrollViewer;
             _headerRow = GetTemplateChild("PART_HeaderRow") as ItemsControl;
+            _addTransactionRow = GetTemplateChild("PART_AddTransactionRow") as TransactionGridRow;
 
             BindScrollBarToContent();
             _contentScrollViewer.SizeChanged += ContentScrollViewer_SizeChanged;
@@ -212,21 +247,9 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             {
                 if (e.OriginalSource != _contentScrollViewer) return;
 
-                //Lock an editing row from being scrolled out of view
-                if (SelectedRow != null && SelectedRow.IsEditing)
+                if (SelectedRow?.IsEditing == true && SelectedRow.IsAdding != true)
                 {
-                    var container = SelectedRow.FindParent<VirtualizingStackPanel>();
-                    Point relativeLocation = SelectedRow.TranslatePoint(new Point(0, 0), container);
-                    if (relativeLocation.Y < 0)
-                    {
-                        SelectedRow.BringIntoView();
-                        return;
-                    }
-                    if (relativeLocation.Y + SelectedRow.ActualHeight > container.ActualHeight)
-                    {
-                        SelectedRow.BringIntoView();
-                        return;
-                    }
+                    LockEditingRowToView();
                 }
 
                 _verticalScrollBar.Value = e.VerticalOffset;
@@ -249,6 +272,25 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
         {
             get { return (IList<TransactionGridRowViewModel>)GetValue(TransactionRowsProperty); }
             set { SetValue(TransactionRowsProperty, value); }
+        }
+
+        private void LockEditingRowToView()
+        {
+            var container = this.GetChildOfType<VirtualizingStackPanel>();
+            var transactionGridRow = this.ItemContainerGenerator.ContainerFromItem(SelectedRow).GetChildOfType<TransactionGridRow>();
+            if (transactionGridRow == null || container == null) return;
+
+            Point relativeLocation = transactionGridRow.TranslatePoint(new Point(0, 0), container);
+            if (relativeLocation.Y < 0)
+            {
+                transactionGridRow.BringIntoView();
+                return;
+            }
+            if (relativeLocation.Y + transactionGridRow.ActualHeight > container.ActualHeight)
+            {
+                transactionGridRow.BringIntoView();
+                return;
+            }
         }
 
         // Using a DependencyProperty as the backing store for TransactionRows.  This enables animation, styling, binding, etc...
