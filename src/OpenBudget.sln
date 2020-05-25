@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Model", "OpenBud
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Model.SQLite", "OpenBudget.Model.SQLite\OpenBudget.Model.SQLite.csproj", "{214483CD-89D7-40D2-A0E7-6B088A8ED2C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Model.Tests", "OpenBudget.Model.Tests\OpenBudget.Model.Tests.csproj", "{36FA9935-D224-4F78-9728-877D22DC4851}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Model.Tests", "OpenBudget.Model.Tests\OpenBudget.Model.Tests.csproj", "{36FA9935-D224-4F78-9728-877D22DC4851}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Application", "OpenBudget.Application\OpenBudget.Application.csproj", "{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}"
 EndProject
@@ -17,54 +17,40 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3A968318
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Util", "OpenBudget.Util\OpenBudget.Util.csproj", "{FB5179E0-F9ED-429D-A2E1-D1411279B508}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Model.SQLite.Tests", "OpenBudget.Model.SQLite.Tests\OpenBudget.Model.SQLite.Tests.csproj", "{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Model.SQLite.Tests", "OpenBudget.Model.SQLite.Tests\OpenBudget.Model.SQLite.Tests.csproj", "{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Linux|Any CPU = Linux|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{16D74F94-F741-4CE4-9D8F-8DD343EE29BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16D74F94-F741-4CE4-9D8F-8DD343EE29BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16D74F94-F741-4CE4-9D8F-8DD343EE29BB}.Linux|Any CPU.ActiveCfg = Debug|Any CPU
-		{16D74F94-F741-4CE4-9D8F-8DD343EE29BB}.Linux|Any CPU.Build.0 = Debug|Any CPU
 		{16D74F94-F741-4CE4-9D8F-8DD343EE29BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16D74F94-F741-4CE4-9D8F-8DD343EE29BB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{214483CD-89D7-40D2-A0E7-6B088A8ED2C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{214483CD-89D7-40D2-A0E7-6B088A8ED2C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{214483CD-89D7-40D2-A0E7-6B088A8ED2C4}.Linux|Any CPU.ActiveCfg = Debug|Any CPU
-		{214483CD-89D7-40D2-A0E7-6B088A8ED2C4}.Linux|Any CPU.Build.0 = Debug|Any CPU
 		{214483CD-89D7-40D2-A0E7-6B088A8ED2C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{214483CD-89D7-40D2-A0E7-6B088A8ED2C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{36FA9935-D224-4F78-9728-877D22DC4851}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{36FA9935-D224-4F78-9728-877D22DC4851}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{36FA9935-D224-4F78-9728-877D22DC4851}.Linux|Any CPU.ActiveCfg = Debug|Any CPU
-		{36FA9935-D224-4F78-9728-877D22DC4851}.Linux|Any CPU.Build.0 = Debug|Any CPU
 		{36FA9935-D224-4F78-9728-877D22DC4851}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36FA9935-D224-4F78-9728-877D22DC4851}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}.Linux|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}.Linux|Any CPU.Build.0 = Debug|Any CPU
 		{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FBA66430-F55B-4897-9670-24AF969D731F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FBA66430-F55B-4897-9670-24AF969D731F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FBA66430-F55B-4897-9670-24AF969D731F}.Linux|Any CPU.ActiveCfg = Debug|Any CPU
 		{FBA66430-F55B-4897-9670-24AF969D731F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBA66430-F55B-4897-9670-24AF969D731F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FB5179E0-F9ED-429D-A2E1-D1411279B508}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FB5179E0-F9ED-429D-A2E1-D1411279B508}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FB5179E0-F9ED-429D-A2E1-D1411279B508}.Linux|Any CPU.ActiveCfg = Debug|Any CPU
-		{FB5179E0-F9ED-429D-A2E1-D1411279B508}.Linux|Any CPU.Build.0 = Debug|Any CPU
 		{FB5179E0-F9ED-429D-A2E1-D1411279B508}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB5179E0-F9ED-429D-A2E1-D1411279B508}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Linux|Any CPU.ActiveCfg = Release|Any CPU
-		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Linux|Any CPU.Build.0 = Release|Any CPU
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

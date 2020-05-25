@@ -2,8 +2,9 @@ language: csharp
 mono: none
 dotnet: 3.1
 dist: xenial
-solution: src/OpenBudget.sln
+solution: src/OpenBudget-Linux.sln
 
 script:
-- dotnet build src/OpenBudget.sln -c Linux
-- dotnet test src
+- dotnet build src/OpenBudget-Linux.sln -c Release
+- dotnet build src/OpenBudget-Linux.sln -c Debug
+- dotnet test src/OpenBudget-Linux.sln
