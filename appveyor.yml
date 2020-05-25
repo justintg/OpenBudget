@@ -22,6 +22,8 @@ before_build:
 build:
   project: src/OpenBudget.sln
   verbosity: minimal
+after_build:
+- cmd: dotnet publish src/OpenBudget.Presentation.Windows -r win-x64 --self-contained -c Release
 artifacts:
-  - path: src\OpenBudget.Presentation.Windows\bin
+  - path: src\OpenBudget.Presentation.Windows\bin\Release\netcoreapp3.1\win-x64\publish\
     name: WindowsBinaries

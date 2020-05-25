@@ -1,6 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Resources">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Color x:Key="BudgetMenuColor">#119EDA</Color>
     <SolidColorBrush x:Key="BudgetMenuBrush" Color="{StaticResource BudgetMenuColor}" />
 </ResourceDictionary>

@@ -13,7 +13,7 @@
         <Style TargetType="controls:SelectableButton">
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource HighlightBrush}" />
+                    <Setter Property="Background" Value="Blue" />
                 </Trigger>
             </Style.Triggers>
             <Setter Property="Background" Value="{StaticResource BudgetMenuBrush}" />

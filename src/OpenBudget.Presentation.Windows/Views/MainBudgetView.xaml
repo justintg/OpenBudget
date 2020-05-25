@@ -20,7 +20,7 @@
 
         <local:BudgetMenuView DataContext="{Binding Menu}"/>
 
-        <GridSplitter Width="3" Grid.Column="1" Grid.RowSpan="1" HorizontalAlignment="Stretch" Background="{StaticResource HighlightBrush}"/>
+        <GridSplitter Width="3" Grid.Column="1" Grid.RowSpan="1" HorizontalAlignment="Stretch" Background="DarkBlue"/>
 
         <ContentControl Content="{Binding CurrentScreen}" Grid.Column="2"/>
     </Grid>

@@ -9,7 +9,7 @@
              d:DesignHeight="300" d:DesignWidth="300"
              d:DataContext="{d:DesignInstance vm:CreateBudgetViewModel}">
     <Grid>
-        <Border Background="{StaticResource AccentColorBrush2}" CornerRadius="10" Padding="10" Width="500" Height="500" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Border Background="CornflowerBlue" CornerRadius="10" Padding="10" Width="500" Height="500" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
