@@ -91,7 +91,7 @@ namespace OpenBudget.Model.Entities
                 SetProperty(value);
                 if (culture != null)
                 {
-                    CurrencyDecimals = culture.NumberFormat.NumberDecimalDigits;
+                    CurrencyDecimals = culture.NumberFormat.CurrencyDecimalDigits;
                 }
             }
         }
