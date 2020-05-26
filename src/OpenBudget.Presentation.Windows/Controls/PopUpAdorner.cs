@@ -32,6 +32,16 @@ namespace OpenBudget.Presentation.Windows.Controls
             _presenter.Content = content;
         }
 
+        public bool IsOpen
+        {
+            get { return (bool)GetValue(IsOpenProperty); }
+            private set { SetValue(IsOpenProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsOpen.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsOpenProperty =
+            DependencyProperty.Register("IsOpen", typeof(bool), typeof(PopupAdorner), new PropertyMetadata(false));
+
         protected override Size MeasureOverride(Size constraint)
         {
             _presenter.Measure(constraint);
@@ -79,21 +89,31 @@ namespace OpenBudget.Presentation.Windows.Controls
             }
         }
 
+        private bool _isOpen = false;
+
         /// <summary>
         /// Brings the popup into view.
         /// </summary>
         public void Show()
         {
-            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(AdornedElement);
-            adornerLayer.Add(this);
+            if (!IsOpen)
+            {
+                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(AdornedElement);
+                adornerLayer.Add(this);
+                IsOpen = true;
+            }
         }
         /// <summary>
         /// Removes the popup into view.
         /// </summary>
         public void Hide()
         {
-            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(AdornedElement);
-            adornerLayer.Remove(this);
+            if (IsOpen)
+            {
+                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(AdornedElement);
+                adornerLayer.Remove(this);
+                IsOpen = false;
+            }
         }
     }
 }

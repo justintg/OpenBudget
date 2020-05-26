@@ -1,5 +1,7 @@
 ﻿using OpenBudget.Application.ViewModels.BudgetEditor;
+using OpenBudget.Model.Entities;
 using OpenBudget.Presentation.Windows.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -21,6 +23,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         public BudgetEditor()
         {
             MonthMarginLeft = MONTH_MARGIN_WIDTH;
+            this.AddHandler(CategoryRowHeader.CategoryRowEditorOpenedEvent, new CategoryRowHeader.CategoryRowEditorOpenedEventHandler(OnRowEditorOpened));
         }
 
         private ItemsControl _categoryItemsControl;
@@ -165,6 +168,32 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         protected override void OnPreviewKeyUp(KeyEventArgs e)
         {
             base.OnPreviewKeyUp(e);
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonUp(e);
+        }
+
+        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            if (_popupAdorner != null)
+            {
+                _popupAdorner.Hide();
+                _popupAdorner = null;
+            }
+        }
+
+        private PopupAdorner _popupAdorner;
+
+        private void OnRowEditorOpened(object sender, CategoryRowHeader.CategoryRowEditorOpenedEventArgs e)
+        {
+            if (_popupAdorner != null && _popupAdorner != e.PopupAdorner)
+            {
+                _popupAdorner.Hide();
+                _popupAdorner = null;
+            }
+            _popupAdorner = e.PopupAdorner;
         }
     }
 }
