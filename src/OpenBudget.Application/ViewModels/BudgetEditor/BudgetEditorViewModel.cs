@@ -136,9 +136,9 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             else if (VisibleMonthViews.Count > number)
             {
                 int monthsToRemove = VisibleMonthViews.Count - number;
-                for (int i = VisibleMonthViews.Count - monthsToRemove; i < VisibleMonthViews.Count; i++)
+                while (VisibleMonthViews.Count > number)
                 {
-                    BudgetMonthViewModel monthToRemove = VisibleMonthViews[i];
+                    BudgetMonthViewModel monthToRemove = VisibleMonthViews[VisibleMonthViews.Count - 1];
                     VisibleMonthViews.Remove(monthToRemove);
                     monthToRemove.Dispose();
                 }
