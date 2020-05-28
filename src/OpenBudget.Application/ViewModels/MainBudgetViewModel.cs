@@ -32,7 +32,7 @@ namespace OpenBudget.Application.ViewModels
                 }
             };
 
-            _menu = new BudgetMenuViewModel(_mainViewModel, _navigationService, (screen) => { CurrentScreen = screen; });
+            _menu = new BudgetMenuViewModel(this, _navigationService, (screen) => { CurrentScreen = screen; });
             if (this.BudgetModel != null)
             {
                 _menu.SelectDefaultItem();

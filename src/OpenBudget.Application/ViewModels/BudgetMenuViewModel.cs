@@ -14,12 +14,12 @@ namespace OpenBudget.Application.ViewModels
 {
     public class BudgetMenuViewModel : ViewModelBase
     {
-        private MainViewModel _mainViewModel;
+        private MainBudgetViewModel _mainViewModel;
         private Action<ViewModelBase> _showScreenCallback;
         private INavigationService _navigationService;
         private Budget _budget;
 
-        public BudgetMenuViewModel(MainViewModel mainViewModel, INavigationService navigationService, Action<ViewModelBase> showScreenCallback)
+        public BudgetMenuViewModel(MainBudgetViewModel mainViewModel, INavigationService navigationService, Action<ViewModelBase> showScreenCallback)
         {
             _mainViewModel = mainViewModel;
             _showScreenCallback = showScreenCallback;
@@ -32,7 +32,7 @@ namespace OpenBudget.Application.ViewModels
 
             _mainViewModel.PropertyChanged += (sender, e) =>
             {
-                if (e.PropertyName == nameof(MainViewModel.BudgetModel))
+                if (e.PropertyName == nameof(MainBudgetViewModel.BudgetModel))
                 {
                     this.BudgetModel = _mainViewModel.BudgetModel;
                 }
@@ -46,6 +46,7 @@ namespace OpenBudget.Application.ViewModels
 
         public void SelectDefaultItem()
         {
+            _selectedItemModel = null;
             SelectMenuItemCommand.Execute(_budgetViewItem);
         }
 
