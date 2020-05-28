@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 {
@@ -177,14 +178,22 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
+            var child = VisualTreeHelper.HitTest(this, e.GetPosition(this)).VisualHit;
+            var categoryRowHeader = child.FindParent<CategoryRowHeader>();
             if (_popupAdorner != null)
             {
+                if(categoryRowHeader == _popupCategoryRowHeader)
+                {
+                    e.Handled = true;
+                }
                 _popupAdorner.Hide();
                 _popupAdorner = null;
+                _popupCategoryRowHeader = null;
             }
         }
 
         private PopupAdorner _popupAdorner;
+        private CategoryRowHeader _popupCategoryRowHeader;
 
         private void OnRowEditorOpened(object sender, CategoryRowHeader.CategoryRowEditorOpenedEventArgs e)
         {
@@ -192,8 +201,10 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             {
                 _popupAdorner.Hide();
                 _popupAdorner = null;
+                _popupCategoryRowHeader = null;
             }
             _popupAdorner = e.PopupAdorner;
+            _popupCategoryRowHeader = e.OriginalSource as CategoryRowHeader;
         }
     }
 }

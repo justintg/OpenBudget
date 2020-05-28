@@ -71,14 +71,10 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            e.Handled = true;
             if (!IsPopupOpen)
             {
                 IsPopupOpen = true;
-            }
-            else
-            {
-                IsPopupOpen = false;
+                e.Handled = true;
             }
         }
 
