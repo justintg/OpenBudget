@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 {
-    public class CategoryRowHeader : Control
+    public class CategoryRowHeader : ContentControl
     {
         private FrameworkElement _popupContent;
         private PopupAdorner _popup;
@@ -57,7 +57,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             RaiseEvent(args);
         }
 
-        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             if (!IsPopupOpen)
             {

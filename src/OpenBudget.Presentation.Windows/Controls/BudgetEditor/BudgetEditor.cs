@@ -133,7 +133,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                     }
                     else
                     {
-                        //e.Handled = NavigateNextCategoryMonth(textBox, categoryRow, monthView);
+                        e.Handled = NavigateNextCategoryMonth(textBox, categoryRow, monthView);
                     }
                 }
             }
@@ -178,11 +178,17 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            var child = VisualTreeHelper.HitTest(this, e.GetPosition(this)).VisualHit;
+            var position = e.GetPosition(this);
+            DependencyObject child = null;
+            if (position != null)
+            {
+                child = VisualTreeHelper.HitTest(this, position)?.VisualHit;
+            }
+
             var categoryRowHeader = child.FindParent<CategoryRowHeader>();
             if (_popupAdorner != null)
             {
-                if(categoryRowHeader == _popupCategoryRowHeader)
+                if (categoryRowHeader == _popupCategoryRowHeader)
                 {
                     e.Handled = true;
                 }

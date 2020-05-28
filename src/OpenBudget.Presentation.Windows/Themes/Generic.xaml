@@ -405,12 +405,21 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:CategoryRowHeader}">
                     <Border Background="{TemplateBinding Background}">
-                        <TextBlock Text="{TemplateBinding CategoryName}" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}"/>
+                        <ContentPresenter />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Setter Property="PopupTemplate" Value="{StaticResource CategoryPopupTemplate}"/>
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock Text="{Binding CategoryName, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
+                               Foreground="{Binding Foreground,RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
+                               FontWeight="{Binding FontWeight, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}"/>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
@@ -447,6 +456,53 @@
                         </budEdit:BudgetEditorCategoryMonth.Margin>
                     </budEdit:BudgetEditorCategoryMonth>
                 </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type budEdit:BudgetEditorMasterCategoryRow}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="ItemsSource" Value="{Binding Categories}" />
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <budEdit:BudgetEditorCategoryRow CategoryName="{Binding Category.Name}" ItemsSource="{Binding CategoryMonthViews}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type budEdit:BudgetEditorMasterCategoryRow}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <budEdit:CategoryRowHeader Grid.Row="0" CategoryName="{Binding MasterCategory.Name}" FontWeight="Bold" Background="LightGray" HorizontalAlignment="Left">
+                            <budEdit:CategoryRowHeader.Style>
+                                <Style TargetType="budEdit:CategoryRowHeader">
+                                    <Style.Setters>
+                                        <Setter Property="PopupTemplate" Value="{StaticResource MasterCategoryPopupTemplate}"/>
+                                        <Setter Property="ContentTemplate">
+                                            <Setter.Value>
+                                                <DataTemplate>
+                                                    <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
+                                                        <Button Content="+" DockPanel.Dock="Right" Focusable="False" Height="15" MinHeight="15" Width="15" Margin="5" Padding="0"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding CategoryName, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
+                                                                    Foreground="{Binding Foreground,RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
+                                                                    FontWeight="{Binding FontWeight, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}"/>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style.Setters>
+                                </Style>
+                            </budEdit:CategoryRowHeader.Style>
+                        </budEdit:CategoryRowHeader>
+
+                        <ItemsPresenter Grid.Row="1" />
+                    </Grid>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
@@ -526,28 +582,7 @@
                             <ItemsControl Grid.Row="2" x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <budEdit:CategoryRowHeader CategoryName="{Binding MasterCategory.Name}" FontWeight="Bold" Background="LightGray">
-                                                <budEdit:CategoryRowHeader.Style>
-                                                    <Style TargetType="budEdit:CategoryRowHeader">
-                                                        <Style.Setters>
-                                                            <Setter Property="PopupTemplate" Value="{StaticResource MasterCategoryPopupTemplate}"/>
-                                                        </Style.Setters>
-                                                    </Style>
-                                                </budEdit:CategoryRowHeader.Style>
-                                            </budEdit:CategoryRowHeader>
-                                            <ItemsControl Grid.Row="2" ItemsSource="{Binding Categories}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <budEdit:BudgetEditorCategoryRow CategoryName="{Binding Category.Name}" ItemsSource="{Binding CategoryMonthViews}" />
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </Grid>
+                                        <budEdit:BudgetEditorMasterCategoryRow />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
