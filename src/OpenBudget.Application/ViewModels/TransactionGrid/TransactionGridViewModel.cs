@@ -185,6 +185,8 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                     transformed.PropertyChanged -= Row_PropertyChanged;
                 });
 
+            Rows.ReturnEmptyOnEmuerate = true;
+
             SortRows();
         }
 
@@ -310,7 +312,7 @@ namespace OpenBudget.Application.ViewModels.TransactionGrid
                 }
                 _currentEditingTransaction = value;
                 var rowsToUnselect = SelectedRows.Where(r => r != _currentEditingTransaction).ToList();
-                foreach(var row in rowsToUnselect)
+                foreach (var row in rowsToUnselect)
                 {
                     SelectedRows.Remove(row);
                 }

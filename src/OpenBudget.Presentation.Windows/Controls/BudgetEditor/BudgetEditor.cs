@@ -24,7 +24,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         public BudgetEditor()
         {
             MonthMarginLeft = MONTH_MARGIN_WIDTH;
-            this.AddHandler(CategoryRowHeader.CategoryRowEditorOpenedEvent, new CategoryRowHeader.CategoryRowEditorOpenedEventHandler(OnRowEditorOpened));
+            this.AddHandler(CategoryRowHeader.CategoryRowEditorOpenedEvent, new CategoryRowEditorOpenedEventHandler(OnRowEditorOpened));
         }
 
         private ItemsControl _categoryItemsControl;
@@ -195,7 +195,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         private PopupAdorner _popupAdorner;
         private CategoryRowHeader _popupCategoryRowHeader;
 
-        private void OnRowEditorOpened(object sender, CategoryRowHeader.CategoryRowEditorOpenedEventArgs e)
+        private void OnRowEditorOpened(object sender, CategoryRowEditorOpenedEventArgs e)
         {
             if (_popupAdorner != null && _popupAdorner != e.PopupAdorner)
             {

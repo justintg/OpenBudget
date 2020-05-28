@@ -51,21 +51,9 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         public static RoutedEvent CategoryRowEditorOpenedEvent
             = EventManager.RegisterRoutedEvent("CategoryRowEditorOpened", RoutingStrategy.Bubble, typeof(CategoryRowEditorOpenedEventHandler), typeof(CategoryRowHeader));
 
-        public delegate void CategoryRowEditorOpenedEventHandler(object sender, CategoryRowEditorOpenedEventArgs e);
-
-        public class CategoryRowEditorOpenedEventArgs : RoutedEventArgs
-        {
-            public PopupAdorner PopupAdorner { get; private set; }
-
-            public CategoryRowEditorOpenedEventArgs(PopupAdorner popupAdorner) : base(CategoryRowEditorOpenedEvent)
-            {
-                this.PopupAdorner = popupAdorner;
-            }
-        }
-
         private void RaiseCategoryRowEditorOpened()
         {
-            CategoryRowEditorOpenedEventArgs args = new CategoryRowEditorOpenedEventArgs(_popup);
+            CategoryRowEditorOpenedEventArgs args = new CategoryRowEditorOpenedEventArgs(_popup, CategoryRowEditorOpenedEvent);
             RaiseEvent(args);
         }
 

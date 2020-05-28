@@ -206,6 +206,9 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid
             base.OnApplyTemplate();
 
             _verticalScrollBar = GetTemplateChild("PART_VerticalScrollBar") as ScrollBar;
+            _verticalScrollBar.LargeChange = 10;
+            _verticalScrollBar.SmallChange = 2;
+
             _headerScrollViewer = GetTemplateChild("PART_HeaderScrollViewer") as ScrollViewer;
             _contentScrollViewer = GetTemplateChild("PART_ContentScrollViewer") as ScrollViewer;
             _headerRow = GetTemplateChild("PART_HeaderRow") as ItemsControl;

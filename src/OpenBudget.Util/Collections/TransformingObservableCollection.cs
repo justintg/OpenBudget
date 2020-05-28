@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace OpenBudget.Util.Collections
 {
-    public class TransformingObservableCollection<TSource, TTransformed> : IList<TTransformed>, INotifyCollectionChanged, IDisposable where TTransformed : class
+    public class TransformingObservableCollection<TSource, TTransformed> : IList<TTransformed>, IList, INotifyCollectionChanged, IDisposable where TTransformed : class
     {
         private IReadOnlyList<TSource> _sourceCollection;
         private INotifyCollectionChanged _collectionChanged;
@@ -55,6 +56,8 @@ namespace OpenBudget.Util.Collections
             EnsureItems();
             _collectionChanged.CollectionChanged += SourceCollection_CollectionChanged;
         }
+
+        public bool ReturnEmptyOnEmuerate { get; set; }
 
         private void ResetCollection()
         {
@@ -278,7 +281,10 @@ namespace OpenBudget.Util.Collections
 
         TTransformed IList<TTransformed>.this[int index]
         {
-            get { return _transformedCollection[index]; }
+            get
+            {
+                return _transformedCollection[index];
+            }
             set { throw new NotImplementedException(); }
         }
 
@@ -305,11 +311,13 @@ namespace OpenBudget.Util.Collections
 
         IEnumerator<TTransformed> IEnumerable<TTransformed>.GetEnumerator()
         {
+            if (ReturnEmptyOnEmuerate) return Enumerable.Empty<TTransformed>().GetEnumerator();
             return _transformedCollection.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
+            if (ReturnEmptyOnEmuerate) return Enumerable.Empty<TTransformed>().GetEnumerator();
             return _transformedCollection.GetEnumerator();
         }
 
@@ -340,6 +348,52 @@ namespace OpenBudget.Util.Collections
         public void CopyTo(TTransformed[] array, int arrayIndex) => _transformedCollection.CopyTo(array, arrayIndex);
 
         public bool Remove(TTransformed item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsFixedSize => false;
+
+        public bool IsSynchronized => false;
+
+        public object SyncRoot => new object();
+
+        object IList.this[int index] { get => this[index]; set => throw new NotImplementedException(); }
+
+        public int Add(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(object value)
+        {
+            if (value is TTransformed transformed)
+            {
+                return Contains(transformed);
+            }
+            return false;
+        }
+
+        public int IndexOf(object value)
+        {
+            if (value is TTransformed transformed)
+            {
+                return IndexOf(transformed);
+            }
+            return -1;
+        }
+
+        public void Insert(int index, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Remove(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(Array array, int index)
         {
             throw new NotImplementedException();
         }

@@ -64,9 +64,9 @@
 
     <Style TargetType="{x:Type trxGrid:TransactionGrid}">
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
-        <Setter Property="VirtualizingPanel.CacheLength" Value="30,30" />
-        <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Item" />
-        <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
+        <Setter Property="VirtualizingPanel.CacheLength" Value="15,15" />
+        <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Page" />
+        <Setter Property="VirtualizingPanel.ScrollUnit" Value="Item" />
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
         <Setter Property="IsAdding" Value="{Binding IsAdding}" />
         <Setter Property="Width" Value="{Binding Width, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" />
@@ -125,7 +125,8 @@
                             <ScrollBar
                                 x:Name="PART_VerticalScrollBar"
                                 Grid.Column="1"
-                                Grid.RowSpan="2"/>
+                                Grid.RowSpan="2"
+                                />
                         </Grid>
 
                         <trxGrid:TransactionGridRow 
@@ -337,50 +338,79 @@
         </Setter>
     </Style>
 
+    <DataTemplate x:Key="MasterCategoryPopupTemplate">
+        <Grid Width="200" Margin="10 0 0 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="85" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Background="Red" CornerRadius="5">
+                <Border.Effect>
+                    <DropShadowEffect Opacity="0.5"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBox Margin="10 12 10 0" Text="{Binding NewCategoryName}" />
+                    <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding SaveCategoryNameCommand}"/>
+                </Grid>
+            </Border>
+
+            <Path Grid.Row="1" Margin="0 -1 0 0" Data="M 10,0 L 16,10 22,0 Z" Fill="LightBlue">
+                <Path.Effect>
+                    <DropShadowEffect Opacity="0.5" />
+                </Path.Effect>
+            </Path>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="CategoryPopupTemplate">
+        <Grid Width="200" Margin="10 0 0 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="85" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Background="LightBlue" CornerRadius="5">
+                <Border.Effect>
+                    <DropShadowEffect Opacity="0.5"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBox Margin="10 12 10 0" Text="{Binding NewCategoryName}" />
+                    <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding SaveCategoryNameCommand}"/>
+                </Grid>
+            </Border>
+
+            <Path Grid.Row="1" Margin="0 -1 0 0" Data="M 10,0 L 16,10 22,0 Z" Fill="LightBlue">
+                <Path.Effect>
+                    <DropShadowEffect Opacity="0.5" />
+                </Path.Effect>
+            </Path>
+        </Grid>
+    </DataTemplate>
+
     <Style TargetType="{x:Type budEdit:CategoryRowHeader}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Foreground" Value="Black" />
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:CategoryRowHeader}">
-                    <Border Background="White">
-                        <TextBlock Text="{TemplateBinding CategoryName}" Foreground="{TemplateBinding Foreground}" />
+                    <Border Background="{TemplateBinding Background}">
+                        <TextBlock Text="{TemplateBinding CategoryName}" Foreground="{TemplateBinding Foreground}" FontWeight="{TemplateBinding FontWeight}"/>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Setter Property="PopupTemplate">
-            <Setter.Value>
-                <DataTemplate>
-                    <Grid Width="200" Margin="10 0 0 0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="85" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <Border Background="LightBlue" CornerRadius="5">
-                            <Border.Effect>
-                                <DropShadowEffect Opacity="0.5"/>
-                            </Border.Effect>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <TextBox Margin="10 12 10 0" Text="{Binding NewCategoryName}" />
-                                <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding SaveCategoryNameCommand}"/>
-                            </Grid>
-                        </Border>
-
-                        <Path Grid.Row="1" Margin="0 -1 0 0" Data="M 10,0 L 16,10 22,0 Z" Fill="LightBlue">
-                            <Path.Effect>
-                                <DropShadowEffect Opacity="0.5" />
-                            </Path.Effect>
-                        </Path>
-                    </Grid>
-                </DataTemplate>
-            </Setter.Value>
-        </Setter>
+        <Setter Property="PopupTemplate" Value="{StaticResource CategoryPopupTemplate}"/>
     </Style>
 
     <Style TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
@@ -501,7 +531,15 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding MasterCategory.Name}" FontWeight="Bold" Background="LightGray"/>
+                                            <budEdit:CategoryRowHeader CategoryName="{Binding MasterCategory.Name}" FontWeight="Bold" Background="LightGray">
+                                                <budEdit:CategoryRowHeader.Style>
+                                                    <Style TargetType="budEdit:CategoryRowHeader">
+                                                        <Style.Setters>
+                                                            <Setter Property="PopupTemplate" Value="{StaticResource MasterCategoryPopupTemplate}"/>
+                                                        </Style.Setters>
+                                                    </Style>
+                                                </budEdit:CategoryRowHeader.Style>
+                                            </budEdit:CategoryRowHeader>
                                             <ItemsControl Grid.Row="2" ItemsSource="{Binding Categories}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
