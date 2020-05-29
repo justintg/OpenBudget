@@ -482,22 +482,25 @@
                             <controls:PopupButton.ContentTemplate>
                                 <DataTemplate>
                                     <Border Background="LightGray">
-                                    <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
-                                        <controls:PopupButton DockPanel.Dock="Right" Focusable="False"  
+                                        <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
+                                            <controls:PopupButton DockPanel.Dock="Right" Focusable="False"  
                                                                               Margin="5" Padding="0">
-                                            <controls:PopupButton.PopupTemplate>
-                                                <DataTemplate>
-                                                    <Border VerticalAlignment="Center" Background="Yellow" Width="200" Height="50">
-                                                        <TextBlock VerticalAlignment="Center" Text="{Binding MasterCategory.Name}" />
-                                                    </Border>
-                                                </DataTemplate>
-                                            </controls:PopupButton.PopupTemplate>
-                                            <Border Background="Beige" Width="15">
-                                                <TextBlock Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                            </Border>
-                                        </controls:PopupButton>
-                                        <TextBlock Text="{Binding MasterCategory.Name}" />
-                                    </DockPanel>
+                                                <controls:PopupButton.PopupTemplate>
+                                                    <DataTemplate>
+                                                        <Border VerticalAlignment="Center" Background="Yellow" Width="200" Height="50">
+                                                            <StackPanel>
+                                                                <TextBox Text="{Binding NewCategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                                <Button Command="{Binding AddCategoryCommand}" Content="Add Category" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </controls:PopupButton.PopupTemplate>
+                                                <Border Background="Beige" Width="15">
+                                                    <TextBlock Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                </Border>
+                                            </controls:PopupButton>
+                                            <TextBlock Text="{Binding MasterCategory.Name}" />
+                                        </DockPanel>
                                     </Border>
                                 </DataTemplate>
                             </controls:PopupButton.ContentTemplate>

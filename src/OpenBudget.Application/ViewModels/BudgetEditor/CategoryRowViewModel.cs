@@ -28,7 +28,15 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                     //instead of ReferenceEquals on the instance
                     BudgetMonthView view = v.BudgetMonthView;
                     MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory.EntityID == category.Parent.EntityID).Single();
-                    return new CategoryMonthViewModel(v, masterView.Categories.Where(c => c.Category.EntityID == _category.EntityID).Single());
+                    var categoryMonthView = masterView.Categories.Where(c => c.Category.EntityID == _category.EntityID).SingleOrDefault();
+                    if (categoryMonthView != null)
+                    {
+                        return new CategoryMonthViewModel(v, categoryMonthView);
+                    }
+                    else
+                    {
+                        return new CategoryMonthViewModel(v, masterView, _category.EntityID);
+                    }
                 },
                 cmv =>
                 {
