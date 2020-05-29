@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -24,7 +25,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         public BudgetEditor()
         {
             MonthMarginLeft = MONTH_MARGIN_WIDTH;
-            this.AddHandler(CategoryRowHeader.CategoryRowEditorOpenedEvent, new CategoryRowEditorOpenedEventHandler(OnRowEditorOpened));
+            this.AddHandler(PopupButton.PopupButtonOpenedEvent, new PopupButtonOpenedEventHandler(OnRowEditorOpened));
         }
 
         private ItemsControl _categoryItemsControl;
@@ -185,32 +186,28 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 child = VisualTreeHelper.HitTest(this, position)?.VisualHit;
             }
 
-            var categoryRowHeader = child.FindParent<CategoryRowHeader>();
-            if (_popupAdorner != null)
+            var popupButton = child.FindParent<PopupButton>();
+            if (_popupButton != null)
             {
-                if (categoryRowHeader == _popupCategoryRowHeader)
+                if (popupButton == _popupButton)
                 {
                     e.Handled = true;
                 }
-                _popupAdorner.Hide();
-                _popupAdorner = null;
-                _popupCategoryRowHeader = null;
+                _popupButton.IsPopupOpen = false;
+                _popupButton = null;
             }
         }
 
-        private PopupAdorner _popupAdorner;
-        private CategoryRowHeader _popupCategoryRowHeader;
+        private PopupButton _popupButton;
 
-        private void OnRowEditorOpened(object sender, CategoryRowEditorOpenedEventArgs e)
+        private void OnRowEditorOpened(object sender, PopupButtonOpenedEventArgs e)
         {
-            if (_popupAdorner != null && _popupAdorner != e.PopupAdorner)
+            if (_popupButton != null && _popupButton != e.PopupButton)
             {
-                _popupAdorner.Hide();
-                _popupAdorner = null;
-                _popupCategoryRowHeader = null;
+                _popupButton.IsPopupOpen = false;
+                _popupButton = null;
             }
-            _popupAdorner = e.PopupAdorner;
-            _popupCategoryRowHeader = e.OriginalSource as CategoryRowHeader;
+            _popupButton = e.PopupButton;
         }
     }
 }

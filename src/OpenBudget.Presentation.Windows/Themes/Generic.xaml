@@ -5,10 +5,21 @@
     xmlns:columns="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns"
     xmlns:trxGrid="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid"
     xmlns:budEdit="clr-namespace:OpenBudget.Presentation.Windows.Controls.BudgetEditor"
+    xmlns:controls="clr-namespace:OpenBudget.Presentation.Windows.Controls"
     xmlns:vmTrx="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/OpenBudget;component/Themes/Converters.xaml" />
     </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="controls:PopupButton">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:PopupButton">
+                    <ContentPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <Style x:Key="ResultItemBox" TargetType="ItemsControl">
         <Setter Property="ItemTemplate">
@@ -396,41 +407,27 @@
         </Grid>
     </DataTemplate>
 
-    <Style TargetType="{x:Type budEdit:CategoryRowHeader}">
-        <Setter Property="Focusable" Value="False" />
-        <Setter Property="Foreground" Value="Black" />
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type budEdit:CategoryRowHeader}">
-                    <Border Background="{TemplateBinding Background}">
-                        <ContentPresenter />
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="PopupTemplate" Value="{StaticResource CategoryPopupTemplate}"/>
-        <Setter Property="ContentTemplate">
-            <Setter.Value>
-                <DataTemplate>
-                    <TextBlock Text="{Binding CategoryName, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
-                               Foreground="{Binding Foreground,RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
-                               FontWeight="{Binding FontWeight, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}"/>
-                </DataTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <Style TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
                     <StackPanel Orientation="Horizontal">
-                        <budEdit:CategoryRowHeader CategoryName="{TemplateBinding CategoryName}"
-                                                   IsPopupOpen="{Binding CategoryEditorOpen, Mode=TwoWay}"
-                                                   Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"/>
+                        <controls:PopupButton Content="{Binding}"
+                                              Foreground="Black"
+                                              Background="White"
+                                              FontWeight="Normal"
+                                              IsPopupOpen="{Binding CategoryEditorOpen, Mode=TwoWay}"
+                                              Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"
+                                              PopupTemplate="{StaticResource CategoryPopupTemplate}">
+                            <controls:PopupButton.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Category.Name}" 
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" 
+                                       FontWeight="{Binding FontWeight, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </DataTemplate>
+                            </controls:PopupButton.ContentTemplate>
+                        </controls:PopupButton>
                         <ItemsPresenter />
                     </StackPanel>
                 </ControlTemplate>
@@ -478,28 +475,33 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <budEdit:CategoryRowHeader Grid.Row="0" CategoryName="{Binding MasterCategory.Name}" FontWeight="Bold" Background="LightGray" HorizontalAlignment="Left">
-                            <budEdit:CategoryRowHeader.Style>
-                                <Style TargetType="budEdit:CategoryRowHeader">
-                                    <Style.Setters>
-                                        <Setter Property="PopupTemplate" Value="{StaticResource MasterCategoryPopupTemplate}"/>
-                                        <Setter Property="ContentTemplate">
-                                            <Setter.Value>
+                        <controls:PopupButton Grid.Row="0"
+                                                FontWeight="Bold"  HorizontalAlignment="Left"
+                                                Content="{Binding}"
+                                              PopupTemplate="{StaticResource MasterCategoryPopupTemplate}">
+                            <controls:PopupButton.ContentTemplate>
+                                <DataTemplate>
+                                    <Border Background="LightGray">
+                                    <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
+                                        <controls:PopupButton DockPanel.Dock="Right" Focusable="False"  
+                                                                              Margin="5" Padding="0">
+                                            <controls:PopupButton.PopupTemplate>
                                                 <DataTemplate>
-                                                    <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
-                                                        <Button Content="+" DockPanel.Dock="Right" Focusable="False" Height="15" MinHeight="15" Width="15" Margin="5" Padding="0"/>
-                                                        <TextBlock VerticalAlignment="Center" Text="{Binding CategoryName, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
-                                                                    Foreground="{Binding Foreground,RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}" 
-                                                                    FontWeight="{Binding FontWeight, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:CategoryRowHeader}}"/>
-                                                    </DockPanel>
+                                                    <Border VerticalAlignment="Center" Background="Yellow" Width="200" Height="50">
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding MasterCategory.Name}" />
+                                                    </Border>
                                                 </DataTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style.Setters>
-                                </Style>
-                            </budEdit:CategoryRowHeader.Style>
-                        </budEdit:CategoryRowHeader>
-
+                                            </controls:PopupButton.PopupTemplate>
+                                            <Border Background="Beige" Width="15">
+                                                <TextBlock Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            </Border>
+                                        </controls:PopupButton>
+                                        <TextBlock Text="{Binding MasterCategory.Name}" />
+                                    </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </controls:PopupButton.ContentTemplate>
+                        </controls:PopupButton>
                         <ItemsPresenter Grid.Row="1" />
                     </Grid>
                 </ControlTemplate>
