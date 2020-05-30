@@ -11,6 +11,8 @@ namespace OpenBudget.Model.Entities
     public class CategorySnapshot : EntitySnapshot
     {
         public string Name { get; set; }
+        public string Note { get; set; }
+        public int SortOrder { get; set; }
     }
 
     public class Category : EntityBase<CategorySnapshot>
@@ -39,7 +41,38 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
+        public string Note
+        {
+            get { return GetProperty<string>(); }
+            set { SetProperty(value); }
+        }
+
+        public int SortOrder
+        {
+            get { return GetProperty<int>(); }
+            set { SetProperty(value); }
+        }
+
         public CategoryMonthFinder CategoryMonths { get; private set; }
+
+        internal override void BeforeSaveChanges(BudgetModel budgetModel)
+        {
+            base.BeforeSaveChanges(budgetModel);
+            DetermineSortOrder(budgetModel);
+        }
+
+        private void DetermineSortOrder(BudgetModel budgetModel)
+        {
+            var parent = Parent as MasterCategory;
+            if(parent.IsAttached)
+            {
+
+            }
+            else
+            {
+                SortOrder = parent.Categories.IndexOf(this);
+            }
+        }
 
         protected override void OnAttached(BudgetModel model)
         {

@@ -366,7 +366,10 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotSupportedException();
+            if (!IsLoaded)
+                throw new InvalidBudgetActionException("This operation is not supported when the EntityCollection is not loaded.");
+
+            _loadedEntities.CopyTo(array, arrayIndex);
         }
 
         public bool Remove(T item)
