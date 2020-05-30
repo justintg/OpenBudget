@@ -338,9 +338,20 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public void Add(T item)
         {
+            OnBeforeAddItem(item);
             EnsureDeletedFromPreviousParent(item);
             AddInternal(item);
             EnsureAddedEntityRegisteredForChanges(item);
+            OnAfterAddItem(item);
+        }
+
+        protected virtual void OnBeforeAddItem(T item)
+        {
+
+        }
+
+        protected virtual void OnAfterAddItem(T item)
+        {
         }
 
         private void EnsureDeletedFromPreviousParent(T item)
