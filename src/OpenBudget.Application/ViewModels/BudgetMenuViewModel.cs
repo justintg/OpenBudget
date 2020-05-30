@@ -66,9 +66,12 @@ namespace OpenBudget.Application.ViewModels
             private set
             {
                 _budgetModel = value;
-                _budget = _budgetModel.GetBudget();
-                _budget.Accounts.LoadCollection();
-                InitializeAccountItems();
+                if (_budgetModel != null)
+                {
+                    _budget = _budgetModel.GetBudget();
+                    _budget.Accounts.EnsureCollectionLoaded();
+                    InitializeAccountItems();
+                }
                 RaisePropertyChanged();
             }
         }

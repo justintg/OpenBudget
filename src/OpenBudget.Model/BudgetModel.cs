@@ -21,7 +21,7 @@ using System.Runtime.CompilerServices;
 
 namespace OpenBudget.Model
 {
-    public class BudgetModel
+    public class BudgetModel : IDisposable
     {
         public Guid DeviceID { get; private set; }
         internal BudgetMessageBus InternalMessageBus { get; private set; }
@@ -734,6 +734,12 @@ namespace OpenBudget.Model
             EntityBase entity = this.FindEntity(entityType, entityId);
             var entityEvents = this.EventStore.GetEntityEvents(entityType, entityId);
             entity.RebuildEntity(entityEvents);
+        }
+
+        public void Dispose()
+        {
+            BudgetStore?.Dispose();
+            BudgetStore = null;
         }
     }
 }

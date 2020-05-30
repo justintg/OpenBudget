@@ -19,6 +19,7 @@ namespace OpenBudget.Model.SQLite
         {
             _connectionString = DBPathToConnectionString(dbPath);
             _connection = new SqliteConnection(_connectionString);
+            _connection.Open();
             EnsureTablesInitialized();
 
             _eventStore = new SQLiteEventStore(_connection);
@@ -105,7 +106,8 @@ namespace OpenBudget.Model.SQLite
 
         public void Dispose()
         {
-            _connection.Dispose();
+            _connection?.Dispose();
+            _snapshotStore?.Dispose();
         }
     }
 }

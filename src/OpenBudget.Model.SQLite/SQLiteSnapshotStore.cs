@@ -19,10 +19,10 @@ using System.Text;
 
 namespace OpenBudget.Model.SQLite
 {
-    internal class SQLiteSnapshotStore : ISnapshotStore
+    internal class SQLiteSnapshotStore : ISnapshotStore, IDisposable
     {
         private readonly string _connectionString;
-        private readonly SqliteConnection _connection;
+        private SqliteConnection _connection;
         private bool _isBatching = false;
         private IDbContextTransaction _transaction;
         private SqliteContext _parentBatchContext;
@@ -319,6 +319,12 @@ namespace OpenBudget.Model.SQLite
             var cmd = _connection.CreateCommand();
             cmd.CommandText = "PRAGMA wal_checkpoint;";
             cmd.ExecuteNonQuery();
+        }
+
+        public void Dispose()
+        {
+            _connection.Dispose();
+            _connection = null;
         }
     }
 }

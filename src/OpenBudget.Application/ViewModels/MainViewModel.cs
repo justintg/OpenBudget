@@ -129,7 +129,21 @@ namespace OpenBudget.Application.ViewModels
         public BudgetModel BudgetModel
         {
             get { return _budgetModel; }
-            private set { _budgetModel = value; RaisePropertyChanged(); }
+            private set
+            {
+                if (_budgetModel != null && _budgetModel != value)
+                {
+                    _budgetModel.Dispose();
+                }
+                _budgetModel = value; RaisePropertyChanged();
+            }
+        }
+
+        protected override void Close()
+        {
+            BudgetModel?.Dispose();
+            BudgetModel = null;
+            base.Close();
         }
     }
 }

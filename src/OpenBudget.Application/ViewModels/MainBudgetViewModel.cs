@@ -98,7 +98,10 @@ namespace OpenBudget.Application.ViewModels
                 SelectedAccount = null;
                 CurrentScreen = null;
                 RaisePropertyChanged();
-                _menu?.SelectDefaultItem();
+                if (_budgetModel != null)
+                {
+                    _menu?.SelectDefaultItem();
+                }
             }
         }
     }

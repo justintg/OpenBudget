@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OpenBudget.Model.BudgetStore
 {
-    public interface IBudgetStore
+    public interface IBudgetStore : IDisposable
     {
         IEventStore EventStore { get; }
         ISnapshotStore SnapshotStore { get; }
