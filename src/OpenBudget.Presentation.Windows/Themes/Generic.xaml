@@ -521,71 +521,82 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0"
-                              Margin="{TemplateBinding CategoryColumnWidth, Converter={StaticResource MarginLeftConverter}}">
+                            <Grid Grid.Row="0">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="{TemplateBinding CategoryColumnWidth, Converter={StaticResource DoubleToGridLengthConverter}}" />
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Content="&lt;" Command="{Binding SelectPreviousMonthCommand}"></Button>
-                                <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding MonthSelector.Year}" Margin="10 0"/>
-                                <ItemsControl Grid.Column="2"
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Button Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="50" Grid.Column="0" Content="Add Master Category" />
+
+                                <Grid Grid.Row="0" Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Content="&lt;" Command="{Binding SelectPreviousMonthCommand}"></Button>
+                                    <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding MonthSelector.Year}" Margin="10 0"/>
+                                    <ItemsControl Grid.Column="2"
                                 ItemsSource="{Binding MonthSelector.Months}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="12"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource EmptyButtonStyle}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsVisible}" Value="True">
+                                                                    <Setter Property="Background" Value="LightGray" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                    <Setter Property="Background" Value="Red" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding MonthName}" />
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Grid.Column="3" Content="&gt;" Command="{Binding SelectNextMonthCommand}"></Button>
+                                </Grid>
+
+                                <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding VisibleMonthViews}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <UniformGrid Columns="12"/>
+                                            <StackPanel Orientation="Horizontal"></StackPanel>
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Button Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}">
-                                                <Button.Style>
-                                                    <Style TargetType="Button" BasedOn="{StaticResource EmptyButtonStyle}">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsVisible}" Value="True">
-                                                                <Setter Property="Background" Value="LightGray" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                                <Setter Property="Background" Value="Red" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding MonthName}" />
-                                            </Button>
+                                            <budEdit:BudgetEditorMonthHeader Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
+                                                <budEdit:BudgetEditorMonthHeader.Margin>
+                                                    <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
+                                                        <Binding />
+                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
+                                                    </MultiBinding>
+                                                </budEdit:BudgetEditorMonthHeader.Margin>
+                                            </budEdit:BudgetEditorMonthHeader>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <Button Grid.Column="3" Content="&gt;" Command="{Binding SelectNextMonthCommand}"></Button>
                             </Grid>
-
-                            <ItemsControl Grid.Row="1" Margin="{TemplateBinding CategoryColumnWidth, Converter={StaticResource MarginLeftConverter}}" ItemsSource="{Binding VisibleMonthViews}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal"></StackPanel>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <budEdit:BudgetEditorMonthHeader Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
-                                            <budEdit:BudgetEditorMonthHeader.Margin>
-                                                <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
-                                                    <Binding />
-                                                    <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
-                                                </MultiBinding>
-                                            </budEdit:BudgetEditorMonthHeader.Margin>
-                                        </budEdit:BudgetEditorMonthHeader>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <ItemsControl Grid.Row="2" x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False">
+                            <ItemsControl Grid.Row="1" x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <budEdit:BudgetEditorMasterCategoryRow />

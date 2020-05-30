@@ -5,5 +5,6 @@
     <conv:BooleanToVisibilityConverter x:Key="InvBoolToVis" True="Collapsed" False="Visible" />
     <conv:MarginLeftConverter x:Key="MarginLeftConverter" />
     <conv:BudgetEditorMonthMarginConverter x:Key="BudgetEditorMonthMarginConverter" />
+    <conv:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter" />
 
 </ResourceDictionary>
