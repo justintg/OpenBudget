@@ -189,12 +189,11 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             var popupButton = child.FindParent<PopupButton>();
             if (_popupButton != null)
             {
-                if (popupButton == _popupButton)
+                if (popupButton == null || popupButton != _popupButton)
                 {
-                    e.Handled = true;
+                    _popupButton.IsPopupOpen = false;
+                    _popupButton = null;
                 }
-                _popupButton.IsPopupOpen = false;
-                _popupButton = null;
             }
         }
 

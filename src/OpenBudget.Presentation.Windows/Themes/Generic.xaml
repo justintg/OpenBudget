@@ -12,6 +12,7 @@
     </ResourceDictionary.MergedDictionaries>
 
     <Style TargetType="controls:PopupButton">
+        <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:PopupButton">
@@ -394,7 +395,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBox Margin="10 12 10 0" Text="{Binding NewCategoryName}" />
+                    <TextBox Margin="10 12 10 0" Text="{Binding NewCategoryName}" x:Name="focusElement"/>
                     <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding SaveCategoryNameCommand}"/>
                 </Grid>
             </Border>

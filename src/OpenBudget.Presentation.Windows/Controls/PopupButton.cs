@@ -5,6 +5,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace OpenBudget.Presentation.Windows.Controls
 {
@@ -31,6 +33,8 @@ namespace OpenBudget.Presentation.Windows.Controls
 
         private PopupAdorner _popup;
         private FrameworkElement _popupContent;
+        private FrameworkElement _focusElement;
+
 
         public PopupButton()
         {
@@ -51,6 +55,7 @@ namespace OpenBudget.Presentation.Windows.Controls
             base.OnApplyTemplate();
 
             _popupContent = PopupTemplate.LoadContent() as FrameworkElement;
+            _focusElement = _popupContent.FindName("focusElement") as FrameworkElement;
             _popup = new PopupAdorner(this, _popupContent);
 
             _popupContent.SetBinding(FrameworkElement.DataContextProperty, new Binding("DataContext") { Source = this });
@@ -78,6 +83,10 @@ namespace OpenBudget.Presentation.Windows.Controls
             {
                 popupButton._popup.Show();
                 popupButton.RaiseCategoryRowEditorOpened();
+                App.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    popupButton._focusElement?.Focus();
+                }, DispatcherPriority.ContextIdle);
             }
             else
             {
