@@ -537,12 +537,35 @@
                                 <controls:PopupButton
                                     Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" Width="130" Grid.Column="0" Content="Add Master Category" Margin="0 0 0 10"
                                     Style="{DynamicResource MetroPopupButtonStyle}"
-                                    OpenPreference="Bottom">
+                                    OpenPreference="Bottom"
+                                    DataContext="{Binding AddMasterCategoryEditor}"
+                                    IsPopupOpen="{Binding IsEditorOpen, Mode=TwoWay}">
                                     <controls:PopupButton.PopupTemplate>
                                         <DataTemplate>
-                                            <Border Width="100" Height="100" Background="Green">
+                                            <Grid Width="200" Margin="10 0 0 0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="85" />
+                                                </Grid.RowDefinitions>
 
-                                            </Border>
+                                                <Path Grid.Row="0" Margin="0 0 0 -1" Data="M 10,15 L 30,0 45,15 Z" Fill="LightBlue">
+                                                </Path>
+
+                                                <Border Grid.Row="1" Background="LightBlue" CornerRadius="5">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect Opacity="0.5"/>
+                                                    </Border.Effect>
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <TextBox Margin="10 12 10 0" x:Name="focusElement" Text="{Binding NewMasterCategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        <Button Content="Add" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding AddMasterCategoryCommand}"/>
+                                                    </Grid>
+                                                </Border>
+
+                                            </Grid>
                                         </DataTemplate>
                                     </controls:PopupButton.PopupTemplate>
                                 </controls:PopupButton>

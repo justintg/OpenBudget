@@ -15,6 +15,9 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
     public class BudgetEditorViewModel : ViewModelBase, IDisposable
     {
         private BudgetModel _budgetModel;
+
+        public BudgetModel BudgetModel => _budgetModel;
+
         private Budget _budget;
         private BudgetMonthViewModel _selectedMonth;
 
@@ -23,6 +26,7 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             _budgetModel = budgetModel;
 
             InitializeRelayCommands();
+            _addMasterCategoryEditor = new AddMasterCategoryViewModel(this);
 
             _budget = _budgetModel.GetBudget();
             _budget.MasterCategories.LoadCollection();
@@ -35,6 +39,14 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 (mc) => { return new MasterCategoryRowViewModel(mc, this); },
                 mcvm => { mcvm.Dispose(); });
 
+        }
+
+        private AddMasterCategoryViewModel _addMasterCategoryEditor;
+
+        public AddMasterCategoryViewModel AddMasterCategoryEditor
+        {
+            get { return _addMasterCategoryEditor; }
+            private set { _addMasterCategoryEditor = value; RaisePropertyChanged(); }
         }
 
         private void InitializeRelayCommands()
