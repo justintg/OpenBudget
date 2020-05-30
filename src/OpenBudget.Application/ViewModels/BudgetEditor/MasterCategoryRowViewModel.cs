@@ -14,7 +14,8 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         {
             _masterCategory = masterCategory;
             _budgetEditor = budgetEditor;
-            InitializeCommands();
+            _addCategoryEditor = new AddCategoryViewModel(this);
+            _editMasterCategoryEditor = new EditMasterCategoryViewModel(this);
 
             if (!_masterCategory.Categories.IsLoaded)
                 _masterCategory.Categories.LoadCollection();
@@ -41,53 +42,20 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             set { _categories = value; RaisePropertyChanged(); }
         }
 
-        private void InitializeCommands()
+        private AddCategoryViewModel _addCategoryEditor;
+
+        public AddCategoryViewModel AddCategoryEditor
         {
-            AddCategoryCommand = new RelayCommand(AddCategory, CanAddCategory);
+            get { return _addCategoryEditor; }
+            private set { _addCategoryEditor = value; RaisePropertyChanged(); }
         }
 
-        public RelayCommand AddCategoryCommand { get; private set; }
+        private EditMasterCategoryViewModel _editMasterCategoryEditor;
 
-        private void AddCategory()
+        public EditMasterCategoryViewModel EditMasterCategoryEditor
         {
-            var budgetModel = _masterCategory.Model;
-            var masterCategory = budgetModel.FindEntity<MasterCategory>(_masterCategory.EntityID);
-            masterCategory.Categories.Add(new Category() { Name = NewCategoryName });
-            budgetModel.SaveChanges();
-            IsNewCategoryEditorOpen = false;
-        }
-
-        private bool CanAddCategory()
-        {
-            return !string.IsNullOrWhiteSpace(NewCategoryName);
-        }
-
-        private string _newCategoryName;
-
-        public string NewCategoryName
-        {
-            get { return _newCategoryName; }
-            set
-            {
-                _newCategoryName = value; RaisePropertyChanged();
-                AddCategoryCommand.RaiseCanExecuteChanged();
-            }
-        }
-
-        private bool _isNewCategoryEditorOpen;
-
-        public bool IsNewCategoryEditorOpen
-        {
-            get { return _isNewCategoryEditorOpen; }
-            set
-            {
-                _isNewCategoryEditorOpen = value;
-                if (!_isNewCategoryEditorOpen)
-                {
-                    NewCategoryName = string.Empty;
-                }
-                RaisePropertyChanged();
-            }
+            get { return _editMasterCategoryEditor; }
+            private set { _editMasterCategoryEditor = value; RaisePropertyChanged(); }
         }
 
         public void Dispose()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MahApps.Metro.Controls;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -33,7 +34,6 @@ namespace OpenBudget.Presentation.Windows.Controls
 
         private PopupAdorner _popup;
         private FrameworkElement _popupContent;
-        private FrameworkElement _focusElement;
 
 
         public PopupButton()
@@ -63,8 +63,12 @@ namespace OpenBudget.Presentation.Windows.Controls
         {
             base.OnApplyTemplate();
 
-            _popupContent = PopupTemplate.LoadContent() as FrameworkElement;
-            _focusElement = _popupContent.FindName("focusElement") as FrameworkElement;
+            var popupContent = new ContentControl();
+            popupContent.ContentTemplate = PopupTemplate;
+            popupContent.SetBinding(ContentControl.ContentProperty, new Binding());
+            _popupContent = popupContent;
+
+            var contentPresenter = popupContent.FindChild<ContentPresenter>();
             _popup = new PopupAdorner(this, _popupContent);
 
             _popupContent.SetBinding(FrameworkElement.DataContextProperty, new Binding("DataContext") { Source = this });
@@ -73,6 +77,17 @@ namespace OpenBudget.Presentation.Windows.Controls
         protected override void OnClick()
         {
             IsPopupOpen = !IsPopupOpen;
+        }
+
+        private void FindFocus()
+        {
+            App.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var contentPresenter = _popupContent.FindChild<ContentPresenter>();
+                var focusElement = contentPresenter?.ContentTemplate?.FindName("focusElement", contentPresenter) as FrameworkElement;
+                focusElement?.Focus();
+            },
+            DispatcherPriority.ContextIdle);
         }
 
         public bool IsPopupOpen
@@ -84,6 +99,7 @@ namespace OpenBudget.Presentation.Windows.Controls
         public static readonly DependencyProperty IsPopupOpenProperty =
             DependencyProperty.Register("IsPopupOpen", typeof(bool), typeof(PopupButton), new PropertyMetadata(false, OnIsPopupOpenChanged));
 
+
         private static void OnIsPopupOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var popupButton = d as PopupButton;
@@ -92,10 +108,8 @@ namespace OpenBudget.Presentation.Windows.Controls
             {
                 popupButton._popup.Show(popupButton.OpenPreference);
                 popupButton.RaiseCategoryRowEditorOpened();
-                App.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    popupButton._focusElement?.Focus();
-                }, DispatcherPriority.ContextIdle);
+
+                popupButton.FindFocus();
             }
             else
             {
