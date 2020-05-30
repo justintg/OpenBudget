@@ -64,9 +64,17 @@ namespace OpenBudget.Model.Entities
         private void DetermineSortOrder(BudgetModel budgetModel)
         {
             var parent = Parent as MasterCategory;
-            if(parent.IsAttached)
+            if (parent.IsAttached)
             {
+                if (parent.Categories.IsLoaded)
+                {
+                    int sortOrder = parent.Categories.Count - 1;//This category is already in the collection
+                    SortOrder = sortOrder;
+                }
+                else
+                {
 
+                }
             }
             else
             {
