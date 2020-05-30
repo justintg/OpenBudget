@@ -137,5 +137,70 @@ namespace OpenBudget.Model.Tests
             Assert.That(category.SortOrder, Is.EqualTo(initialCount));
             Assert.That(category2.SortOrder, Is.EqualTo(initialCount + 1));
         }
+
+        [Test]
+        public void MovingCategoryBetweenMasterCategories_UpdatesSortingInBothCollections()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+            var masterCategory2 = TestBudget.Budget.MasterCategories[1];
+
+            var categoryToMove = masterCategory.Categories[1];
+            Assert.That(masterCategory.Categories.Count, Is.EqualTo(4));
+            Assert.That(masterCategory2.Categories.Count, Is.EqualTo(4));
+            Assert.That(categoryToMove.SortOrder, Is.EqualTo(1));
+
+            masterCategory2.Categories.Add(categoryToMove);
+            TestBudget.SaveChanges();
+
+            Assert.That(categoryToMove.SortOrder, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void MoveAndAddCategoriesOnSameCollection_ProducesCorrectSorting()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+            var masterCategory2 = TestBudget.Budget.MasterCategories[1];
+
+            var categoryToMove = masterCategory.Categories[1];
+            Assert.That(masterCategory.Categories.Count, Is.EqualTo(4));
+            Assert.That(masterCategory2.Categories.Count, Is.EqualTo(4));
+            Assert.That(categoryToMove.SortOrder, Is.EqualTo(1));
+
+            var categoryBefore = new Category() { Name = "Before" };
+            var categoryAfter = new Category() { Name = "After" };
+            masterCategory2.Categories.Add(categoryBefore);
+            masterCategory2.Categories.Add(categoryToMove);
+            masterCategory2.Categories.Add(categoryAfter);
+            TestBudget.SaveChanges();
+
+            Assert.That(categoryBefore.SortOrder, Is.EqualTo(4));
+            Assert.That(categoryToMove.SortOrder, Is.EqualTo(5));
+            Assert.That(categoryAfter.SortOrder, Is.EqualTo(6));
+        }
+
+        [Test]
+        public void MoveAndAddCategoriesOnSameCollection_ProducesCorrectSorting_WhenCollectinIsUnloaded()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+            var masterCategory2 = TestBudget.Budget.MasterCategories[1];
+
+            var unloadedMasterCategory2 = TestBudget.BudgetModel.FindEntity<MasterCategory>(masterCategory2.EntityID);
+
+            var categoryToMove = masterCategory.Categories[1];
+            Assert.That(masterCategory.Categories.Count, Is.EqualTo(4));
+            Assert.That(masterCategory2.Categories.Count, Is.EqualTo(4));
+            Assert.That(categoryToMove.SortOrder, Is.EqualTo(1));
+
+            var categoryBefore = new Category() { Name = "Before" };
+            var categoryAfter = new Category() { Name = "After" };
+            unloadedMasterCategory2.Categories.Add(categoryBefore);
+            unloadedMasterCategory2.Categories.Add(categoryToMove);
+            unloadedMasterCategory2.Categories.Add(categoryAfter);
+            TestBudget.SaveChanges();
+
+            Assert.That(categoryBefore.SortOrder, Is.EqualTo(4));
+            Assert.That(categoryToMove.SortOrder, Is.EqualTo(5));
+            Assert.That(categoryAfter.SortOrder, Is.EqualTo(6));
+        }
     }
 }

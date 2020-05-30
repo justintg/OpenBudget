@@ -120,8 +120,7 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             return _loadedEntities.Where(e =>
             {
-                return !e.IsAttached ||
-                e.CurrentEvent.Changes.ContainsKey(nameof(EntityBase.Parent));
+                return e.CurrentEvent.Changes.ContainsKey(nameof(EntityBase.Parent));
             }
             ).ToList();
         }

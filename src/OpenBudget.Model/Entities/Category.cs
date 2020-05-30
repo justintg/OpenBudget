@@ -64,8 +64,22 @@ namespace OpenBudget.Model.Entities
 
         private void DetermineSortOrder(BudgetModel budgetModel)
         {
-            if (this.IsAttached) return;
+            if (!this.IsAttached)
+            {
+                DetermineSortOrderImpl();
+            }
+            else
+            {
+                if (this.CurrentEvent.Changes.ContainsKey(nameof(EntityBase.Parent)) &&
+                    !this.CurrentEvent.Changes.ContainsKey(nameof(Category.SortOrder)))
+                {
+                    DetermineSortOrderImpl();
+                }
+            }
+        }
 
+        private void DetermineSortOrderImpl()
+        {
             var parent = Parent as MasterCategory;
             if (parent.IsAttached)
             {
@@ -84,7 +98,7 @@ namespace OpenBudget.Model.Entities
                     else if (pendingAddIndex > 0)
                     {
                         Category first = pendingAdds[0];
-                        SortOrder = first.SortOrder + 1;
+                        SortOrder = first.SortOrder + pendingAddIndex;
                     }
                 }
             }
