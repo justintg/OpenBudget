@@ -115,6 +115,12 @@ namespace OpenBudget.Model.BudgetStore
             return new EmptyDisposable();
         }
 
+        public int GetCategoryMaxSortOrder(string masterCategoryId)
+        {
+            var snapshots = GetOrCreateSnapshotStorage<CategorySnapshot>().GetSnapshotsByParent(nameof(MasterCategory), masterCategoryId);
+            return snapshots.Max(s => s.SortOrder);
+        }
+
         private class EmptyDisposable : IDisposable
         {
             public void Dispose()

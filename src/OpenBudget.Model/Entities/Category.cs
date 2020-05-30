@@ -4,6 +4,7 @@ using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace OpenBudget.Model.Entities
@@ -63,17 +64,28 @@ namespace OpenBudget.Model.Entities
 
         private void DetermineSortOrder(BudgetModel budgetModel)
         {
+            if (this.IsAttached) return;
+
             var parent = Parent as MasterCategory;
             if (parent.IsAttached)
             {
                 if (parent.Categories.IsLoaded)
                 {
-                    int sortOrder = parent.Categories.Count - 1;//This category is already in the collection
-                    SortOrder = sortOrder;
+                    SortOrder = parent.Categories.IndexOf(this);
                 }
                 else
                 {
-
+                    var pendingAdds = parent.Categories.GetPendingAdds();
+                    int pendingAddIndex = pendingAdds.IndexOf(this);
+                    if (pendingAddIndex == 0)
+                    {
+                        SortOrder = parent.Model.BudgetStore.SnapshotStore.GetCategoryMaxSortOrder(parent.EntityID) + 1;
+                    }
+                    else if (pendingAddIndex > 0)
+                    {
+                        Category first = pendingAdds[0];
+                        SortOrder = first.SortOrder + 1;
+                    }
                 }
             }
             else

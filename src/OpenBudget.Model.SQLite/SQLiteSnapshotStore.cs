@@ -326,5 +326,13 @@ namespace OpenBudget.Model.SQLite
             _connection.Dispose();
             _connection = null;
         }
+
+        public int GetCategoryMaxSortOrder(string masterCategoryId)
+        {
+            using (GetContext(out SqliteContext context))
+            {
+                return context.Categories.Where(c => c.Parent.EntityID == nameof(MasterCategory) && c.Parent.EntityID == masterCategoryId).Max(c => c.SortOrder);
+            }
+        }
     }
 }

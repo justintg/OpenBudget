@@ -27,6 +27,7 @@ namespace OpenBudget.Model.BudgetStore
         //void StoreSnapshots(IEnumerable<EntitySnapshot> snapshots);
 
         long GetAcountBalanceLongValue(string accountId);
+        int GetCategoryMaxSortOrder(string masterCategoryId);
 
         VectorClock GetLastVectorClock();
         IDisposable StartSnapshotStoreBatch();

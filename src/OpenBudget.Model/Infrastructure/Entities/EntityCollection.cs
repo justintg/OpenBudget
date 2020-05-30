@@ -17,7 +17,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
         Attached
     }
 
-    public class EntityCollection<T> : IList<T>, IReadOnlyList<T>, INotifyCollectionChanged, IEntityCollection, IHandler<EntityCreatedEvent>, IHandler<EntityUpdatedEvent> where T : EntityBase
+    public class EntityCollection<T>
+        : IList<T>,
+        IReadOnlyList<T>,
+        INotifyCollectionChanged,
+        IEntityCollection,
+        IHandler<EntityCreatedEvent>,
+        IHandler<EntityUpdatedEvent>
+        where T : EntityBase
     {
         private EntityBase _parent;
 
@@ -107,6 +114,16 @@ namespace OpenBudget.Model.Infrastructure.Entities
             {
                 AddInternal(entity);
             }
+        }
+
+        internal List<T> GetPendingAdds()
+        {
+            return _loadedEntities.Where(e =>
+            {
+                return !e.IsAttached ||
+                e.CurrentEvent.Changes.ContainsKey(nameof(EntityBase.Parent));
+            }
+            ).ToList();
         }
 
         private void AddInternal(T entity)

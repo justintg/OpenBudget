@@ -30,7 +30,7 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
-        public void AddNewCategoryToLoadedCollectionAssignsLastSortOrder()
+        public void AddNewCategoryTo_Loaded_CollectionAssignsLastSortOrder()
         {
             var masterCategory = TestBudget.Budget.MasterCategories[0];
             Assert.That(masterCategory.Categories.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
@@ -47,6 +47,95 @@ namespace OpenBudget.Model.Tests
             TestBudget.SaveChanges();
 
             Assert.That(category.SortOrder, Is.EqualTo(initialCount));
+        }
+
+        [Test]
+        public void AddNewCategoryTo_UnLoaded_CollectionAssignsLastSortOrder()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+            Assert.That(masterCategory.Categories.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(masterCategory.Categories.IsLoaded, Is.True);
+
+            int initialCount = masterCategory.Categories.Count;
+
+            Category category = new Category()
+            {
+                Name = "NewCategory"
+            };
+
+            var unloadedMasterCategory = TestBudget.BudgetModel.FindEntity<MasterCategory>(masterCategory.EntityID);
+            Assert.That(unloadedMasterCategory.Categories.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(unloadedMasterCategory.Categories.IsLoaded, Is.False);
+
+            unloadedMasterCategory.Categories.Add(category);
+            TestBudget.SaveChanges();
+
+            Assert.That(category.SortOrder, Is.EqualTo(initialCount));
+        }
+
+        [Test]
+        public void AddMultipleNewCategoryTo_UnLoaded_CollectionAssignsLastSortOrder()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+
+            int initialCount = masterCategory.Categories.Count;
+
+            Category category = new Category()
+            {
+                Name = "NewCategory"
+            };
+
+            Category category2 = new Category()
+            {
+                Name = "NewCategory2"
+            };
+
+            var unloadedMasterCategory = TestBudget.BudgetModel.FindEntity<MasterCategory>(masterCategory.EntityID);
+            Assert.That(unloadedMasterCategory.Categories.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(unloadedMasterCategory.Categories.IsLoaded, Is.False);
+
+            unloadedMasterCategory.Categories.Add(category);
+            unloadedMasterCategory.Categories.Add(category2);
+            TestBudget.SaveChanges();
+
+            Assert.That(category.SortOrder, Is.EqualTo(initialCount));
+            Assert.That(category2.SortOrder, Is.EqualTo(initialCount + 1));
+
+            Category category3 = new Category()
+            {
+                Name = "NewCategory3"
+            };
+
+            unloadedMasterCategory.Categories.Add(category3);
+            TestBudget.SaveChanges();
+            Assert.That(category3.SortOrder, Is.EqualTo(initialCount + 2));
+        }
+
+        [Test]
+        public void AddMultipleNewCategoryTo_Loaded_CollectionAssignsLastSortOrder()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+            Assert.That(masterCategory.Categories.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(masterCategory.Categories.IsLoaded, Is.True);
+
+            int initialCount = masterCategory.Categories.Count;
+
+            Category category = new Category()
+            {
+                Name = "NewCategory"
+            };
+
+            Category category2 = new Category()
+            {
+                Name = "NewCategory2"
+            };
+
+            masterCategory.Categories.Add(category);
+            masterCategory.Categories.Add(category2);
+            TestBudget.SaveChanges();
+
+            Assert.That(category.SortOrder, Is.EqualTo(initialCount));
+            Assert.That(category2.SortOrder, Is.EqualTo(initialCount + 1));
         }
     }
 }
