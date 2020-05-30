@@ -12,6 +12,12 @@ using System.Windows.Media;
 
 namespace OpenBudget.Presentation.Windows.Controls
 {
+
+    public enum PopupOpenPreference
+    {
+        Bottom,
+        Top
+    }
     public class PopupAdorner : Adorner
     {
         private VisualCollection _visuals;
@@ -67,14 +73,37 @@ namespace OpenBudget.Presentation.Windows.Controls
         {
             FrameworkElement container = AdornedElement.FindParent<VirtualizingStackPanel>();
             if (container == null)
-                return true;
+            {
+                container = AdornedElement.FindParent<Window>();
+            }
 
-            Point relativeLocation = AdornedElement.TranslatePoint(new Point(0, 0), container);
-            double remainingHeight = container.ActualHeight - (relativeLocation.Y + (AdornedElement as FrameworkElement).ActualHeight);
-            if (remainingHeight < _presenter.DesiredSize.Height)
-                return true;
-            else
-                return false;
+            if (container != null)
+            {
+                Point relativeLocation = AdornedElement.TranslatePoint(new Point(0, 0), container);
+                if (_openPreference == PopupOpenPreference.Top)
+                {
+                    //double heightAbove = container.ActualHeight - (relativeLocation.Y + (AdornedElement as FrameworkElement).ActualHeight);
+                    double heightAbove = relativeLocation.Y;
+                    if (heightAbove >= _presenter.DesiredSize.Height)
+                        return true;
+                    else
+                        return false;
+                }
+                else if(_openPreference == PopupOpenPreference.Bottom)
+                {
+                    double heightBelow = container.ActualHeight - (relativeLocation.Y + (AdornedElement as FrameworkElement).ActualHeight);
+                    if(heightBelow >= _presenter.DesiredSize.Height)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return true;
         }
 
         protected override Visual GetVisualChild(int index)
@@ -89,15 +118,16 @@ namespace OpenBudget.Presentation.Windows.Controls
             }
         }
 
-        private bool _isOpen = false;
+        private PopupOpenPreference _openPreference = PopupOpenPreference.Top;
 
         /// <summary>
         /// Brings the popup into view.
         /// </summary>
-        public void Show()
+        public void Show(PopupOpenPreference openPreference = PopupOpenPreference.Top)
         {
             if (!IsOpen)
             {
+                _openPreference = openPreference;
                 AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(AdornedElement);
                 adornerLayer.Add(this);
                 IsOpen = true;

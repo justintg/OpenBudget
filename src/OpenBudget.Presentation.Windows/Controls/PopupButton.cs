@@ -50,6 +50,15 @@ namespace OpenBudget.Presentation.Windows.Controls
         public static readonly DependencyProperty PopupTemplateProperty =
             DependencyProperty.Register("PopupTemplate", typeof(DataTemplate), typeof(PopupButton), new PropertyMetadata(null));
 
+        public PopupOpenPreference OpenPreference
+        {
+            get { return (PopupOpenPreference)GetValue(OpenPreferenceProperty); }
+            set { SetValue(OpenPreferenceProperty, value); }
+        }
+
+        public static readonly DependencyProperty OpenPreferenceProperty =
+            DependencyProperty.Register("OpenPreference", typeof(PopupOpenPreference), typeof(PopupButton), new PropertyMetadata(PopupOpenPreference.Top));
+
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
@@ -81,7 +90,7 @@ namespace OpenBudget.Presentation.Windows.Controls
             bool newValue = (bool)e.NewValue;
             if (newValue)
             {
-                popupButton._popup.Show();
+                popupButton._popup.Show(popupButton.OpenPreference);
                 popupButton.RaiseCategoryRowEditorOpened();
                 App.Current.Dispatcher.InvokeAsync(() =>
                 {

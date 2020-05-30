@@ -1,5 +1,14 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:OpenBudget.Presentation.Windows.Controls">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    
     <Color x:Key="BudgetMenuColor">#119EDA</Color>
     <SolidColorBrush x:Key="BudgetMenuBrush" Color="{StaticResource BudgetMenuColor}" />
+
+    <Style x:Key="MetroPopupButtonStyle" TargetType="{x:Type controls:PopupButton}" BasedOn="{StaticResource MahApps.Styles.Button}" />
 </ResourceDictionary>
