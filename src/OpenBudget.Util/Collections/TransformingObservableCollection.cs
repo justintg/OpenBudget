@@ -129,6 +129,14 @@ namespace OpenBudget.Util.Collections
             CollectionChanged?.Invoke(this, args);
         }
 
+        public void ForceSort()
+        {
+            if (_comparison != null)
+            {
+                Sort(_comparison);
+            }
+        }
+
         /// <summary>
         /// Checks to make sure all items are created, if a filter is applied it checks the predicate
         /// before creating and also checks if any items need to be removed

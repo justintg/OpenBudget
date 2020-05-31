@@ -6,7 +6,8 @@
     xmlns:trxGrid="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid"
     xmlns:budEdit="clr-namespace:OpenBudget.Presentation.Windows.Controls.BudgetEditor"
     xmlns:controls="clr-namespace:OpenBudget.Presentation.Windows.Controls"
-    xmlns:vmTrx="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application">
+    xmlns:vmTrx="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application"
+    xmlns:dd="urn:gong-wpf-dragdrop">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/OpenBudget;component/Themes/Converters.xaml" />
     </ResourceDictionary.MergedDictionaries>
@@ -487,6 +488,10 @@
     <Style TargetType="{x:Type budEdit:BudgetEditorMasterCategoryRow}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="ItemsSource" Value="{Binding Categories}" />
+        <Setter Property="dd:DragDrop.IsDragSource" Value="True" />
+        <Setter Property="dd:DragDrop.IsDropTarget" Value="True" />
+        <Setter Property="dd:DragDrop.DropHandler" Value="{Binding RelativeSource={RelativeSource Self}}" />
+        <Setter Property="dd:DragDrop.UseDefaultDragAdorner" Value="True" />
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
