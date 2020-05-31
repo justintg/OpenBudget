@@ -492,6 +492,7 @@
         <Setter Property="dd:DragDrop.IsDropTarget" Value="True" />
         <Setter Property="dd:DragDrop.DropHandler" Value="{Binding RelativeSource={RelativeSource Self}}" />
         <Setter Property="dd:DragDrop.UseDefaultDragAdorner" Value="True" />
+        <Setter Property="dd:DragDrop.ShowAlwaysDropTargetAdorner" Value="True" />
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
@@ -532,7 +533,8 @@
                                 </DataTemplate>
                             </controls:PopupButton.ContentTemplate>
                         </controls:PopupButton>
-                        <ItemsPresenter Grid.Row="1" />
+
+                        <ItemsPresenter Grid.Row="1"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

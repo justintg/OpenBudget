@@ -1,7 +1,9 @@
 ﻿using GongSolutions.Wpf.DragDrop;
+using Microsoft.EntityFrameworkCore.Internal;
 using OpenBudget.Application.ViewModels.BudgetEditor;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,11 +19,20 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
-            if (dropInfo.Data is CategoryRowViewModel && dropInfo.TargetItem is CategoryRowViewModel)
+            if (dropInfo.Data is CategoryRowViewModel)
             {
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
                 dropInfo.Effects = DragDropEffects.Move;
+
+                if (this.DataContext is MasterCategoryRowViewModel viewModel)
+                {
+                    if (viewModel.Categories.Count == 0)
+                    {
+                        dropInfo.DropTargetAdorner = typeof(DropTargetEmptyInsertionAdorner);
+                    }
+                }
             }
+
         }
 
         void IDropTarget.Drop(IDropInfo dropInfo)
