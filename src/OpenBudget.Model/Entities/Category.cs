@@ -62,7 +62,10 @@ namespace OpenBudget.Model.Entities
             if (parent == null || !parent.Categories.IsLoaded)
                 throw new InvalidBudgetActionException("You cannot set the SortOrder of a Category when the MasterCategory's Category collection is not loaded.");
 
-            var categories = parent.Categories.OrderBy(c => c.SortOrder).ToList();
+            var pendingAdds = parent.Categories.GetPendingAdds();
+
+            var categories = parent.Categories.Where(c => !pendingAdds.Contains(c)).OrderBy(c => c.SortOrder).ToList();
+
             int index = categories.IndexOf(this);
             if (position == index) return;
             if (index >= 0)
@@ -77,6 +80,10 @@ namespace OpenBudget.Model.Entities
                     categories.Insert(position, this);
                     categories.RemoveAt(index + 1);
                 }
+            }
+            else
+            {
+                categories.Insert(position, this);
             }
 
             for (int i = 0; i < categories.Count; i++)

@@ -23,11 +23,21 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         void IDropTarget.Drop(IDropInfo dropInfo)
         {
-            var categoryRow = dropInfo.Data as CategoryRowViewModel;
-            categoryRow.Category.SetSortOrder(dropInfo.InsertIndex);
-            categoryRow.Category.Model.SaveChanges();
             if (this.DataContext is MasterCategoryRowViewModel viewModel)
             {
+                var categoryRow = dropInfo.Data as CategoryRowViewModel;
+                if (viewModel.MasterCategory.Categories.Contains(categoryRow.Category))
+                {
+                    categoryRow.Category.SetSortOrder(dropInfo.InsertIndex);
+                    categoryRow.Category.Model.SaveChanges();
+                }
+                else
+                {
+                    viewModel.MasterCategory.Categories.Add(categoryRow.Category);
+                    categoryRow.Category.SetSortOrder(dropInfo.InsertIndex);
+                    categoryRow.Category.Model.SaveChanges();
+                }
+
                 viewModel.Categories.ForceSort();
             }
         }
