@@ -331,7 +331,7 @@ namespace OpenBudget.Model.SQLite
         {
             using (GetContext(out SqliteContext context))
             {
-                return context.Categories.Where(c => c.Parent.EntityID == nameof(MasterCategory) && c.Parent.EntityID == masterCategoryId).Max(c => c.SortOrder);
+                return context.Categories.Where(c => c.Parent.EntityType == nameof(MasterCategory) && c.Parent.EntityID == masterCategoryId).Max(c => c.SortOrder);
             }
         }
     }

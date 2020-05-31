@@ -17,8 +17,11 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         void IDropTarget.DragOver(IDropInfo dropInfo)
         {
-            dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
-            dropInfo.Effects = DragDropEffects.Move;
+            if (dropInfo.Data is CategoryRowViewModel && dropInfo.TargetItem is CategoryRowViewModel)
+            {
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Insert;
+                dropInfo.Effects = DragDropEffects.Move;
+            }
         }
 
         void IDropTarget.Drop(IDropInfo dropInfo)
