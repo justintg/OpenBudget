@@ -48,7 +48,7 @@ namespace OpenBudget.Model.Tests
 
     public class BudgetSetup
     {
-        public static TestBudget CreateBudget(BudgetBackends budgetBackend)
+        public static TestBudget CreateBudget(BudgetBackends budgetBackend, Budget initialBudget = null)
         {
             TestBudget testBudget = null;
             if (budgetBackend == BudgetBackends.Memory)
@@ -73,7 +73,11 @@ namespace OpenBudget.Model.Tests
                 testBudget.EventStore = testBudget.BudgetStore.EventStore as TestEventStore;
             }
 
-            var initialBudget = InitializeBudget();
+            if (initialBudget == null)
+            {
+                initialBudget = InitializeBudget();
+            }
+
             testBudget.BudgetModel = BudgetModel.CreateNew(testBudget.DeviceID, testBudget.BudgetStore, initialBudget);
             testBudget.BudgetModel.SaveChanges();
 
@@ -82,6 +86,12 @@ namespace OpenBudget.Model.Tests
             testBudget.Budget = initialBudget;
 
             return testBudget;
+        }
+
+        public static BudgetModel CreateModelFrom(Budget initialBudget, BudgetBackends budgetBackend)
+        {
+            var testBudget = CreateBudget(budgetBackend, initialBudget);
+            return testBudget.BudgetModel;
         }
 
         private static Budget InitializeBudget()
