@@ -208,6 +208,7 @@ namespace OpenBudget.Model.Tests
             Assert.That(categoryAfter.SortOrder, Is.EqualTo(6));
         }
 
+        [Test]
         public void AttemptingToMoveACategoryWhenItsMasterCategory_CategoryCollectionIsNotLoadedShouldThrowException()
         {
             var masterCategory = TestBudget.Budget.MasterCategories[0];
@@ -219,6 +220,34 @@ namespace OpenBudget.Model.Tests
             Assert.That(categoryToMove.SortOrder, Is.EqualTo(1));
 
             Assert.Throws<InvalidBudgetActionException>(() => { masterCategory2.Categories.Add(categoryToMove); });
+        }
+
+        [Test]
+        public void CanUpdateSortOrder_Back_WithinOriginalParent()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+
+            var category = masterCategory.Categories[2];
+            category.SetSortOrder(1);
+
+            Assert.That(masterCategory.Categories[0].SortOrder, Is.EqualTo(0));
+            Assert.That(masterCategory.Categories[1].SortOrder, Is.EqualTo(2));
+            Assert.That(masterCategory.Categories[2].SortOrder, Is.EqualTo(1));
+            Assert.That(masterCategory.Categories[3].SortOrder, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void CanUpdateSortOrder_Forward_WithinOriginalParent()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+
+            var category = masterCategory.Categories[0];
+            category.SetSortOrder(2);
+
+            Assert.That(masterCategory.Categories[0].SortOrder, Is.EqualTo(1));
+            Assert.That(masterCategory.Categories[1].SortOrder, Is.EqualTo(0));
+            Assert.That(masterCategory.Categories[2].SortOrder, Is.EqualTo(2));
+            Assert.That(masterCategory.Categories[3].SortOrder, Is.EqualTo(3));
         }
     }
 }

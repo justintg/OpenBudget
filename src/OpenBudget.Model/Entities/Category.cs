@@ -4,6 +4,7 @@ using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -51,7 +52,40 @@ namespace OpenBudget.Model.Entities
         public int SortOrder
         {
             get { return GetProperty<int>(); }
-            set { SetProperty(value); }
+            internal set { SetProperty(value); }
+        }
+
+        public void SetSortOrder(int position)
+        {
+            EntityReference parentReference = GetProperty<EntityReference>(nameof(EntityBase.Parent));
+            MasterCategory parent = parentReference.ReferencedEntity as MasterCategory;
+            if (parent == null || !parent.Categories.IsLoaded)
+                throw new InvalidBudgetActionException("You cannot set the SortOrder of a Category when the MasterCategory's Category collection is not loaded.");
+
+            var categories = parent.Categories.OrderBy(c => c.SortOrder).ToList();
+            int index = categories.IndexOf(this);
+            if (position == index) return;
+            if (index >= 0)
+            {
+                if (position > index)
+                {
+                    categories.Insert(position, this);
+                    categories.RemoveAt(index);
+                }
+                else if (position < index)
+                {
+                    categories.Insert(position, this);
+                    categories.RemoveAt(index + 1);
+                }
+            }
+
+            for (int i = 0; i < categories.Count; i++)
+            {
+                if (categories[i].SortOrder != i)
+                {
+                    categories[i].SortOrder = i;
+                }
+            }
         }
 
         public CategoryMonthFinder CategoryMonths { get; private set; }

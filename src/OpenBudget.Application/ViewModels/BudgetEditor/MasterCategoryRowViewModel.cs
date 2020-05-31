@@ -24,6 +24,8 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 masterCategory.Categories,
                 c => { return new CategoryRowViewModel(this, c, _budgetEditor); },
                 cvm => { cvm.Dispose(); });
+
+            _categories.Sort(c => c.Category.SortOrder);
         }
 
         private MasterCategory _masterCategory;
