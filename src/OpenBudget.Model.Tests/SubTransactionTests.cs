@@ -10,20 +10,28 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Tests
 {
-    [TestFixture]
+    [TestFixture(BudgetBackends.Memory)]
+    [TestFixture(BudgetBackends.SQLite)]
     public class SubTransactionTests
     {
         TestBudget TestBudget;
+        private readonly BudgetBackends _backend;
+
+        public SubTransactionTests(BudgetBackends backend)
+        {
+            _backend = backend;
+        }
 
         [SetUp]
         public void Setup()
         {
-            TestBudget = BudgetSetup.CreateBudget();
+            TestBudget = BudgetSetup.CreateBudget(_backend);
         }
 
         [TearDown]
         public void Teardown()
         {
+            TestBudget?.BudgetModel?.Dispose();
             TestBudget = null;
         }
 

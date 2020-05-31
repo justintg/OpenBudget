@@ -8,12 +8,15 @@ using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Events;
 using OpenBudget.Model.BudgetStore;
+using NUnit.Framework.Internal;
+using Microsoft.Data.Sqlite;
+using OpenBudget.Model.SQLite;
 
 namespace OpenBudget.Model.Tests
 {
     public class TestBudget
     {
-        public MemoryBudgetStore BudgetStore;
+        public IBudgetStore BudgetStore;
         public TestEventStore EventStore;
         public BudgetModel BudgetModel;
         public Guid DeviceID;
@@ -37,15 +40,39 @@ namespace OpenBudget.Model.Tests
         }
     }
 
+    public enum BudgetBackends
+    {
+        Memory = 1,
+        SQLite = 2
+    }
+
     public class BudgetSetup
     {
-        public static TestBudget CreateBudget()
+        public static TestBudget CreateBudget(BudgetBackends budgetBackend)
         {
-            TestBudget testBudget = new TestBudget();
-            testBudget.DeviceID = Guid.NewGuid();
+            TestBudget testBudget = null;
+            if (budgetBackend == BudgetBackends.Memory)
+            {
+                testBudget = new TestBudget();
+                testBudget.DeviceID = Guid.NewGuid();
 
-            testBudget.EventStore = new TestEventStore();
-            testBudget.BudgetStore = new MemoryBudgetStore(testBudget.EventStore);
+                testBudget.EventStore = new TestEventStore(new MemoryEventStore());
+                testBudget.BudgetStore = new MemoryBudgetStore(testBudget.EventStore);
+            }
+            else if (budgetBackend == BudgetBackends.SQLite)
+            {
+                testBudget = new TestBudget();
+                testBudget.DeviceID = Guid.NewGuid();
+
+                SqliteConnectionStringBuilder builder = new SqliteConnectionStringBuilder();
+                builder.Mode = SqliteOpenMode.Memory;
+                builder.Cache = SqliteCacheMode.Shared;
+                builder.DataSource = "BudgetTests";
+
+                testBudget.BudgetStore = new SQLiteBudgetStore(testBudget.DeviceID, builder.ToString(), (es) => new TestEventStore(es));
+                testBudget.EventStore = testBudget.BudgetStore.EventStore as TestEventStore;
+            }
+
             var initialBudget = InitializeBudget();
             testBudget.BudgetModel = BudgetModel.CreateNew(testBudget.DeviceID, testBudget.BudgetStore, initialBudget);
             testBudget.BudgetModel.SaveChanges();

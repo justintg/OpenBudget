@@ -8,20 +8,28 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Tests
 {
-    [TestFixture]
+    [TestFixture(BudgetBackends.Memory)]
+    [TestFixture(BudgetBackends.SQLite)]
     public class SaveLoadTests
     {
         TestBudget TestBudget;
+        private readonly BudgetBackends _backend;
+
+        public SaveLoadTests(BudgetBackends backend)
+        {
+            _backend = backend;
+        }
 
         [SetUp]
         public void Setup()
         {
-            TestBudget = BudgetSetup.CreateBudget();
+            TestBudget = BudgetSetup.CreateBudget(_backend);
         }
 
         [TearDown]
         public void Teardown()
         {
+            TestBudget?.BudgetModel?.Dispose();
             TestBudget = null;
         }
 
@@ -119,7 +127,7 @@ namespace OpenBudget.Model.Tests
             otherAccount = TestBudget.BudgetModel.FindEntity<Account>(otherAccount.EntityID);
 
             Assert.That(transaction.Parent.EntityID, Is.EqualTo(otherAccount.EntityID));
-            
+
             parent.Transactions.LoadCollection();
             otherAccount.Transactions.LoadCollection();
             Assert.That(parent.Transactions.Select(t => t.EntityID), Has.No.Member(transaction.EntityID));

@@ -8,15 +8,29 @@ using System.Text;
 
 namespace OpenBudget.Model.Tests
 {
-    [TestFixture]
+    [TestFixture(BudgetBackends.Memory)]
+    [TestFixture(BudgetBackends.SQLite)]
     public class CategoryTests
     {
         TestBudget TestBudget;
+        private readonly BudgetBackends _backend;
+
+        public CategoryTests(BudgetBackends backend)
+        {
+            _backend = backend;
+        }
 
         [SetUp]
         public void Setup()
         {
-            TestBudget = BudgetSetup.CreateBudget();
+            TestBudget = BudgetSetup.CreateBudget(_backend);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            TestBudget?.BudgetModel?.Dispose();
+            TestBudget = null;
         }
 
         [Test]

@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Tests
 {
-    [TestFixture]
+    [TestFixture(BudgetBackends.Memory)]
+    [TestFixture(BudgetBackends.SQLite)]
     public class EntityBaseTests
     {
         TestBudget TestBudget;
@@ -17,15 +18,32 @@ namespace OpenBudget.Model.Tests
         Budget Budget;
         Account Account;
         List<ModelEvent> TestEvents;
+        private readonly BudgetBackends _backend;
+
+        public EntityBaseTests(BudgetBackends backend)
+        {
+            _backend = backend;
+        }
 
         [SetUp]
         public void Setup()
         {
-            TestBudget = BudgetSetup.CreateBudget();
+            TestBudget = BudgetSetup.CreateBudget(_backend);
             BudgetModel = TestBudget.BudgetModel;
             Budget = TestBudget.Budget;
             Account = Budget.Accounts[0];
             TestEvents = TestBudget.EventStore.TestEvents;
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            TestBudget?.BudgetModel?.Dispose();
+            TestBudget = null;
+            BudgetModel = null;
+            Budget = null;
+            Account = null;
+            TestEvents = null;
         }
 
         /// <summary>
@@ -67,14 +85,6 @@ namespace OpenBudget.Model.Tests
             Assert.That(Account.LastEventID, Is.EqualTo(accountCopy.LastEventID));
         }
 
-        [TearDown]
-        public void Teardown()
-        {
-            TestBudget = null;
-            BudgetModel = null;
-            Budget = null;
-            Account = null;
-            TestEvents = null;
-        }
+
     }
 }

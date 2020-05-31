@@ -12,15 +12,29 @@ using OpenBudget.Model.Util;
 
 namespace OpenBudget.Model.Tests
 {
-    [TestFixture]
+    [TestFixture(BudgetBackends.Memory)]
+    [TestFixture(BudgetBackends.SQLite)]
     public class TransactionTests
     {
         TestBudget TestBudget;
+        private readonly BudgetBackends _backend;
+
+        public TransactionTests(BudgetBackends backend)
+        {
+            _backend = backend;
+        }
 
         [SetUp]
         public void Setup()
         {
-            TestBudget = BudgetSetup.CreateBudget();
+            TestBudget = BudgetSetup.CreateBudget(_backend);
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            TestBudget?.BudgetModel?.Dispose();
+            TestBudget = null;
         }
 
         [Test]
@@ -479,12 +493,6 @@ namespace OpenBudget.Model.Tests
             var amountDenominatorChange = testEvent.Changes[nameof(TransactionSnapshot.Amount_Denominator)] as TypedFieldChange<int>;
             Assert.That(amountChange.TypedNewValue, Is.EqualTo(100 * 100));
             Assert.That(amountDenominatorChange.TypedNewValue, Is.EqualTo(100));
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            TestBudget = null;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace OpenBudget.Model.BudgetStore
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            //Nothing to dispose
         }
     }
 }

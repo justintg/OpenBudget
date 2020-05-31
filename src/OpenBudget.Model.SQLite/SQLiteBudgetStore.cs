@@ -14,6 +14,7 @@ namespace OpenBudget.Model.SQLite
         private SqliteConnection _connection;
         private SQLiteEventStore _eventStore;
         private SQLiteSnapshotStore _snapshotStore;
+        private IEventStore _decoratedEventStore;
 
         public SQLiteBudgetStore(Guid deviceId, string dbPath)
         {
@@ -24,6 +25,18 @@ namespace OpenBudget.Model.SQLite
 
             _eventStore = new SQLiteEventStore(_connection);
             _snapshotStore = new SQLiteSnapshotStore(_connectionString);
+        }
+
+        public SQLiteBudgetStore(Guid deviceId, string connectionString, Func<SQLiteEventStore, IEventStore> decorateStoreFunc)
+        {
+            _connectionString = connectionString;
+            _connection = new SqliteConnection(_connectionString);
+            _connection.Open();
+            EnsureTablesInitialized();
+
+            _eventStore = new SQLiteEventStore(_connection);
+            _snapshotStore = new SQLiteSnapshotStore(_connectionString);
+            _decoratedEventStore = decorateStoreFunc(_eventStore);
         }
 
         private static string DBPathToConnectionString(string dbPath)
@@ -54,7 +67,7 @@ namespace OpenBudget.Model.SQLite
             }
         }
 
-        public IEventStore EventStore => _eventStore;
+        public IEventStore EventStore => _decoratedEventStore ?? _eventStore;
 
         public ISnapshotStore SnapshotStore => _snapshotStore;
 

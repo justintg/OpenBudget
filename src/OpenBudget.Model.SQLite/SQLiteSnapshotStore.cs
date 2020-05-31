@@ -213,6 +213,11 @@ namespace OpenBudget.Model.SQLite
 
         public IDictionary<EntityReference, List<TChildSnapshot>> GetChildSnapshots<TChildSnapshot>(IReadOnlyList<EntityReference> parents) where TChildSnapshot : EntitySnapshot
         {
+            if (parents == null || parents.Count == 0)
+            {
+                return null;
+            }
+
             var parentTypes = parents.GroupBy(p => p.EntityType).ToDictionary(g => g.Key, g => g.Select(r => r.EntityID).ToList());
             Expression<Func<TChildSnapshot, bool>> whereExpr = null;
             foreach (var parentType in parentTypes)
@@ -332,7 +337,7 @@ namespace OpenBudget.Model.SQLite
             using (GetContext(out SqliteContext context))
             {
                 var maxSortOrder = context.Categories.Where(c => c.Parent.EntityType == nameof(MasterCategory) && c.Parent.EntityID == masterCategoryId).Max(c => (int?)c.SortOrder);
-                if(maxSortOrder == null || !maxSortOrder.HasValue)
+                if (maxSortOrder == null || !maxSortOrder.HasValue)
                 {
                     return -1;
                 }

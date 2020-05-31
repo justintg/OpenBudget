@@ -136,7 +136,12 @@ namespace OpenBudget.Model.Infrastructure.Entities
         {
             List<TEntity> cachedEntities = new List<TEntity>();
             List<string> missingEntityIds = new List<string>();
-            var references = _snapshotStore.GetChildSnapshotReferences<TSnapshot>(parentType, parentId);
+            var references = _snapshotStore.GetChildSnapshotReferences<TSnapshot>(parentType, parentId).ToList();
+            if (references.Count == 0)
+            {
+                return Enumerable.Empty<TEntity>();
+            }
+
             foreach (var reference in references)
             {
                 if (lookupRoot.TryGetValue(reference, out TEntity entity))

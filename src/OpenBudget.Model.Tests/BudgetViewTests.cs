@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Tests
 {
-    [TestFixture]
+    [TestFixture(BudgetBackends.Memory)]
+    [TestFixture(BudgetBackends.SQLite)]
     public class BudgetViewTests
     {
         private TestBudget TestBudget;
@@ -19,12 +20,30 @@ namespace OpenBudget.Model.Tests
         private Account _checking;
         private CategoryMonth _previousMonth;
         private CategoryMonth _thisMonth;
+        private readonly BudgetBackends _backend;
+
+        public BudgetViewTests(BudgetBackends backend)
+        {
+            _backend = backend;
+        }
 
         [SetUp]
         public void Setup()
         {
-            TestBudget = BudgetSetup.CreateBudget();
+            TestBudget = BudgetSetup.CreateBudget(_backend);
             InitViewTests();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            TestBudget?.BudgetModel?.Dispose();
+            TestBudget = null;
+            _electricity = null;
+            _previousMonth = null;
+            _thisMonth = null;
+            _mortgage = null;
+            _checking = null;
         }
 
         private Transaction AddTransaction(decimal amount, int month, Category category = null)
@@ -235,14 +254,6 @@ namespace OpenBudget.Model.Tests
 
             Assert.That(mortgageView.EndBalance, Is.EqualTo(75));
             Assert.That(electricityView.EndBalance, Is.EqualTo(-75));
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            TestBudget = null;
-            _mortgage = null;
-            _checking = null;
         }
     }
 }
