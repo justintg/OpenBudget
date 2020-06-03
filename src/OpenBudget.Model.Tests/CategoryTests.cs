@@ -263,5 +263,20 @@ namespace OpenBudget.Model.Tests
             Assert.That(masterCategory.Categories[2].SortOrder, Is.EqualTo(2));
             Assert.That(masterCategory.Categories[3].SortOrder, Is.EqualTo(3));
         }
+
+        [Test]
+        public void CanMoveCategoryAndSetPositionToZero()
+        {
+            var masterCategory = TestBudget.Budget.MasterCategories[0];
+            var masterCategory2 = TestBudget.Budget.MasterCategories[1];
+
+            var category = masterCategory2.Categories[0];
+
+            masterCategory.Categories.Add(category);
+            category.SetSortOrder(0);
+
+            TestBudget.SaveChanges();
+            Assert.That(category.SortOrder, Is.EqualTo(0));
+        }
     }
 }

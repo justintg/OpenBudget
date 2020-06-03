@@ -63,8 +63,10 @@ namespace OpenBudget.Model.Entities
                 throw new InvalidBudgetActionException("You cannot set the SortOrder of a Category when the MasterCategory's Category collection is not loaded.");
 
             var pendingAdds = parent.Categories.GetPendingAdds();
-
             var categories = parent.Categories.Where(c => !pendingAdds.Contains(c)).OrderBy(c => c.SortOrder).ToList();
+
+            //Sort categories by their original sort order before setting the order below
+            this.SortOrder = 0;
 
             int index = categories.IndexOf(this);
             if (position == index) return;

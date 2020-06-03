@@ -488,8 +488,6 @@
     <Style TargetType="{x:Type budEdit:BudgetEditorMasterCategoryRow}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="ItemsSource" Value="{Binding Categories}" />
-        <Setter Property="dd:DragDrop.IsDropTarget" Value="True" />
-        <Setter Property="dd:DragDrop.DropHandler" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type budEdit:BudgetEditor}}}" />
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
