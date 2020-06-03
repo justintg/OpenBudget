@@ -488,11 +488,8 @@
     <Style TargetType="{x:Type budEdit:BudgetEditorMasterCategoryRow}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="ItemsSource" Value="{Binding Categories}" />
-        <Setter Property="dd:DragDrop.IsDragSource" Value="True" />
         <Setter Property="dd:DragDrop.IsDropTarget" Value="True" />
-        <Setter Property="dd:DragDrop.DropHandler" Value="{Binding RelativeSource={RelativeSource Self}}" />
-        <Setter Property="dd:DragDrop.UseDefaultDragAdorner" Value="True" />
-        <Setter Property="dd:DragDrop.ShowAlwaysDropTargetAdorner" Value="True" />
+        <Setter Property="dd:DragDrop.DropHandler" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type budEdit:BudgetEditor}}}" />
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
@@ -503,7 +500,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:BudgetEditorMasterCategoryRow}">
-                    <Grid>
+                    <Grid Background="White">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -542,6 +539,7 @@
     </Style>
 
     <Style TargetType="{x:Type budEdit:BudgetEditor}">
+        <Setter Property="AllowDrop" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:BudgetEditor}">
@@ -658,7 +656,9 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </Grid>
-                            <ItemsControl Grid.Row="1" x:Name="PART_CategoryItemsControl" ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False">
+                            <ItemsControl Grid.Row="1" x:Name="PART_CategoryItemsControl" 
+                                          ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False"
+                                          >
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <budEdit:BudgetEditorMasterCategoryRow />
