@@ -6,6 +6,7 @@ using GongSolutions.Wpf.DragDrop.Utilities;
 using MahApps.Metro.Controls;
 using OpenBudget.Presentation.Windows.Controls.DragDrop;
 using OpenBudget.Presentation.Windows.Util;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -144,6 +145,27 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             if (DragType == BudgetEditorDragTypes.Category)
             {
                 UpdateDropTargetForCategoryDrag(categoryItemsControl, position);
+            }
+            else if (DragType == BudgetEditorDragTypes.MasterCategory)
+            {
+                UpdateDropTargetForMasterCategoryDrag(categoryItemsControl, position);
+            }
+        }
+
+        private void UpdateDropTargetForMasterCategoryDrag(ItemsControl categoryItemsControl, Point position)
+        {
+            var masterCategoryRow = categoryItemsControl.GetItemContainerAt(position).FindChild<BudgetEditorMasterCategoryRow>();
+            if (masterCategoryRow != null)
+            {
+                var masterCategoryRowPoint = categoryItemsControl.TranslatePoint(position, masterCategoryRow);
+                if (masterCategoryRowPoint.Y > masterCategoryRow.RenderSize.Height * 0.66)
+                {
+                    DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, true);
+                }
+                else
+                {
+                    DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, false);
+                }
             }
         }
 
