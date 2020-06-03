@@ -29,6 +29,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
         private EntityBase _parent;
 
         private ObservableCollection<T> _loadedEntities = new ObservableCollection<T>();
+
+        internal ObservableCollection<T> GetInternalCollection() => _loadedEntities;
+
         private HashSet<string> _loadedEntityIds = new HashSet<string>();
         private Dictionary<string, T> _knownMaterializedChildren = new Dictionary<string, T>();
 

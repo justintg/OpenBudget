@@ -21,10 +21,27 @@ namespace OpenBudget.Model.Tests
     public class LazyLoadingTests
     {
         private readonly BudgetBackends _backend;
+        private BudgetModel Model { get; set; }
+        private Budget InitialBudget { get; set; }
 
         public LazyLoadingTests(BudgetBackends backend)
         {
             _backend = backend;
+        }
+
+        [SetUp]
+        public void Setup()
+        {
+            InitialBudget = CreateInitialBudget();
+            Model = BudgetSetup.CreateModelFrom(InitialBudget, _backend);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            InitialBudget = null;
+            Model?.Dispose();
+            Model = null;
         }
 
         public static Budget CreateInitialBudget()
@@ -40,85 +57,63 @@ namespace OpenBudget.Model.Tests
         [Test]
         public void InitialBudget_IsAttachedAfterCreate()
         {
-            Budget initialBudget = CreateInitialBudget();
-            Account account = initialBudget.Accounts[0];
+            Account account = InitialBudget.Accounts[0];
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                Assert.That(model.EventStore.GetEvents().Count(), Is.EqualTo(2));
-                Assert.That(initialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
-                Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
-            }
+            Assert.That(Model.EventStore.GetEvents().Count(), Is.EqualTo(2));
+            Assert.That(InitialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
 
         [Test]
         public void InitialBudget_And_GetBudget_AreDifferentCopies()
         {
-            Budget initialBudget = CreateInitialBudget();
+            var getBudget = Model.GetBudget();
+            Assert.That(getBudget.Name, Is.EqualTo(InitialBudget.Name));
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var getBudget = model.GetBudget();
-                Assert.That(getBudget.Name, Is.EqualTo(initialBudget.Name));
-
-                getBudget.Name = "New Name";
-                Assert.That(getBudget, Is.Not.EqualTo(initialBudget));
-                Assert.That(getBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
-                Assert.That(getBudget.Name, Is.Not.EqualTo(initialBudget.Name));
-                Assert.That(initialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
-            }
+            getBudget.Name = "New Name";
+            Assert.That(getBudget, Is.Not.EqualTo(InitialBudget));
+            Assert.That(getBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
+            Assert.That(getBudget.Name, Is.Not.EqualTo(InitialBudget.Name));
+            Assert.That(InitialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
 
         [Test]
         public void ChangingBudgetName_SetsStateTo_AttachedHasChanges()
         {
-            Budget initialBudget = CreateInitialBudget();
+            var getBudget = Model.GetBudget();
+            getBudget.Name = "New Name";
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var getBudget = model.GetBudget();
-                getBudget.Name = "New Name";
-
-                Assert.That(getBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
-            }
+            Assert.That(getBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
         }
 
         [Test]
         public void ChangingBudgetName_RegistersEntityIn_UnitOfWork()
         {
-            Budget initialBudget = CreateInitialBudget();
+            var getBudget = Model.GetBudget();
+            getBudget.Name = "New Name";
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var getBudget = model.GetBudget();
-                getBudget.Name = "New Name";
-
-                UnitOfWork unitOfWork = model.GetCurrentUnitOfWork();
-                Assert.That(unitOfWork.ContainsEntity(getBudget), Is.True);
-            }
+            UnitOfWork unitOfWork = Model.GetCurrentUnitOfWork();
+            Assert.That(unitOfWork.ContainsEntity(getBudget), Is.True);
         }
 
         [Test]
         public void MultipleEntityCopies_ReceiveUpdates()
         {
-            Budget initialBudget = CreateInitialBudget();
+            var getBudget = Model.GetBudget();
+            getBudget.Name = "New Name";
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var getBudget = model.GetBudget();
-                getBudget.Name = "New Name";
-
-                model.SaveChanges();
-                Assert.That(initialBudget.Name, Is.EqualTo(getBudget.Name));
-                Assert.That(initialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
-                Assert.That(getBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
-            }
+            Model.SaveChanges();
+            Assert.That(InitialBudget.Name, Is.EqualTo(getBudget.Name));
+            Assert.That(InitialBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
+            Assert.That(getBudget.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
 
         [Test]
         public void ChildEntityCollection_Starts_Unattached()
         {
-            Budget initialBudget = CreateInitialBudget();
+            //Purposefully use local and unattached initial budget rather than the copy on
+            //the test fixture since that one was attached already
+            var initialBudget = CreateInitialBudget();
 
             Assert.That(initialBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Unattached));
         }
@@ -126,58 +121,38 @@ namespace OpenBudget.Model.Tests
         [Test]
         public void ChildEntityCollection_IsAttachedLoaded_AfterCreate()
         {
-            Budget initialBudget = CreateInitialBudget();
-
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                Assert.That(initialBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
-                Assert.That(initialBudget.Accounts.IsLoaded, Is.True);
-            }
+            Assert.That(InitialBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(InitialBudget.Accounts.IsLoaded, Is.True);
         }
 
         [Test]
         public void ChildEntityCollectionCopy_StartsUnloaded()
         {
-            Budget initialBudget = CreateInitialBudget();
+            var getBudget = Model.GetBudget();
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var getBudget = model.GetBudget();
-
-                Assert.That(getBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
-                Assert.That(getBudget.Accounts.IsLoaded, Is.False);
-            }
+            Assert.That(getBudget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(getBudget.Accounts.IsLoaded, Is.False);
         }
 
         [Test]
         public void UnloadedEntityCollectionThrowsException()
         {
-            Budget initialBudget = CreateInitialBudget();
+            var account = Model.FindEntity<Account>(InitialBudget.Accounts[0].EntityID);
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var account = model.FindEntity<Account>(initialBudget.Accounts[0].EntityID);
-
-                Assert.That(account.Transactions.IsLoaded, Is.False);
-                Assert.Throws<InvalidBudgetActionException>(() => { int count = account.Transactions.Count; });
-                Assert.Throws<InvalidBudgetActionException>(() => { foreach (var t in account.Transactions) { } });
-            }
+            Assert.That(account.Transactions.IsLoaded, Is.False);
+            Assert.Throws<InvalidBudgetActionException>(() => { int count = account.Transactions.Count; });
+            Assert.Throws<InvalidBudgetActionException>(() => { foreach (var t in account.Transactions) { } });
         }
 
         [Test]
         public void CanLoadChildEntityCollection()
         {
-            Budget initialBudget = CreateInitialBudget();
+            var getBudget = Model.GetBudget();
 
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var getBudget = model.GetBudget();
+            getBudget.Accounts.LoadCollection();
 
-                getBudget.Accounts.LoadCollection();
-
-                Assert.That(getBudget.Accounts.IsLoaded, Is.True);
-                Assert.That(getBudget.Accounts.Count, Is.EqualTo(1));
-            }
+            Assert.That(getBudget.Accounts.IsLoaded, Is.True);
+            Assert.That(getBudget.Accounts.Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -200,15 +175,11 @@ namespace OpenBudget.Model.Tests
             transaction.MakeSplitTransaction();
             var subTransaction = transaction.SubTransactions.Create();
 
-            Budget initialBudget = CreateInitialBudget();
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                initialBudget.Accounts[0].Transactions.Add(transaction);
-                model.SaveChanges();
+            InitialBudget.Accounts[0].Transactions.Add(transaction);
+            Model.SaveChanges();
 
-                Assert.That(subTransaction.IsAttached, Is.True);
-                Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
-            }
+            Assert.That(subTransaction.IsAttached, Is.True);
+            Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
 
         [Test]
@@ -216,22 +187,17 @@ namespace OpenBudget.Model.Tests
         {
             Transaction transaction = new Transaction();
 
-            Budget initialBudget = CreateInitialBudget();
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
+            InitialBudget.Accounts[0].Transactions.Add(transaction);
+            transaction.MakeSplitTransaction();
+            Model.SaveChanges();
 
-                initialBudget.Accounts[0].Transactions.Add(transaction);
-                transaction.MakeSplitTransaction();
-                model.SaveChanges();
+            Assert.That(transaction.IsAttached, Is.True);
+            Assert.That(transaction.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
 
-                Assert.That(transaction.IsAttached, Is.True);
-                Assert.That(transaction.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
+            var subTransaction = transaction.SubTransactions.Create();
 
-                var subTransaction = transaction.SubTransactions.Create();
-
-                Assert.That(subTransaction.IsAttached, Is.True);
-                Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
-            }
+            Assert.That(subTransaction.IsAttached, Is.True);
+            Assert.That(subTransaction.SaveState, Is.EqualTo(EntitySaveState.AttachedHasChanges));
         }
 
         [Test]
@@ -239,115 +205,102 @@ namespace OpenBudget.Model.Tests
         {
             Transaction transaction = new Transaction();
 
-            Budget initialBudget = CreateInitialBudget();
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
 
-                initialBudget.Accounts[0].Transactions.Add(transaction);
-                transaction.MakeSplitTransaction();
-                transaction.Amount = 100;
+            InitialBudget.Accounts[0].Transactions.Add(transaction);
+            transaction.MakeSplitTransaction();
+            transaction.Amount = 100;
 
-                var subTransaction = transaction.SubTransactions.Create();
-                subTransaction.Amount = 100;
-                model.SaveChanges();
+            var subTransaction = transaction.SubTransactions.Create();
+            subTransaction.Amount = 100;
+            Model.SaveChanges();
 
-                var accountCopy = model.FindEntity<Account>(initialBudget.Accounts[0].EntityID);
-                accountCopy.Transactions.LoadCollection();
-                var transactionCopy = accountCopy.Transactions[0];
-                var subTransactionCopy = transactionCopy.SubTransactions[0];
+            var accountCopy = Model.FindEntity<Account>(InitialBudget.Accounts[0].EntityID);
+            accountCopy.Transactions.LoadCollection();
+            var transactionCopy = accountCopy.Transactions[0];
+            var subTransactionCopy = transactionCopy.SubTransactions[0];
 
-                transactionCopy.Amount = 150;
-                subTransactionCopy.Amount = 150;
-                model.SaveChanges();
+            transactionCopy.Amount = 150;
+            subTransactionCopy.Amount = 150;
+            Model.SaveChanges();
 
-                Assert.That(subTransactionCopy.Amount, Is.EqualTo(subTransaction.Amount));
-                Assert.That(transactionCopy.Amount, Is.EqualTo(transaction.Amount));
+            Assert.That(subTransactionCopy.Amount, Is.EqualTo(subTransaction.Amount));
+            Assert.That(transactionCopy.Amount, Is.EqualTo(transaction.Amount));
 
-                var subTransactionCopy2 = transactionCopy.SubTransactions.Create();
-                subTransactionCopy.Amount = 75;
-                subTransactionCopy2.Amount = 75;
+            var subTransactionCopy2 = transactionCopy.SubTransactions.Create();
+            subTransactionCopy.Amount = 75;
+            subTransactionCopy2.Amount = 75;
 
-                model.SaveChanges();
-                Assert.That(transaction.SubTransactions, Has.Count.EqualTo(2));
+            Model.SaveChanges();
+            Assert.That(transaction.SubTransactions, Has.Count.EqualTo(2));
 
-                var subTransaction2 = transaction.SubTransactions.Where(st => st.EntityID == subTransactionCopy2.EntityID).Single();
+            var subTransaction2 = transaction.SubTransactions.Where(st => st.EntityID == subTransactionCopy2.EntityID).Single();
 
-                Assert.That(subTransactionCopy.Amount, Is.EqualTo(subTransaction.Amount));
-                Assert.That(subTransactionCopy2.Amount, Is.EqualTo(subTransaction2.Amount));
-                Assert.That(transactionCopy.Amount, Is.EqualTo(transaction.Amount));
-            }
+            Assert.That(subTransactionCopy.Amount, Is.EqualTo(subTransaction.Amount));
+            Assert.That(subTransactionCopy2.Amount, Is.EqualTo(subTransaction2.Amount));
+            Assert.That(transactionCopy.Amount, Is.EqualTo(transaction.Amount));
         }
 
         [Test]
         public void EntitiesInTree_ResolveToRightEntityAndNotAnotherCopy()
         {
             //First Case: Parent To Child
-            Budget initialBudget = CreateInitialBudget();
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var budget = model.GetBudget();
-                budget.Accounts.EnsureCollectionLoaded();
+            var budget = Model.GetBudget();
+            budget.Accounts.EnsureCollectionLoaded();
 
-                var account = budget.Accounts[0];
-                Assert.That(account.Parent, Is.EqualTo(budget));
+            var account = budget.Accounts[0];
+            Assert.That(account.Parent, Is.EqualTo(budget));
 
-                //Second Case: Child To Parent
-                account = model.FindEntity<Account>(account.EntityID);
-                budget = (Budget)account.Parent;
-                Assert.That(budget.Accounts.IsLoaded, Is.False);
-                budget.Accounts.EnsureCollectionLoaded();
-                Assert.That(budget.Accounts, Has.Member(account));
-            }
+            //Second Case: Child To Parent
+            account = Model.FindEntity<Account>(account.EntityID);
+            budget = (Budget)account.Parent;
+            Assert.That(budget.Accounts.IsLoaded, Is.False);
+            budget.Accounts.EnsureCollectionLoaded();
+            Assert.That(budget.Accounts, Has.Member(account));
         }
 
         [Test]
         public void ChildEntityCollections_EntitiesInsideAreAttached()
         {
-            Budget initialBudget = CreateInitialBudget();
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
-            {
-                var budget = model.GetBudget();
-                budget.Accounts.EnsureCollectionLoaded();
+            var budget = Model.GetBudget();
+            budget.Accounts.EnsureCollectionLoaded();
 
-                Assert.That(budget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
+            Assert.That(budget.Accounts.CollectionState, Is.EqualTo(EntityCollectionState.Attached));
 
-                Account account = new Account();
-                Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.Unattached));
+            Account account = new Account();
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.Unattached));
 
-                budget.Accounts.Add(account);
-                Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.UnattachedRegistered));
+            budget.Accounts.Add(account);
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.UnattachedRegistered));
 
-                model.SaveChanges();
-                Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
-            }
+            Model.SaveChanges();
+            Assert.That(account.SaveState, Is.EqualTo(EntitySaveState.AttachedNoChanges));
         }
 
         [Test]
         public void EntityCollection_ParentEventHasNoEffectWhenCollectionNotLoaded()
         {
-            Budget initialBudget = CreateInitialBudget();
-            using (var model = BudgetSetup.CreateModelFrom(initialBudget, _backend))
+            var budgetCopy = Model.GetBudget();
+            //budgetCopy.Accounts.EnsureCollectionLoaded();
+
+            Account account = new Account();
+            Transaction transaction = new Transaction();
+            account.Transactions.Add(transaction);
+            InitialBudget.Accounts.Add(account);
+            Model.SaveChanges();
+
+            var internalAccounts = budgetCopy.Accounts.GetInternalCollection();
+
+            Assert.That(internalAccounts.Count, Is.EqualTo(0));
+
+            //Check for a bug where EntityCollection loaded an entity when collection was not in
+            //loaded state and then a subsequent load would throw an exception.
+            Assert.That(() =>
             {
+                budgetCopy.Accounts.EnsureCollectionLoaded();
+            }, Throws.Nothing);
 
-                var budgetCopy = model.GetBudget();
-                //budgetCopy.Accounts.EnsureCollectionLoaded();
-
-                Account account = new Account();
-                Transaction transaction = new Transaction();
-                account.Transactions.Add(transaction);
-                initialBudget.Accounts.Add(account);
-                model.SaveChanges();
-
-                //Check for a bug where EntityCollection loaded an entity when collection was not in
-                //loaded state and then a subsequent load would throw an exception.
-                Assert.That(() =>
-                {
-                    budgetCopy.Accounts.EnsureCollectionLoaded();
-                }, Throws.Nothing);
-
-                Assert.That(budgetCopy.Accounts.Count, Is.EqualTo(2));
-                Assert.That(budgetCopy.Accounts[1].EntityID, Is.EqualTo(account.EntityID));
-            }
+            Assert.That(budgetCopy.Accounts.Count, Is.EqualTo(2));
+            Assert.That(budgetCopy.Accounts.Select(a => a.EntityID), Has.Member(account.EntityID));
         }
     }
 }
