@@ -178,6 +178,9 @@ namespace OpenBudget.Application.ViewModels
                 "Restaurants"
             }));
 
+            Budget.MasterCategories.Add(CreateCategory("Tests", Enumerable.Range(1, 10).Select(i => $"Test {i}").ToArray()));
+            Budget.MasterCategories.Add(CreateCategory("More Tests", Enumerable.Range(1, 10).Select(i => $"More Test {i}").ToArray()));
+
         }
 
         private MasterCategory CreateCategory(string name, string[] subCategories)

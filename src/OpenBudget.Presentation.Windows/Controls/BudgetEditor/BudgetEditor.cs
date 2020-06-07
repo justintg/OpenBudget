@@ -234,6 +234,8 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 if (distance.Length > 4.0)
                 {
                     _dragHandler.StartDrag();
+                    _dragHandler.DestroyDragAdorner();
+                    _dragHandler = null;
                 }
             }
         }
