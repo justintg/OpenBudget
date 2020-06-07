@@ -330,10 +330,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         private DragAdorner CreateDragAdorner()
         {
-            if (DragVisual == null)
-            {
-                DragVisual = CreateDragVisual();
-            }
+            DragVisual = CreateDragVisual();
 
             var rootElement = Window.GetWindow(DraggingUIElement).Content as UIElement;
             DragAdorner adorner = new DragAdorner(rootElement, DragVisual, new Point(-4, -4));
