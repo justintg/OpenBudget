@@ -38,6 +38,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         private ScrollBar _categoryItemsScrollBar;
 
         internal ItemsControl CategoryItemsControl => _categoryItemsControl;
+        internal ScrollViewer CategoryItemsScrollViewer => _categoryItemsScrollViewer;
 
         public override void OnApplyTemplate()
         {

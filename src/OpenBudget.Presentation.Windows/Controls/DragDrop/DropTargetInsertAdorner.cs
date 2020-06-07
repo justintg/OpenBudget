@@ -2,6 +2,7 @@
  * This code has been adapted from GongSolutions.WPF.DragDrop
  * Original source can be found here: https://github.com/punker76/gong-wpf-dragdrop
  */
+using MahApps.Metro.Controls;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -30,12 +31,12 @@ namespace OpenBudget.Presentation.Windows.Controls.DragDrop
             m_Triangle.Freeze();
         }
 
-        public DropTargetInsertAdorner(UIElement adornedElement, bool insertBelow) : base(adornedElement)
+        public DropTargetInsertAdorner(UIElement adornedElement, AdornerLayer adornerLayer, bool insertBelow) : base(adornedElement)
         {
             this.IsHitTestVisible = false;
             this.AllowDrop = false;
             this.SnapsToDevicePixels = true;
-            this.m_AdornerLayer = AdornerLayer.GetAdornerLayer(adornedElement);
+            this.m_AdornerLayer = adornerLayer;
             this.m_AdornerLayer.Add(this);
             InsertBelow = insertBelow;
         }

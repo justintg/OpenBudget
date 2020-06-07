@@ -4,11 +4,13 @@
  */
 using GongSolutions.Wpf.DragDrop.Utilities;
 using MahApps.Metro.Controls;
+using OpenBudget.Model.Entities;
 using OpenBudget.Presentation.Windows.Controls.DragDrop;
 using OpenBudget.Presentation.Windows.Util;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -58,8 +60,21 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             this.DragStartPosition = dragStartPosition;
         }
 
-        public BudgetEditor BudgetEditor { get; private set; }
+        private BudgetEditor _budgetEditor;
+        public BudgetEditor BudgetEditor
+        {
+            get { return _budgetEditor; }
+            private set
+            {
+                _budgetEditor = value;
+                if (_budgetEditor != null)
+                {
+                    DropTargetAdornerLayer = AdornerLayer.GetAdornerLayer(_budgetEditor);
+                }
+            }
+        }
 
+        public AdornerLayer DropTargetAdornerLayer { get; set; }
         public bool IsDragging { get; set; }
         public Point DragStartPosition { get; private set; }
         public BudgetEditorDragTypes DragType { get; private set; }
@@ -160,11 +175,11 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 var masterCategoryRowPoint = categoryItemsControl.TranslatePoint(position, masterCategoryRow);
                 if (masterCategoryRowPoint.Y > masterCategoryRow.RenderSize.Height * 0.66)
                 {
-                    DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, true);
+                    DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, DropTargetAdornerLayer, true);
                 }
                 else
                 {
-                    DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, false);
+                    DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, DropTargetAdornerLayer, false);
                 }
             }
         }
@@ -198,7 +213,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
             TargetMasterCategory = lastMasterCategory;
             InsertPosition = lastMasterCategory.ItemContainerGenerator.Items.Count;
-            DropTargetAdorner = new DropTargetInsertAdorner(lastMasterCategory, true);
+            DropTargetAdorner = new DropTargetInsertAdorner(lastMasterCategory, DropTargetAdornerLayer, true);
         }
 
         private void CategoryDragOverMasterCategoryHeader(BudgetEditorMasterCategoryRow masterCategoryRow, Point masterCategoryRowPoint)
@@ -210,7 +225,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 {
                     TargetMasterCategory = masterCategoryRow;
                     InsertPosition = 0;
-                    DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, false);
+                    DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, DropTargetAdornerLayer, false);
                 }
             }
             else
@@ -222,7 +237,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                     {
                         TargetMasterCategory = masterCategoryRow;
                         InsertPosition = 0;
-                        DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, false);
+                        DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, DropTargetAdornerLayer, false);
                     }
                 }
                 else
@@ -236,11 +251,11 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
                     if (length == 0)
                     {
-                        DropTargetAdorner = new DropTargetInsertAdorner(previousMasterCategory, true);
+                        DropTargetAdorner = new DropTargetInsertAdorner(previousMasterCategory, DropTargetAdornerLayer, true);
                     }
                     else
                     {
-                        DropTargetAdorner = new DropTargetInsertAdorner(lastCategory, true);
+                        DropTargetAdorner = new DropTargetInsertAdorner(lastCategory, DropTargetAdornerLayer, true);
                     }
                 }
             }
@@ -258,11 +273,11 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             if (isTargetNextRow)
             {
                 InsertPosition++;
-                DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, true);
+                DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, DropTargetAdornerLayer, true);
             }
             else
             {
-                DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, false);
+                DropTargetAdorner = new DropTargetInsertAdorner(categoryRow, DropTargetAdornerLayer, false);
             }
         }
 
@@ -333,7 +348,9 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             DragVisual = CreateDragVisual();
 
             var rootElement = Window.GetWindow(DraggingUIElement).Content as UIElement;
+            //var rootElement = DraggingUIElement.FindParent<ScrollViewer>();
             DragAdorner adorner = new DragAdorner(rootElement, DragVisual, new Point(-4, -4));
+            adorner.MaxAdornerPosX = BudgetEditor.CategoryItemsScrollViewer?.ActualWidth + BudgetEditor.TranslatePoint(new Point(), rootElement).X;
             return adorner;
         }
 

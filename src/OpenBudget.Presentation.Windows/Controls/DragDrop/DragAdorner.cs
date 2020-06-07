@@ -25,6 +25,8 @@ namespace OpenBudget.Presentation.Windows.Controls.DragDrop
 
         public DragDropEffects Effects { get; private set; }
 
+        public double? MaxAdornerPosX { get; set; }
+
         public Point MousePosition
         {
             get { return this.m_MousePosition; }
@@ -80,7 +82,7 @@ namespace OpenBudget.Presentation.Windows.Controls.DragDrop
             }
             else
             {
-                var maxAdornerPosX = this.AdornedElement.RenderSize.Width;
+                var maxAdornerPosX = MaxAdornerPosX ?? this.AdornedElement.RenderSize.Width;
                 var adornerPosRightX = (adornerMousePosition.X + this.Translation.X + adornerSize.Width);
                 if (adornerPosRightX > maxAdornerPosX)
                 {
