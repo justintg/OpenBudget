@@ -547,6 +547,10 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
                             <Grid Grid.Row="0">
                                 <Grid.ColumnDefinitions>
@@ -654,15 +658,21 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </Grid>
-                            <ItemsControl Grid.Row="1" x:Name="PART_CategoryItemsControl" 
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          x:Name="PART_CategoryItemsScrollViewer">
+                                <ItemsControl x:Name="PART_CategoryItemsControl" 
                                           ItemsSource="{TemplateBinding MasterCategories}" Focusable="False" IsTabStop="False"
                                           >
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <budEdit:BudgetEditorMasterCategoryRow />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <budEdit:BudgetEditorMasterCategoryRow />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                            <ScrollBar Grid.Row="1" Grid.Column="1" x:Name="PART_CategoryItemsScrollBar" />
                         </Grid>
                     </Border>
                 </ControlTemplate>

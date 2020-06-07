@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -33,6 +34,8 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         }
 
         private ItemsControl _categoryItemsControl;
+        private ScrollViewer _categoryItemsScrollViewer;
+        private ScrollBar _categoryItemsScrollBar;
 
         internal ItemsControl CategoryItemsControl => _categoryItemsControl;
 
@@ -41,6 +44,41 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             base.OnApplyTemplate();
 
             _categoryItemsControl = GetTemplateChild("PART_CategoryItemsControl") as ItemsControl;
+            _categoryItemsScrollViewer = GetTemplateChild("PART_CategoryItemsScrollViewer") as ScrollViewer;
+            _categoryItemsScrollBar = GetTemplateChild("PART_CategoryItemsScrollBar") as ScrollBar;
+            _categoryItemsScrollViewer.SizeChanged += CategoryItemsScrollViewer_SizeChanged;
+
+            BindScrollBarToContent();
+        }
+
+        private void BindScrollBarToContent()
+        {
+            _categoryItemsScrollBar.SetBinding(ScrollBar.MaximumProperty, (new Binding("ScrollableHeight") { Source = _categoryItemsScrollViewer, Mode = BindingMode.OneWay }));
+            _categoryItemsScrollBar.SetBinding(ScrollBar.ViewportSizeProperty, (new Binding("ViewportHeight") { Source = _categoryItemsScrollViewer, Mode = BindingMode.OneWay }));
+
+            _categoryItemsScrollBar.Scroll += (sender, e) =>
+            {
+                _categoryItemsScrollViewer.ScrollToVerticalOffset(e.NewValue);
+            };
+
+            _categoryItemsScrollViewer.ScrollChanged += (sender, e) =>
+            {
+                if (e.OriginalSource != _categoryItemsScrollViewer) return;
+
+                _categoryItemsScrollBar.Value = e.VerticalOffset;
+                _categoryItemsScrollViewer.ScrollToHorizontalOffset(e.HorizontalOffset);
+
+                if (e.ViewportHeight >= e.ExtentHeight)
+                {
+                    _categoryItemsScrollBar.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    _categoryItemsScrollBar.Visibility = Visibility.Visible;
+                }
+            };
+
+            _categoryItemsScrollViewer.ScrollToHome();
         }
 
         public IList<MasterCategoryRowViewModel> MasterCategories
@@ -88,10 +126,9 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         public static readonly DependencyProperty MonthMarginLeftProperty =
             MonthMarginLeftPropertyKey.DependencyProperty;
 
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        private void CategoryItemsScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            base.OnRenderSizeChanged(sizeInfo);
-            double totalWidth = sizeInfo.NewSize.Width - CategoryColumnWidth;
+            double totalWidth = e.NewSize.Width - CategoryColumnWidth;
 
             int numberOfColumns = MaxNumberOfColumns(totalWidth);
 
@@ -103,6 +140,11 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             {
                 viewModel.MakeNumberOfMonthsVisible(numberOfColumns);
             }
+        }
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            base.OnRenderSizeChanged(sizeInfo);
         }
 
         private int MaxNumberOfColumns(double totalWidth)
