@@ -19,5 +19,9 @@ namespace OpenBudget.Model.Infrastructure.Entities
         void ForceAddChild(EntityBase child);
         void EnsureContainsMaterializedChild(EntityBase child);
         IEnumerable<EntityBase> EnumerateUnattachedEntities();
+        IEnumerable<EntityBase> EnumerateChildren();
+        IList<EntityBase> GetPendingAdds();
+        bool IsLoaded { get; }
+        int IndexOf(EntityBase child);
     }
 }

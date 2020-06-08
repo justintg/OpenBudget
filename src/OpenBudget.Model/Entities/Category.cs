@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Entities.Generators;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Entities.Generators;
 using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
@@ -17,7 +18,7 @@ namespace OpenBudget.Model.Entities
         public int SortOrder { get; set; }
     }
 
-    public class Category : EntityBase<CategorySnapshot>
+    public class Category : EntityBase<CategorySnapshot>, ISortableEntity
     {
         public Category()
             : base(Guid.NewGuid().ToString())
@@ -57,104 +58,33 @@ namespace OpenBudget.Model.Entities
 
         public void SetSortOrder(int position)
         {
-            EntityReference parentReference = GetProperty<EntityReference>(nameof(EntityBase.Parent));
-            MasterCategory parent = parentReference.ReferencedEntity as MasterCategory;
-            if (parent == null || !parent.Categories.IsLoaded)
-                throw new InvalidBudgetActionException("You cannot set the SortOrder of a Category when the MasterCategory's Category collection is not loaded.");
-
-            var pendingAdds = parent.Categories.GetPendingAdds();
-            var categories = parent.Categories.Where(c => !pendingAdds.Contains(c)).OrderBy(c => c.SortOrder).ToList();
-
-            //Sort categories by their original sort order before setting the order below
-            this.SortOrder = 0;
-
-            int index = categories.IndexOf(this);
-            if (position == index) return;
-            if (index >= 0)
-            {
-                if (position > index)
-                {
-                    categories.Insert(position, this);
-                    categories.RemoveAt(index);
-                }
-                else if (position < index)
-                {
-                    categories.Insert(position, this);
-                    categories.RemoveAt(index + 1);
-                }
-            }
-            else
-            {
-                categories.Insert(position, this);
-            }
-
-            for (int i = 0; i < categories.Count; i++)
-            {
-                if (categories[i].SortOrder != i)
-                {
-                    categories[i].SortOrder = i;
-                }
-            }
+            SetSortOrderImpl(this, position);
         }
 
         public CategoryMonthFinder CategoryMonths { get; private set; }
-
-        internal override void BeforeSaveChanges(BudgetModel budgetModel)
-        {
-            base.BeforeSaveChanges(budgetModel);
-            DetermineSortOrder(budgetModel);
-        }
-
-        private void DetermineSortOrder(BudgetModel budgetModel)
-        {
-            if (!this.IsAttached)
-            {
-                DetermineSortOrderImpl();
-            }
-            else
-            {
-                if (this.CurrentEvent.Changes.ContainsKey(nameof(EntityBase.Parent)) &&
-                    !this.CurrentEvent.Changes.ContainsKey(nameof(Category.SortOrder)))
-                {
-                    DetermineSortOrderImpl();
-                }
-            }
-        }
-
-        private void DetermineSortOrderImpl()
-        {
-            var parent = Parent as MasterCategory;
-            if (parent.IsAttached)
-            {
-                if (parent.Categories.IsLoaded)
-                {
-                    SortOrder = parent.Categories.IndexOf(this);
-                }
-                else
-                {
-                    var pendingAdds = parent.Categories.GetPendingAdds();
-                    int pendingAddIndex = pendingAdds.IndexOf(this);
-                    if (pendingAddIndex == 0)
-                    {
-                        SortOrder = parent.Model.BudgetStore.SnapshotStore.GetCategoryMaxSortOrder(parent.EntityID) + 1;
-                    }
-                    else if (pendingAddIndex > 0)
-                    {
-                        Category first = pendingAdds[0];
-                        SortOrder = first.SortOrder + pendingAddIndex;
-                    }
-                }
-            }
-            else
-            {
-                SortOrder = parent.Categories.IndexOf(this);
-            }
-        }
 
         protected override void OnAttached(BudgetModel model)
         {
             base.OnAttached(model);
             CategoryMonths.AttachToModel(model);
+        }
+
+        void ISortableEntity.ForceSetSortOrder(int position)
+        {
+            SortOrder = position;
+        }
+
+        IEntityCollection ISortableEntity.GetParentCollection()
+        {
+            var parentReference = GetProperty<EntityReference>(nameof(EntityBase.Parent));
+            var masterCategory = parentReference?.ReferencedEntity as MasterCategory;
+            return masterCategory?.Categories;
+        }
+
+        int ISortableEntity.GetMaxSnapshotSortOrder(ISnapshotStore snapshotStore)
+        {
+            var parentReference = GetProperty<EntityReference>(nameof(EntityBase.Parent));
+            return snapshotStore.GetCategoryMaxSortOrder(parentReference.EntityID);
         }
     }
 }

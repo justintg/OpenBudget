@@ -252,9 +252,14 @@ namespace OpenBudget.Model.Infrastructure.Entities
         internal virtual void BeforeSaveChanges(BudgetModel budgetModel)
         {
             FormatCurrencyProperties(budgetModel);
-            foreach(var subEntity in _subEntities.Values)
+            foreach (var subEntity in _subEntities.Values)
             {
                 subEntity.BeforeSaveChanges(budgetModel);
+            }
+
+            if (this is ISortableEntity sortable)
+            {
+                DetermineSortOrder(budgetModel, sortable);
             }
         }
 
@@ -959,6 +964,96 @@ namespace OpenBudget.Model.Infrastructure.Entities
             foreach (var subEntity in _subEntities.Values)
             {
                 subEntity.LoadCollection();
+            }
+        }
+
+        private protected virtual void SetSortOrderImpl(ISortableEntity sortable, int position)
+        {
+            var parentCollection = sortable.GetParentCollection();
+
+            if (parentCollection == null || !parentCollection.IsLoaded)
+                throw new InvalidBudgetActionException("You cannot set the SortOrder when the parent collection is not loaded.");
+
+            var pendingAdds = parentCollection.GetPendingAdds();
+
+            //Sort categories by their original sort order before setting the order below
+            var sortedChildren = parentCollection.EnumerateChildren().Where(c => !pendingAdds.Contains(c)).Select(e => (ISortableEntity)e).OrderBy(e => e.SortOrder).ToList();
+
+            sortable.ForceSetSortOrder(0);
+
+            int index = sortedChildren.IndexOf(sortable);
+            if (position == index) return;
+            if (index >= 0)
+            {
+                if (position > index)
+                {
+                    sortedChildren.Insert(position, sortable);
+                    sortedChildren.RemoveAt(index);
+                }
+                else if (position < index)
+                {
+                    sortedChildren.Insert(position, sortable);
+                    sortedChildren.RemoveAt(index + 1);
+                }
+            }
+            else
+            {
+                sortedChildren.Insert(position, sortable);
+            }
+
+            for (int i = 0; i < sortedChildren.Count; i++)
+            {
+                if (sortedChildren[i].SortOrder != i)
+                {
+                    sortedChildren[i].ForceSetSortOrder(i);
+                }
+            }
+        }
+
+        private protected virtual void DetermineSortOrder(BudgetModel budgetModel, ISortableEntity sortable)
+        {
+            if (!this.IsAttached)
+            {
+                DetermineSortOrderImpl(budgetModel, sortable);
+            }
+            else
+            {
+                if (this.CurrentEvent.Changes.ContainsKey(nameof(EntityBase.Parent)) &&
+                    !this.CurrentEvent.Changes.ContainsKey(nameof(Category.SortOrder)))
+                {
+                    DetermineSortOrderImpl(budgetModel, sortable);
+                }
+            }
+        }
+
+        private protected virtual void DetermineSortOrderImpl(BudgetModel budgetModel, ISortableEntity sortable)
+        {
+            var parent = Parent;
+            var parentCollection = sortable.GetParentCollection();
+            if (parent.IsAttached)
+            {
+                if (parentCollection.IsLoaded)
+                {
+                    sortable.ForceSetSortOrder(parentCollection.IndexOf(this));
+                }
+                else
+                {
+                    var pendingAdds = parentCollection.GetPendingAdds().Select(e => (ISortableEntity)e).ToList();
+                    int pendingAddIndex = pendingAdds.IndexOf(sortable);
+                    if (pendingAddIndex == 0)
+                    {
+                        sortable.ForceSetSortOrder(sortable.GetMaxSnapshotSortOrder(budgetModel.BudgetStore.SnapshotStore) + 1);
+                    }
+                    else if (pendingAddIndex > 0)
+                    {
+                        ISortableEntity first = pendingAdds[0];
+                        sortable.ForceSetSortOrder(first.SortOrder + pendingAddIndex);
+                    }
+                }
+            }
+            else
+            {
+                sortable.ForceSetSortOrder(parentCollection.IndexOf(this));
             }
         }
         #endregion

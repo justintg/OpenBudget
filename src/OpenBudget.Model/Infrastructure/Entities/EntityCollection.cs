@@ -214,6 +214,8 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         public bool IsReadOnly => false;
 
+
+
         public T this[int index] { get => _loadedEntities[index]; set => throw new NotSupportedException(); }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged
@@ -350,8 +352,31 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected virtual void OnBeforeAddItem(T item)
         {
-
+            if (item is ISortableEntity sortable)
+            {
+                OnBeforeAddSortable(item, sortable);
+            }
         }
+
+        private void OnBeforeAddSortable(T item, ISortableEntity sortable)
+        {
+            if (item.IsAttached)  //Item is being moved
+            {
+                var parentCollection = sortable.GetParentCollection();
+                if (parentCollection == null || !parentCollection.IsLoaded)
+                {
+                    throw new InvalidBudgetActionException("You cannot move an entity when the previous parent collection is not loaded.");
+                }
+
+                var sortedChildren = parentCollection.EnumerateChildren().Where(c => c != item).Select(c => (ISortableEntity)c).ToList();
+                for (int i = 0; i < sortedChildren.Count; i++)
+                {
+                    sortedChildren[i].ForceSetSortOrder(i);
+                }
+            }
+        }
+
+        bool IEntityCollection.IsLoaded => IsLoaded;
 
         protected virtual void OnAfterAddItem(T item)
         {
@@ -436,6 +461,32 @@ namespace OpenBudget.Model.Infrastructure.Entities
             }
 
             _knownMaterializedChildren.Add(child.EntityID, (T)child);
+        }
+
+        IEnumerable<EntityBase> IEntityCollection.EnumerateChildren()
+        {
+            if (!IsLoaded)
+                throw new InvalidBudgetActionException("This operation is not supported when the EntityCollection is not loaded.");
+
+            foreach (var child in this)
+            {
+                yield return child;
+            }
+        }
+
+        IList<EntityBase> IEntityCollection.GetPendingAdds()
+        {
+            return GetPendingAdds().Select(c => (EntityBase)c).ToList();
+        }
+
+        int IEntityCollection.IndexOf(EntityBase child)
+        {
+            if (child is T typedChild)
+            {
+                return this.IndexOf(typedChild);
+            }
+
+            throw new InvalidOperationException();
         }
     }
 }

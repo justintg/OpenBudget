@@ -1,5 +1,4 @@
-﻿using OpenBudget.Model.Entities.Collections;
-using OpenBudget.Model.Events;
+﻿using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 using System;
@@ -18,18 +17,18 @@ namespace OpenBudget.Model.Entities
         public MasterCategory()
             : base(Guid.NewGuid().ToString())
         {
-            Categories = RegisterChildEntityCollection(new CategoryCollection(this, true));
+            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this, true));
         }
 
         internal MasterCategory(MasterCategorySnapshot snapshot) : base(snapshot)
         {
-            Categories = RegisterChildEntityCollection(new CategoryCollection(this));
+            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this));
         }
 
         internal MasterCategory(EntityCreatedEvent evt)
             : base(evt)
         {
-            Categories = RegisterChildEntityCollection(new CategoryCollection(this));
+            Categories = RegisterChildEntityCollection(new EntityCollection<Category>(this));
         }
 
         public string Name

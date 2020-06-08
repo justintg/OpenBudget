@@ -20,4 +20,8 @@
     <ProjectReference Include="..\OpenBudget.Util\OpenBudget.Util.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Entities\Collections\" />
+  </ItemGroup>
+
 </Project>
