@@ -347,5 +347,21 @@ namespace OpenBudget.Model.SQLite
                 }
             }
         }
+
+        public int GetMasterCategoryMaxSortOrder()
+        {
+            using (GetContext(out SqliteContext context))
+            {
+                var maxSortOrder = context.MasterCategories.Max(c => (int?)c.SortOrder);
+                if (maxSortOrder == null || !maxSortOrder.HasValue)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return maxSortOrder.Value;
+                }
+            }
+        }
     }
 }

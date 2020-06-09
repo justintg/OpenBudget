@@ -1,4 +1,5 @@
-﻿using OpenBudget.Model.Events;
+﻿using OpenBudget.Model.BudgetStore;
+using OpenBudget.Model.Events;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
 using System;
@@ -10,9 +11,10 @@ namespace OpenBudget.Model.Entities
     public class MasterCategorySnapshot : EntitySnapshot
     {
         public string Name { get; set; }
+        public int SortOrder { get; set; }
     }
 
-    public class MasterCategory : EntityBase<MasterCategorySnapshot>
+    public class MasterCategory : EntityBase<MasterCategorySnapshot>, ISortableEntity
     {
         public MasterCategory()
             : base(Guid.NewGuid().ToString())
@@ -37,6 +39,36 @@ namespace OpenBudget.Model.Entities
             set { SetProperty(value); }
         }
 
+        public int SortOrder
+        {
+            get { return GetProperty<int>(); }
+            internal set { SetProperty(value); }
+        }
+
+        public void SetSortOrder(int position)
+        {
+            SetSortOrderImpl(this, position);
+        }
+
         public EntityCollection<Category> Categories { get; private set; }
+
+        int ISortableEntity.SortOrder => SortOrder;
+
+        void ISortableEntity.ForceSetSortOrder(int position)
+        {
+            SortOrder = position;
+        }
+
+        int ISortableEntity.GetMaxSnapshotSortOrder(ISnapshotStore snapshotStore)
+        {
+            return snapshotStore.GetMasterCategoryMaxSortOrder();
+        }
+
+        IEntityCollection ISortableEntity.GetParentCollection()
+        {
+            var parentReference = GetProperty<EntityReference>(nameof(EntityBase.Parent));
+            var budget = parentReference?.ReferencedEntity as Budget;
+            return budget?.MasterCategories;
+        }
     }
 }

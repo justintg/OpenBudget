@@ -169,16 +169,20 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         private void UpdateDropTargetForMasterCategoryDrag(ItemsControl categoryItemsControl, Point position)
         {
-            var masterCategoryRow = categoryItemsControl.GetItemContainerAt(position).FindChild<BudgetEditorMasterCategoryRow>();
+            var masterCategoryContainer = categoryItemsControl.GetItemContainerAt(position);
+            var masterCategoryRow = masterCategoryContainer?.FindChild<BudgetEditorMasterCategoryRow>();
             if (masterCategoryRow != null)
             {
+                int masterCategoryRowIndex = categoryItemsControl.ItemContainerGenerator.IndexFromContainer(masterCategoryContainer);
                 var masterCategoryRowPoint = categoryItemsControl.TranslatePoint(position, masterCategoryRow);
                 if (masterCategoryRowPoint.Y > masterCategoryRow.RenderSize.Height * 0.66)
                 {
+                    InsertPosition = masterCategoryRowIndex + 1;
                     DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, DropTargetAdornerLayer, true);
                 }
                 else
                 {
+                    InsertPosition = masterCategoryRowIndex;
                     DropTargetAdorner = new DropTargetInsertAdorner(masterCategoryRow, DropTargetAdornerLayer, false);
                 }
             }
@@ -302,6 +306,10 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             if (DragType == BudgetEditorDragTypes.Category)
             {
                 TargetMasterCategory.HandleDrop(this);
+            }
+            else if (DragType == BudgetEditorDragTypes.MasterCategory)
+            {
+                BudgetEditor.HandleDrop(this);
             }
         }
 

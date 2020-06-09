@@ -28,6 +28,7 @@ namespace OpenBudget.Model.BudgetStore
 
         long GetAcountBalanceLongValue(string accountId);
         int GetCategoryMaxSortOrder(string masterCategoryId);
+        int GetMasterCategoryMaxSortOrder();
 
         VectorClock GetLastVectorClock();
         IDisposable StartSnapshotStoreBatch();

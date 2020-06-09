@@ -3,6 +3,7 @@
  * Original source can be found here: https://github.com/punker76/gong-wpf-dragdrop
  */
 using MahApps.Metro.Controls;
+using OpenBudget.Presentation.Windows.Controls.BudgetEditor;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;

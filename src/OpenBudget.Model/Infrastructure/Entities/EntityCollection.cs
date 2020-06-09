@@ -352,28 +352,6 @@ namespace OpenBudget.Model.Infrastructure.Entities
 
         protected virtual void OnBeforeAddItem(T item)
         {
-            if (item is ISortableEntity sortable)
-            {
-                OnBeforeAddSortable(item, sortable);
-            }
-        }
-
-        private void OnBeforeAddSortable(T item, ISortableEntity sortable)
-        {
-            if (item.IsAttached)  //Item is being moved
-            {
-                var parentCollection = sortable.GetParentCollection();
-                if (parentCollection == null || !parentCollection.IsLoaded)
-                {
-                    throw new InvalidBudgetActionException("You cannot move an entity when the previous parent collection is not loaded.");
-                }
-
-                var sortedChildren = parentCollection.EnumerateChildren().Where(c => c != item).Select(c => (ISortableEntity)c).ToList();
-                for (int i = 0; i < sortedChildren.Count; i++)
-                {
-                    sortedChildren[i].ForceSetSortOrder(i);
-                }
-            }
         }
 
         bool IEntityCollection.IsLoaded => IsLoaded;

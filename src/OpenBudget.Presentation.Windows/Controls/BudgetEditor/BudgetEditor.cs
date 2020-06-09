@@ -317,6 +317,20 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             _dragHandler.OnDrop(e);
         }
 
+        internal void HandleDrop(BudgetEditorDragDropHandler dropInfo)
+        {
+            if (dropInfo.DragType != BudgetEditorDragTypes.MasterCategory) throw new InvalidOperationException();
+
+            if (this.DataContext is BudgetEditorViewModel viewModel)
+            {
+                var masterCategoryRow = dropInfo.MasterCategoryRow.DataContext as MasterCategoryRowViewModel;
+                masterCategoryRow.MasterCategory.SetSortOrder(dropInfo.InsertPosition);
+                viewModel.BudgetModel.SaveChanges();
+
+                viewModel.MasterCategories.ForceSort();
+            }
+        }
+
         /*public bool CanStartDrag(IDragInfo dragInfo)
         {
             var hitTest = VisualTreeHelper.HitTest(dragInfo.VisualSource, dragInfo.DragStartPosition);
