@@ -188,21 +188,64 @@ namespace OpenBudget.Util.Collections
                 ResetCollection();
                 return;
             }
-            List<TTransformed> newItems = new List<TTransformed>();
-            List<Tuple<int, TTransformed>> removedItems = new List<Tuple<int, TTransformed>>();
-            if (e.NewItems != null)
+            else if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                foreach (TSource source in e.NewItems)
+                List<TTransformed> newItems = new List<TTransformed>();
+                List<Tuple<int, TTransformed>> removedItems = new List<Tuple<int, TTransformed>>();
+                if (e.NewItems != null)
                 {
-                    TTransformed newTransformed = AddSource(source);
+                    foreach (TSource source in e.NewItems)
+                    {
+                        TTransformed newTransformed = AddSource(source);
+                    }
                 }
             }
-
-            if (e.OldItems != null)
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                foreach (TSource source in e.OldItems)
+                if (e.OldItems != null)
                 {
-                    RemoveSource(source);
+                    foreach (TSource source in e.OldItems)
+                    {
+                        RemoveSource(source);
+                    }
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Replace)
+            {
+                if (_comparer == null)
+                {
+                    TSource source = (TSource)e.NewItems[0];
+
+                    TTransformed transformed = TransformSource(source);
+
+                    _transformedCollection[e.NewStartingIndex] = transformed;
+
+                    TSource removedSource = (TSource)e.OldItems[0];
+                    TTransformed oldTransformed = DestroySource(source);
+
+                    var newItems = new List<TTransformed>(new[] { transformed });
+                    var oldItems = new List<TTransformed>(new[] { oldTransformed });
+
+                    NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItems, oldItems, e.NewStartingIndex);
+                    CollectionChanged?.Invoke(this, args);
+                }
+                else
+                {
+                    if (e.NewItems != null)
+                    {
+                        foreach (TSource source in e.NewItems)
+                        {
+                            TTransformed newTransformed = AddSource(source);
+                        }
+                    }
+
+                    if (e.OldItems != null)
+                    {
+                        foreach (TSource source in e.OldItems)
+                        {
+                            RemoveSource(source);
+                        }
+                    }
                 }
             }
         }
@@ -214,9 +257,8 @@ namespace OpenBudget.Util.Collections
                 return null;
             }
 
-            var transformed = _onAddAction(source);
+            TTransformed transformed = TransformSource(source);
 
-            _mapping.Add(source, transformed);
             if (_comparer != null)
             {
                 int index = _transformedCollection.BinarySearch(transformed, _comparer);
@@ -236,6 +278,19 @@ namespace OpenBudget.Util.Collections
                 CollectionChanged?.Invoke(this, args);
             }
 
+            return transformed;
+        }
+
+        private TTransformed TransformSource(TSource source)
+        {
+            TTransformed transformed = default(TTransformed);
+
+            if (!_mapping.TryGetValue(source, out transformed))
+            {
+                transformed = _onAddAction(source);
+                _mapping.Add(source, transformed);
+            }
+
             if (_listenForChanges && transformed is INotifyPropertyChanged propChanged)
             {
                 propChanged.PropertyChanged += Item_PropertyChanged;
@@ -249,7 +304,7 @@ namespace OpenBudget.Util.Collections
             ItemPropertyChanged?.Invoke(sender, e);
         }
 
-        private TTransformed RemoveSource(TSource source)
+        private TTransformed DestroySource(TSource source)
         {
             TTransformed transformed = null;
             if (!_mapping.TryGetValue(source, out transformed))
@@ -262,17 +317,23 @@ namespace OpenBudget.Util.Collections
                 propChanged.PropertyChanged -= Item_PropertyChanged;
             }
 
+            _mapping.Remove(source);
+            _onRemovedAction(transformed);
+
+            return transformed;
+        }
+
+        private void RemoveSource(TSource source)
+        {
+            TTransformed transformed = DestroySource(source);
+
             TTransformed[] removedItems = new TTransformed[] { transformed };
             int index = _transformedCollection.IndexOf(transformed);
 
             _transformedCollection.Remove(transformed);
-            _mapping.Remove(source);
-            _onRemovedAction(transformed);
 
             var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems, index);
             CollectionChanged?.Invoke(this, args);
-
-            return transformed;
         }
 
         public TTransformed this[int index]

@@ -106,10 +106,9 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 monthToDispose.Dispose();
             }
 
-            VisibleMonthViews.Clear();
             for (int i = 0; i < visibleMonthsCount; i++)
             {
-                VisibleMonthViews.Add(desiredMonths[i].desiredMonth);
+                VisibleMonthViews[i] = desiredMonths[i].desiredMonth;
             }
 
             _selectedMonth = VisibleMonthViews[0];
