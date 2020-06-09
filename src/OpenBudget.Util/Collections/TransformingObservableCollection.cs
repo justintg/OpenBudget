@@ -124,9 +124,26 @@ namespace OpenBudget.Util.Collections
             _comparison = comparison;
             _comparer = Comparer<TTransformed>.Create(_comparison);
 
+            var oldCollection = _transformedCollection.ToList();
             _transformedCollection.Sort(_comparison);
-            var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
-            CollectionChanged?.Invoke(this, args);
+
+            HashSet<int> changedIndices = new HashSet<int>();
+
+            for (int newIndex = 0; newIndex < _transformedCollection.Count; newIndex++)
+            {
+                int oldIndex = oldCollection.IndexOf(_transformedCollection[newIndex]);
+                if (newIndex != oldIndex)
+                {
+                    changedIndices.Add(newIndex);
+                }
+            }
+
+            foreach (var changedIndex in changedIndices)
+            {
+
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, _transformedCollection[changedIndex], oldCollection[changedIndex], changedIndex);
+                CollectionChanged?.Invoke(this, args);
+            }
         }
 
         public void ForceSort()
@@ -221,10 +238,18 @@ namespace OpenBudget.Util.Collections
                     _transformedCollection[e.NewStartingIndex] = transformed;
 
                     TSource removedSource = (TSource)e.OldItems[0];
-                    TTransformed oldTransformed = DestroySource(source);
+                    TTransformed removedTransformed = null;
+                    if (!_sourceCollection.Contains(removedSource))
+                    {
+                        removedTransformed = DestroySource(removedSource);
+                    }
+                    else
+                    {
+                        _mapping.TryGetValue(removedSource, out removedTransformed);
+                    }
 
                     var newItems = new List<TTransformed>(new[] { transformed });
-                    var oldItems = new List<TTransformed>(new[] { oldTransformed });
+                    var oldItems = new List<TTransformed>(new[] { removedTransformed });
 
                     NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItems, oldItems, e.NewStartingIndex);
                     CollectionChanged?.Invoke(this, args);

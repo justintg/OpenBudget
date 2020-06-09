@@ -12,16 +12,13 @@ namespace OpenBudget.Presentation.Windows.Converters
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var budgetEditor = values[1] as BudgetEditor;
-            if (values[0] is BudgetMonthViewModel budgetMonthViewModel)
+            if(values[0] is bool boolValue)
             {
-                if (!budgetMonthViewModel.IsFirstVisibleMonth)
+                if(boolValue)
                 {
-                    return new Thickness(budgetEditor.MonthMarginLeft, 0, 0, 0);
+                    return new Thickness();
                 }
-            }
-            else if (values[0] is CategoryMonthViewModel categoryMonthViewModel)
-            {
-                if (!categoryMonthViewModel.BudgetMonthViewModel.IsFirstVisibleMonth)
+                else
                 {
                     return new Thickness(budgetEditor.MonthMarginLeft, 0, 0, 0);
                 }

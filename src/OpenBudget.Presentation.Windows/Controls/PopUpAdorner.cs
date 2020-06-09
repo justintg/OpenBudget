@@ -1,4 +1,5 @@
-﻿using OpenBudget.Presentation.Windows.Controls.TransactionGrid;
+﻿using MahApps.Metro.Controls;
+using OpenBudget.Presentation.Windows.Controls.TransactionGrid;
 using OpenBudget.Presentation.Windows.Util;
 using System;
 using System.Collections.Generic;
@@ -89,10 +90,10 @@ namespace OpenBudget.Presentation.Windows.Controls
                     else
                         return false;
                 }
-                else if(_openPreference == PopupOpenPreference.Bottom)
+                else if (_openPreference == PopupOpenPreference.Bottom)
                 {
                     double heightBelow = container.ActualHeight - (relativeLocation.Y + (AdornedElement as FrameworkElement).ActualHeight);
-                    if(heightBelow >= _presenter.DesiredSize.Height)
+                    if (heightBelow >= _presenter.DesiredSize.Height)
                     {
                         return false;
                     }
@@ -119,6 +120,21 @@ namespace OpenBudget.Presentation.Windows.Controls
         }
 
         private PopupOpenPreference _openPreference = PopupOpenPreference.Top;
+        private AdornerLayer _adornerLayer = null;
+
+        private AdornerLayer FindAdornerLayer()
+        {
+            //var window = Window.GetWindow(AdornedElement);
+            //return window.FindChild<AdornerLayer>();
+
+            ScrollViewer parent = AdornedElement.FindParent<ScrollViewer>();
+            if (parent != null)
+            {
+                return AdornerLayer.GetAdornerLayer(parent);
+            }
+
+            return AdornerLayer.GetAdornerLayer(AdornedElement);
+        }
 
         /// <summary>
         /// Brings the popup into view.
@@ -128,8 +144,11 @@ namespace OpenBudget.Presentation.Windows.Controls
             if (!IsOpen)
             {
                 _openPreference = openPreference;
-                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(AdornedElement);
-                adornerLayer.Add(this);
+                if (_adornerLayer == null)
+                {
+                    _adornerLayer = FindAdornerLayer();
+                }
+                _adornerLayer.Add(this);
                 IsOpen = true;
             }
         }
@@ -140,8 +159,7 @@ namespace OpenBudget.Presentation.Windows.Controls
         {
             if (IsOpen)
             {
-                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(AdornedElement);
-                adornerLayer.Remove(this);
+                _adornerLayer.Remove(this);
                 IsOpen = false;
             }
         }

@@ -449,7 +449,7 @@
                         Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
                         <budEdit:BudgetEditorCategoryMonth.Margin>
                             <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
-                                <Binding />
+                                <Binding Path="BudgetMonthViewModel.IsFirstVisibleMonth"/>
                                 <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
                             </MultiBinding>
                         </budEdit:BudgetEditorCategoryMonth.Margin>
@@ -649,7 +649,7 @@
                                             <budEdit:BudgetEditorMonthHeader Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
                                                 <budEdit:BudgetEditorMonthHeader.Margin>
                                                     <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
-                                                        <Binding />
+                                                        <Binding Path="IsFirstVisibleMonth"/>
                                                         <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
                                                     </MultiBinding>
                                                 </budEdit:BudgetEditorMonthHeader.Margin>
