@@ -276,6 +276,11 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 var distance = Point.Subtract(newPoint, _dragHandler.DragStartPosition);
                 if (distance.Length > 4.0)
                 {
+                    if(_popupButton != null)
+                    {
+                        _popupButton.IsPopupOpen = false;
+                        _popupButton = null;
+                    }
                     _dragHandler.StartDrag();
                     _dragHandler.DestroyDragAdorner();
                     _dragHandler = null;

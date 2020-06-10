@@ -132,10 +132,12 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
         public void UpdateDrag(DragEventArgs e)
         {
             var categoryItemsControl = BudgetEditor.CategoryItemsControl;
-            var position = e.GetPosition(categoryItemsControl);
+            var categoryItemsScrollViewer = BudgetEditor.CategoryItemsScrollViewer;
+            var position = e.GetPosition(categoryItemsScrollViewer);
             if (position.Y < 0 || position.X < 0 || position.Y > categoryItemsControl.ActualHeight || position.X > categoryItemsControl.ActualWidth)
             {
                 DragAdorner = null;
+                DropTargetAdorner = null;
                 e.Effects = DragDropEffects.None;
                 e.Handled = true;
                 return;
