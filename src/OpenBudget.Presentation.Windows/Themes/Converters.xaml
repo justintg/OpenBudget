@@ -6,5 +6,6 @@
     <conv:MarginLeftConverter x:Key="MarginLeftConverter" />
     <conv:BudgetEditorMonthMarginConverter x:Key="BudgetEditorMonthMarginConverter" />
     <conv:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter" />
+    <conv:BooleanOrVisibilityConverter x:Key="BooleanOrVisibilityConveter" />
 
 </ResourceDictionary>

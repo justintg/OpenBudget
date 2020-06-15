@@ -56,6 +56,7 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         private void InitializeRelayCommands()
         {
             SaveCategoryNameCommand = new RelayCommand(SaveCategoryName);
+            SaveCategoryNoteCommand = new RelayCommand(SaveCategoryNote);
         }
 
         private bool _categoryEditorOpen;
@@ -108,6 +109,67 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 budgetModel.SaveChanges();
             }
             CategoryEditorOpen = false;
+        }
+
+        private bool _categoryNoteEditorOpen;
+
+        public bool CategoryNoteEditorOpen
+        {
+            get { return _categoryNoteEditorOpen; }
+            set
+            {
+                _categoryNoteEditorOpen = value;
+                if (_categoryNoteEditorOpen)
+                {
+                    OnCategoryNoteEditorOpen();
+                }
+                else
+                {
+                    OnCategoryNoteEditorClose();
+                }
+                RaisePropertyChanged();
+            }
+        }
+
+        private void OnCategoryNoteEditorClose()
+        {
+            NewNoteText = Category.Note;
+        }
+
+        private void OnCategoryNoteEditorOpen()
+        {
+            NewNoteText = Category.Note;
+        }
+
+        private string _newNoteText;
+
+        public string NewNoteText
+        {
+            get { return _newNoteText; }
+            set { _newNoteText = value; RaisePropertyChanged(); }
+        }
+
+        public RelayCommand SaveCategoryNoteCommand { get; private set; }
+
+        private void SaveCategoryNote()
+        {
+            if (NewNoteText != Category.Note)
+            {
+                var budgetModel = Category.Model;
+                var editorCategory = budgetModel.FindEntity<Category>(Category.EntityID);
+                editorCategory.Note = NewNoteText;
+                budgetModel.SaveChanges();
+            }
+            CategoryNoteEditorOpen = false;
+            RaisePropertyChanged(nameof(HasCategoryNote));
+        }
+
+        public bool HasCategoryNote
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace(Category.Note);
+            }
         }
 
         private TransformingObservableCollection<BudgetMonthViewModel, CategoryMonthViewModel> _categoryMonthViews;

@@ -7,7 +7,7 @@
     xmlns:budEdit="clr-namespace:OpenBudget.Presentation.Windows.Controls.BudgetEditor"
     xmlns:controls="clr-namespace:OpenBudget.Presentation.Windows.Controls"
     xmlns:vmTrx="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid;assembly=OpenBudget.Application"
-    xmlns:dd="urn:gong-wpf-dragdrop">
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/OpenBudget;component/Themes/Converters.xaml" />
     </ResourceDictionary.MergedDictionaries>
@@ -409,6 +409,59 @@
         </Grid>
     </DataTemplate>
 
+    <Style TargetType="{x:Type controls:PopupButton}" x:Key="NotePopupButton">
+        <Setter Property="Content" Value="{Binding}" />
+        <Setter Property="OpenPreference" Value="Bottom" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:PopupButton">
+                    <Border Background="{TemplateBinding Background}">
+                        <iconPacks:PackIconMaterialLight Kind="Note" DockPanel.Dock="Right" 
+                                                         VerticalAlignment="Center"
+                                                         Foreground="{TemplateBinding Foreground}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="PopupTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Grid Width="300" Margin="-10 -7 0 0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="155" />
+                        </Grid.RowDefinitions>
+
+                        <Path Grid.Row="0" Margin="3 0 0 -1" Data="M 0,15 L 15,0 30,15 Z" Fill="LightBlue">
+                        </Path>
+
+                        <Border Grid.Row="1" Background="LightBlue" CornerRadius="5">
+                            <Border.Effect>
+                                <DropShadowEffect Opacity="0.5"/>
+                            </Border.Effect>
+                        </Border>
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBox Margin="10 12 10 0" x:Name="focusElement"
+                                         Height="100"
+                                         Text="{Binding NewNoteText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         TextOptions.TextFormattingMode="Display"
+                                         TextWrapping="NoWrap"
+                                         VerticalScrollBarVisibility="Auto"
+                                         HorizontalScrollBarVisibility="Auto"
+                                         AcceptsReturn="True"/>
+                            <Button Content="Save Note" Grid.Row="1" Command="{Binding SaveCategoryNoteCommand}" HorizontalAlignment="Left" Margin="10 5 10 0" />
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
@@ -416,19 +469,42 @@
                 <ControlTemplate TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
                     <StackPanel Orientation="Horizontal">
                         <controls:PopupButton Content="{Binding}"
+                                              x:Name="CategoryHeaderPopupButton"
                                               Foreground="Black"
                                               Background="White"
                                               FontWeight="Normal"
                                               IsPopupOpen="{Binding CategoryEditorOpen, Mode=TwoWay}"
                                               Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"
                                               PopupTemplate="{StaticResource CategoryPopupTemplate}">
-                            <controls:PopupButton.ContentTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Category.Name}" 
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" 
-                                       FontWeight="{Binding FontWeight, RelativeSource={RelativeSource TemplatedParent}}"/>
-                                </DataTemplate>
-                            </controls:PopupButton.ContentTemplate>
+                            <controls:PopupButton.Template>
+                                <ControlTemplate TargetType="controls:PopupButton">
+                                    <DockPanel Background="White">
+                                        <controls:PopupButton DockPanel.Dock="Right"
+                                                              x:Name="CategoryNoteButton"
+                                                              Style="{StaticResource NotePopupButton}" 
+                                                              Margin="0 0 3 0"
+                                                              Foreground="Gray"
+                                                              IsPopupOpen="{Binding CategoryNoteEditorOpen, Mode=TwoWay}">
+                                            <controls:PopupButton.Visibility>
+                                                <MultiBinding Converter="{StaticResource BooleanOrVisibilityConveter}">
+                                                    <Binding Path="IsMouseOver" ElementName="CategoryHeaderPopupButton" />
+                                                    <Binding Path="IsPopupOpen" RelativeSource="{RelativeSource Self}" />
+                                                    <Binding Path="HasCategoryNote" />
+                                                </MultiBinding>
+                                            </controls:PopupButton.Visibility>
+                                        </controls:PopupButton>
+
+                                        <TextBlock Text="{Binding Category.Name}" 
+                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" 
+                                            FontWeight="{Binding FontWeight, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    </DockPanel>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="CategoryNoteButton" Property="Foreground" Value="Black" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </controls:PopupButton.Template>
                         </controls:PopupButton>
                         <ItemsPresenter />
                     </StackPanel>
