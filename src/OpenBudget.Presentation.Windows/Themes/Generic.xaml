@@ -494,12 +494,13 @@
                                             </controls:PopupButton.Visibility>
                                         </controls:PopupButton>
 
-                                        <TextBlock Text="{Binding Category.Name}" 
-                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" 
-                                            FontWeight="{Binding FontWeight, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                        <TextBlock Text="{Binding Category.Name}" />
                                     </DockPanel>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="CategoryNoteButton" Property="Foreground" Value="Black" />
+                                        </Trigger>
+                                        <Trigger Property="IsPopupOpen" SourceName="CategoryNoteButton" Value="True">
                                             <Setter TargetName="CategoryNoteButton" Property="Foreground" Value="Black" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
