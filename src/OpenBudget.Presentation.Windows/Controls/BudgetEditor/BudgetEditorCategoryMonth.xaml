@@ -12,10 +12,31 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <TextBox Text="{Binding AmountBudgeted, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Column="0" />
-        <TextBlock HorizontalAlignment="Right" Text="{Binding CategoryMonthView.TransactionsInMonth, StringFormat=C}" Grid.Column="1" />
-        <Border Grid.Column="2" BorderBrush="Black" BorderThickness="1">
-        <TextBlock HorizontalAlignment="Right" Text="{Binding CategoryMonthView.EndBalance, StringFormat=C}" Grid.Column="2" Foreground="Red"/>
+        <TextBox Text="{Binding AmountBudgeted, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Column="0"
+                 BorderBrush="Blue" BorderThickness="{Binding CategoryRowViewModel.IsFirstCategoryRow, Converter={StaticResource CategoryMonthTextBoxBorderConverter}}"/>
+        <Border Grid.Column="1" BorderThickness="{Binding CategoryRowViewModel.IsFirstCategoryRow, Converter={StaticResource CategoryMonthTextBlockBorderConverter}}">
+            <Border.BorderBrush>
+                <VisualBrush>
+                    <VisualBrush.Visual>
+                        <Rectangle StrokeDashArray="2 2" Stroke="Gray" StrokeThickness="1"
+                  Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
+                  Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Border.BorderBrush>
+            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0 0 5 0" Text="{Binding CategoryMonthView.TransactionsInMonth, StringFormat=C}" />
+        </Border>
+        <Border Grid.Column="2" BorderThickness="{Binding CategoryRowViewModel.IsFirstCategoryRow, Converter={StaticResource CategoryMonthTextBlockBorderConverter}}">
+            <Border.BorderBrush>
+                <VisualBrush>
+                    <VisualBrush.Visual>
+                        <Rectangle StrokeDashArray="2 2" Stroke="Gray" StrokeThickness="1"
+                  Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
+                  Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Border.BorderBrush>
+            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0 0 5 0" Text="{Binding CategoryMonthView.EndBalance, StringFormat=C}" Grid.Column="2" Foreground="Red"/>
         </Border>
     </Grid>
 </UserControl>

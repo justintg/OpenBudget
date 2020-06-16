@@ -7,5 +7,7 @@
     <conv:BudgetEditorMonthMarginConverter x:Key="BudgetEditorMonthMarginConverter" />
     <conv:DoubleToGridLengthConverter x:Key="DoubleToGridLengthConverter" />
     <conv:BooleanOrVisibilityConverter x:Key="BooleanOrVisibilityConveter" />
+    <conv:CategoryMonthBorderThicknessConverter x:Key="CategoryMonthTextBoxBorderConverter" FirstMonthThickness="1 1 1 1" NotFirstMonthThickness="1 0 1 1" />
+    <conv:CategoryMonthBorderThicknessConverter x:Key="CategoryMonthTextBlockBorderConverter" FirstMonthThickness="0 1 1 1" NotFirstMonthThickness="0 0 1 1" />
 
 </ResourceDictionary>

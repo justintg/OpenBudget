@@ -19,17 +19,20 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         }
 
         public BudgetMonthViewModel BudgetMonthViewModel { get; private set; }
+        public CategoryRowViewModel CategoryRowViewModel { get; private set; }
 
-        public CategoryMonthViewModel(BudgetMonthViewModel budgetMonthViewModel, CategoryMonthView monthView)
+        public CategoryMonthViewModel(BudgetMonthViewModel budgetMonthViewModel, CategoryRowViewModel categoryRowViewModel, CategoryMonthView monthView)
         {
             BudgetMonthViewModel = budgetMonthViewModel;
+            CategoryRowViewModel = categoryRowViewModel;
             CategoryMonthView = monthView;
             CategoryMonthView.PropertyChanged += MonthView_PropertyChanged;
         }
 
-        public CategoryMonthViewModel(BudgetMonthViewModel budgetMonthViewModel, MasterCategoryMonthView masterCategoryMonthView, string categoryId)
+        public CategoryMonthViewModel(BudgetMonthViewModel budgetMonthViewModel, CategoryRowViewModel categoryRowViewModel, MasterCategoryMonthView masterCategoryMonthView, string categoryId)
         {
             BudgetMonthViewModel = budgetMonthViewModel;
+            CategoryRowViewModel = categoryRowViewModel;
             RegisterForCallBack(masterCategoryMonthView, categoryId);
         }
 

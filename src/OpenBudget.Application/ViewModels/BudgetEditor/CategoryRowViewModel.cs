@@ -31,11 +31,11 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                     var categoryMonthView = masterView.Categories.Where(c => c.Category.EntityID == _category.EntityID).SingleOrDefault();
                     if (categoryMonthView != null)
                     {
-                        return new CategoryMonthViewModel(v, categoryMonthView);
+                        return new CategoryMonthViewModel(v, this, categoryMonthView);
                     }
                     else
                     {
-                        return new CategoryMonthViewModel(v, masterView, _category.EntityID);
+                        return new CategoryMonthViewModel(v, this, masterView, _category.EntityID);
                     }
                 },
                 cmv =>
@@ -52,6 +52,13 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             private set { _category = value; RaisePropertyChanged(); }
         }
 
+        private bool _isFirstCategoryRow;
+
+        public bool IsFirstCategoryRow
+        {
+            get { return _isFirstCategoryRow; }
+            set { _isFirstCategoryRow = value; RaisePropertyChanged(); }
+        }
 
         private void InitializeRelayCommands()
         {

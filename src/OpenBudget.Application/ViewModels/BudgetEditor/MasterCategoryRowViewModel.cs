@@ -3,6 +3,8 @@ using GalaSoft.MvvmLight.Command;
 using OpenBudget.Model.Entities;
 using OpenBudget.Util.Collections;
 using System;
+using System.Collections.Specialized;
+using System.Threading;
 
 namespace OpenBudget.Application.ViewModels.BudgetEditor
 {
@@ -26,6 +28,28 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 cvm => { cvm.Dispose(); });
 
             _categories.Sort(c => c.Category.SortOrder);
+            _categories.CollectionChanged += Categories_CollectionChanged;
+            UpdateIsFirstCategoryRow();
+        }
+
+        private void Categories_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdateIsFirstCategoryRow();
+        }
+
+        private void UpdateIsFirstCategoryRow()
+        {
+            for (int i = 0; i < _categories.Count; i++)
+            {
+                if (i == 0)
+                {
+                    _categories[i].IsFirstCategoryRow = true;
+                }
+                else
+                {
+                    _categories[i].IsFirstCategoryRow = false;
+                }
+            }
         }
 
         private MasterCategory _masterCategory;
