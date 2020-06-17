@@ -1,5 +1,6 @@
 ﻿using GongSolutions.Wpf.DragDrop;
 using GongSolutions.Wpf.DragDrop.Utilities;
+using MahApps.Metro.Controls;
 using OpenBudget.Application.ViewModels.BudgetEditor;
 using OpenBudget.Model.Entities;
 using OpenBudget.Presentation.Windows.Controls.DragDrop;
@@ -7,6 +8,7 @@ using OpenBudget.Presentation.Windows.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -177,9 +179,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 {
                     if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
                     {
-                        TraversalRequest request = new TraversalRequest(FocusNavigationDirection.Up);
-                        (e.OriginalSource as UIElement)?.MoveFocus(request);
-                        e.Handled = true;
+                        e.Handled = NavigatePreviousCategoryMonth(textBox, categoryRow, monthView);
                     }
                     else
                     {
@@ -188,6 +188,35 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 }
             }
             base.OnPreviewKeyDown(e);
+        }
+
+        private bool NavigatePreviousCategoryMonth(TextBox textBox, BudgetEditorCategoryRow row, BudgetEditorCategoryMonth monthView)
+        {
+            if (!(this.DataContext is BudgetEditorViewModel editorViewModel)) return false;
+            if (!(row.DataContext is CategoryRowViewModel rowViewModel)) return false;
+            if (!(monthView.DataContext is CategoryMonthViewModel monthViewModel)) return false;
+
+            if (rowViewModel == rowViewModel.MasterCategory.Categories.First() && rowViewModel.MasterCategory == editorViewModel.MasterCategories.First())
+            {
+                var previousCategoryMonth = FindPreviousCategoryMonth(editorViewModel, monthViewModel);
+                var previousTextBox = FindAmountBudgetedTextBox(previousCategoryMonth);
+                if (previousTextBox != null)
+                {
+                    previousTextBox.Focus();
+                    previousTextBox.BringIntoView();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                TraversalRequest request = new TraversalRequest(FocusNavigationDirection.Up);
+                textBox.MoveFocus(request);
+                return true;
+            }
         }
 
         private bool NavigateNextCategoryMonth(TextBox textBox, BudgetEditorCategoryRow row, BudgetEditorCategoryMonth monthView)
@@ -200,7 +229,18 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
             if (rowViewModel == rowViewModel.MasterCategory.Categories.Last() && rowViewModel.MasterCategory == editorViewModel.MasterCategories.Last())
             {
-                return false;
+                var nextCategoryMonth = FindNextCategoryMonth(editorViewModel, monthViewModel);
+                var nextTextBox = FindAmountBudgetedTextBox(nextCategoryMonth);
+                if (nextTextBox != null)
+                {
+                    nextTextBox.Focus();
+                    nextTextBox.BringIntoView();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
@@ -208,6 +248,63 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 textBox.MoveFocus(request);
                 return true;
             }
+        }
+
+        private TextBox FindAmountBudgetedTextBox(CategoryMonthViewModel categoryMonth)
+        {
+            var masterCategory = categoryMonth.CategoryRowViewModel.MasterCategory;
+            var category = categoryMonth.CategoryRowViewModel;
+
+            BudgetEditorMasterCategoryRow masterCategoryRow = CategoryItemsControl.ItemContainerGenerator.ContainerFromItem(masterCategory).FindChild<BudgetEditorMasterCategoryRow>();
+            BudgetEditorCategoryRow categoryRow = masterCategoryRow.ItemContainerGenerator.ContainerFromItem(category).FindChild<BudgetEditorCategoryRow>();
+            var categoryMonthControl = categoryRow.ItemContainerGenerator.ContainerFromItem(categoryMonth).FindChild<BudgetEditorCategoryMonth>();
+            return categoryMonthControl.FindName("AmountBudgetedTextbox") as TextBox;
+        }
+
+        private CategoryMonthViewModel FindPreviousCategoryMonth(BudgetEditorViewModel editorViewModel, CategoryMonthViewModel currentCategoryMonth)
+        {
+            var budgetMonthViewModel = currentCategoryMonth.BudgetMonthViewModel;
+            int index = editorViewModel.VisibleMonthViews.IndexOf(budgetMonthViewModel);
+            int count = editorViewModel.VisibleMonthViews.Count;
+
+            int nextMonthIndex;
+            if (index - 1 == -1)
+            {
+                nextMonthIndex = count - 1;
+            }
+            else
+            {
+                nextMonthIndex = index - 1;
+            }
+            BudgetMonthViewModel previousMonthViewModel = editorViewModel.VisibleMonthViews[nextMonthIndex];
+
+            var lastMasterCategory = editorViewModel.MasterCategories.Last(mc => mc.Categories.Count >= 1);
+            var lastCategory = lastMasterCategory.Categories[lastMasterCategory.Categories.Count - 1];
+
+            return lastCategory.CategoryMonthViews.Single(cmv => cmv.BudgetMonthViewModel == previousMonthViewModel);
+        }
+
+        private CategoryMonthViewModel FindNextCategoryMonth(BudgetEditorViewModel editorViewModel, CategoryMonthViewModel currentCategoryMonth)
+        {
+            var budgetMonthViewModel = currentCategoryMonth.BudgetMonthViewModel;
+            int index = editorViewModel.VisibleMonthViews.IndexOf(budgetMonthViewModel);
+            int count = editorViewModel.VisibleMonthViews.Count;
+
+            int nextMonthIndex;
+            if (index + 1 == count)
+            {
+                nextMonthIndex = 0;
+            }
+            else
+            {
+                nextMonthIndex = Math.Min(index + 1, count - 1);
+            }
+            BudgetMonthViewModel nextMonthViewModel = editorViewModel.VisibleMonthViews[nextMonthIndex];
+
+            var firstMasterCategory = editorViewModel.MasterCategories.First(mc => mc.Categories.Count >= 1);
+            var firstCategory = firstMasterCategory.Categories[0];
+
+            return firstCategory.CategoryMonthViews.Single(cmv => cmv.BudgetMonthViewModel == nextMonthViewModel);
         }
 
         private BudgetEditorCategoryMonth FindParent(TextBox textBox)
@@ -265,7 +362,16 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            _dragHandler = BudgetEditorDragDropHandler.CreateFromEvent(this, e);
+            var position = e.GetPosition(this);
+            if (position.X <= CategoryColumnWidth)
+            {
+                _dragHandler = BudgetEditorDragDropHandler.CreateFromEvent(this, e);
+            }
+            else
+            {
+                _dragHandler?.DestroyDragAdorner();
+                _dragHandler = null;
+            }
         }
 
         protected override void OnPreviewMouseMove(MouseEventArgs e)
@@ -276,7 +382,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 var distance = Point.Subtract(newPoint, _dragHandler.DragStartPosition);
                 if (distance.Length > 4.0)
                 {
-                    if(_popupButton != null)
+                    if (_popupButton != null)
                     {
                         _popupButton.IsPopupOpen = false;
                         _popupButton = null;

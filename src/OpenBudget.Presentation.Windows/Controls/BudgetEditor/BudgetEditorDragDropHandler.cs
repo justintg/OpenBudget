@@ -2,6 +2,7 @@
  * Parts of this code has been adapted from GongSolutions.WPF.DragDrop
  * Original source can be found here: https://github.com/punker76/gong-wpf-dragdrop
  */
+using GongSolutions.Wpf.DragDrop;
 using GongSolutions.Wpf.DragDrop.Utilities;
 using MahApps.Metro.Controls;
 using OpenBudget.Model.Entities;
@@ -134,6 +135,7 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             var categoryItemsControl = BudgetEditor.CategoryItemsControl;
             var categoryItemsScrollViewer = BudgetEditor.CategoryItemsScrollViewer;
             var position = e.GetPosition(categoryItemsScrollViewer);
+            var categoryItemsControlPosition = e.GetPosition(categoryItemsControl);
             if (position.Y < 0 || position.X < 0 || position.Y > categoryItemsControl.ActualHeight || position.X > categoryItemsControl.ActualWidth)
             {
                 DragAdorner = null;
@@ -151,10 +153,43 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             var movePosition = e.GetPosition(DragAdorner.AdornedElement);
             DragAdorner?.Move(movePosition, new Point(0, 1), ref AdornerMousePosition, ref AdornerSize);
 
-            UpdateDropTarget(categoryItemsControl, position);
+            Scroll(categoryItemsScrollViewer, position);
+
+            UpdateDropTarget(categoryItemsControl, categoryItemsControlPosition);
 
             e.Effects = DragDropEffects.Move;
             e.Handled = true;
+        }
+
+        private static void Scroll(ScrollViewer scrollViewer, Point position)
+        {
+            var scrollingMode = ScrollingMode.VerticalOnly;
+
+            var scrollMargin = Math.Min(scrollViewer.FontSize * 2, scrollViewer.ActualHeight / 2);
+
+            if (scrollingMode == ScrollingMode.Both || scrollingMode == ScrollingMode.HorizontalOnly)
+            {
+                if (position.X >= scrollViewer.ActualWidth - scrollMargin && scrollViewer.HorizontalOffset < scrollViewer.ExtentWidth - scrollViewer.ViewportWidth)
+                {
+                    scrollViewer.LineRight();
+                }
+                else if (position.X < scrollMargin && scrollViewer.HorizontalOffset > 0)
+                {
+                    scrollViewer.LineLeft();
+                }
+            }
+
+            if (scrollingMode == ScrollingMode.Both || scrollingMode == ScrollingMode.VerticalOnly)
+            {
+                if (position.Y >= scrollViewer.ActualHeight - scrollMargin && scrollViewer.VerticalOffset < scrollViewer.ExtentHeight - scrollViewer.ViewportHeight)
+                {
+                    scrollViewer.LineDown();
+                }
+                else if (position.Y < scrollMargin && scrollViewer.VerticalOffset > 0)
+                {
+                    scrollViewer.LineUp();
+                }
+            }
         }
 
         private void UpdateDropTarget(ItemsControl categoryItemsControl, Point position)

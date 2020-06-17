@@ -23,17 +23,18 @@
             </Grid.ColumnDefinitions>
             <TextBlock Grid.ColumnSpan="3" Text="{Binding BudgetMonthView.Date, StringFormat=MMMM yyyy}" HorizontalAlignment="Center"/>
 
-            <TextBlock Grid.Column="0" Grid.Row="1" Text="Income This Month" HorizontalAlignment="Right"/>
-            <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding BudgetMonthView.IncomeThisMonth, StringFormat=C}" HorizontalAlignment="Left"/>
 
-            <TextBlock Grid.Column="0" Grid.Row="2" Text="Budgeted This Month" HorizontalAlignment="Right"/>
-            <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding BudgetMonthView.BudgetedThisMonth, StringFormat=C}" HorizontalAlignment="Left"/>
+            <TextBlock Grid.Column="0" Grid.Row="1" Text="Not Budgeted Prev. Month" HorizontalAlignment="Right"/>
+            <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding BudgetMonthView.NotBudgetedPreviousMonth, StringFormat=C}" HorizontalAlignment="Left"/>
 
-            <TextBlock Grid.Column="0" Grid.Row="3" Text="Not Budgeted Prev. Month" HorizontalAlignment="Right"/>
-            <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding BudgetMonthView.NotBudgetedPreviousMonth, StringFormat=C}" HorizontalAlignment="Left"/>
+            <TextBlock Grid.Column="0" Grid.Row="2" Text="Available To Budget" HorizontalAlignment="Right"/>
+            <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding BudgetMonthView.AvailableToBudget, StringFormat=C}" HorizontalAlignment="Left"/>
 
-            <TextBlock Grid.Column="0" Grid.Row="4" Text="Available To Budget" HorizontalAlignment="Right"/>
-            <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding BudgetMonthView.AvailableToBudget, StringFormat=C}" HorizontalAlignment="Left"/>
+            <TextBlock Grid.Column="0" Grid.Row="3" Text="{Binding BudgetMonthView.Date, StringFormat=Income in {0:MMM}}" HorizontalAlignment="Right"/>
+            <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding BudgetMonthView.IncomeThisMonth, StringFormat=C}" HorizontalAlignment="Left"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="4" Text="{Binding BudgetMonthView.Date, StringFormat=Budgeted in {0:MMM}}" HorizontalAlignment="Right"/>
+            <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding BudgetMonthView.BudgetedThisMonth, StringFormat=C}" HorizontalAlignment="Left"/>
         </Grid>
     </Border>
 </UserControl>

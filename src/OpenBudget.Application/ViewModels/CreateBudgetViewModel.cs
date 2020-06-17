@@ -121,7 +121,7 @@ namespace OpenBudget.Application.ViewModels
             Budget.Payees.Add(payee);
             budgetModel.SaveChanges();
 
-            for (int i = 1; i <= 1000; i++)
+            /*for (int i = 1; i <= 1000; i++)
             {
                 OpenBudget.Model.Entities.Transaction transaction = new OpenBudget.Model.Entities.Transaction();
                 transaction.Amount = -i;
@@ -140,7 +140,7 @@ namespace OpenBudget.Application.ViewModels
 
             Budget.Accounts.Add(manyTransactions);
             Budget.Accounts.Add(manyMoreTransactions);
-            budgetModel.SaveChanges();
+            budgetModel.SaveChanges();*/
 
             List<ModelEvent> events = budgetModel.BudgetStore.EventStore.GetEvents().ToList();
             EventStreamHeader header = new EventStreamHeader(events[0].EventVector, events.Last().EventVector, default(Guid), default(Guid));

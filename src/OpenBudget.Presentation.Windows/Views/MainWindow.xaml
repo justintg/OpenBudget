@@ -9,7 +9,8 @@
         xmlns:vmBudget="clr-namespace:OpenBudget.Application.ViewModels.BudgetEditor;assembly=OpenBudget.Application"
         xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Views"
         mc:Ignorable="d"
-        Title="{Binding Header}" WindowState="Maximized" SaveWindowPosition="True">
+        Title="{Binding Header}" WindowState="Maximized" SaveWindowPosition="True"
+                      SnapsToDevicePixels="True">
     <Controls:MetroWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
