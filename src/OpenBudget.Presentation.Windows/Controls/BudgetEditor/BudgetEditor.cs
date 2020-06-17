@@ -410,22 +410,21 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
         private void DoDragOver(DragEventArgs e)
         {
-            _dragHandler.UpdateDrag(e);
+            _dragHandler?.UpdateDrag(e);
         }
 
         protected override void OnPreviewDragLeave(DragEventArgs e)
         {
             if (e.Data.GetData(typeof(BudgetEditorDragDropHandler).FullName) == null) return;
 
-            _dragHandler.DestroyDragAdorner();
-            e.Handled = true;
+            _dragHandler?.OnDragLeave(e);
         }
 
         protected override void OnPreviewDrop(DragEventArgs e)
         {
             if (e.Data.GetData(typeof(BudgetEditorDragDropHandler).FullName) == null) return;
 
-            _dragHandler.OnDrop(e);
+            _dragHandler?.OnDrop(e);
         }
 
         internal void HandleDrop(BudgetEditorDragDropHandler dropInfo)

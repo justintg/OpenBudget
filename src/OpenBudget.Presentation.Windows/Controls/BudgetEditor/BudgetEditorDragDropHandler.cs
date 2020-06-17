@@ -161,6 +161,14 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
             e.Handled = true;
         }
 
+        public void OnDragLeave(DragEventArgs e)
+        {
+            DragAdorner = null;
+            DropTargetAdorner = null;
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+        }
+
         private static void Scroll(ScrollViewer scrollViewer, Point position)
         {
             var scrollingMode = ScrollingMode.VerticalOnly;
