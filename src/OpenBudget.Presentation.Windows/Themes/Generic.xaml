@@ -362,15 +362,16 @@
                 <Border.Effect>
                     <DropShadowEffect Opacity="0.5"/>
                 </Border.Effect>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBox Margin="10 12 10 0" x:Name="focusElement" Text="{Binding NewMasterCategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding RenameMasterCategoryCommand}"/>
-                </Grid>
             </Border>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBox Margin="10 12 10 0" x:Name="focusElement" Text="{Binding NewMasterCategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding RenameMasterCategoryCommand}"/>
+            </Grid>
 
             <Path Grid.Row="1" Margin="0 -1 0 0" Data="M 10,0 L 16,10 22,0 Z" Fill="LightBlue">
                 <Path.Effect>
@@ -391,15 +392,16 @@
                 <Border.Effect>
                     <DropShadowEffect Opacity="0.5"/>
                 </Border.Effect>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBox Margin="10 12 10 0" Text="{Binding NewCategoryName}" x:Name="focusElement"/>
-                    <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding SaveCategoryNameCommand}"/>
-                </Grid>
             </Border>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBox Margin="10 12 10 0" Text="{Binding NewCategoryName}" x:Name="focusElement"/>
+                <Button Content="Save" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding SaveCategoryNameCommand}"/>
+            </Grid>
 
             <Path Grid.Row="1" Margin="0 -1 0 0" Data="M 10,0 L 16,10 22,0 Z" Fill="LightBlue">
                 <Path.Effect>
@@ -580,31 +582,32 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <controls:PopupButton Grid.Row="0"
+
+                        <Border Background="LightGray" Grid.Row="0">
+                            <controls:PopupButton 
                                                 FontWeight="Bold"  HorizontalAlignment="Left"
                                               IsPopupOpen="{Binding EditMasterCategoryEditor.IsEditorOpen, Mode=TwoWay}"
                                                 Content="{Binding}"
                                               PopupTemplate="{StaticResource MasterCategoryPopupTemplate}">
-                            <controls:PopupButton.ContentTemplate>
-                                <DataTemplate>
-                                    <Border Background="LightGray">
+                                <controls:PopupButton.ContentTemplate>
+                                    <DataTemplate>
                                         <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
                                             <controls:PopupButton DockPanel.Dock="Right" Focusable="False"  
                                                                   DataContext="{Binding AddCategoryEditor}"
-                                                                    Margin="5" Padding="0"
-                                                                    OpenPreference="Bottom"
-                                                                    IsPopupOpen="{Binding IsEditorOpen, Mode=TwoWay}"
+                                                                  Margin="3 3" Padding="0"
+                                                                  OpenPreference="Bottom"
+                                                                  IsPopupOpen="{Binding IsEditorOpen, Mode=TwoWay}"
                                                                   PopupTemplate="{StaticResource AddCategoryEditor}">
                                                 <Border Background="Beige" Width="15">
                                                     <TextBlock Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                 </Border>
                                             </controls:PopupButton>
-                                            <TextBlock Text="{Binding MasterCategory.Name}" />
+                                            <TextBlock Text="{Binding MasterCategory.Name}" VerticalAlignment="Center" />
                                         </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </controls:PopupButton.ContentTemplate>
-                        </controls:PopupButton>
+                                    </DataTemplate>
+                                </controls:PopupButton.ContentTemplate>
+                            </controls:PopupButton>
+                        </Border>
 
                         <ItemsPresenter Grid.Row="1"/>
                     </Grid>
