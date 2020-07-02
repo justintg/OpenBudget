@@ -1,0 +1,11 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Controls.BudgetEditor">
+    <ControlTemplate x:Key="BudgetEditorTemplate" TargetType="{x:Type local:BudgetEditor}">
+
+    </ControlTemplate>
+
+    <Style TargetType="{x:Type local:BudgetEditor}">
+        <Setter Property="Template" Value="{StaticResource BudgetEditorTemplate}" />
+    </Style>
+</ResourceDictionary>
