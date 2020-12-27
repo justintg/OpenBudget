@@ -13,6 +13,7 @@
     <SolidColorBrush x:Key="PositiveNumberBrush" Color="DarkGreen" />
     <SolidColorBrush x:Key="NegativeNumberBrush" Color="DarkRed" />
     <SolidColorBrush x:Key="CategoryRowMouseOverBrush" Color="LightGray" />
+    <SolidColorBrush x:Key="MasterCategoryRowBackgroundBrush" Color="LightGray" />
 
     <Style x:Key="MetroPopupButtonStyle" TargetType="{x:Type controls:PopupButton}" BasedOn="{StaticResource MahApps.Styles.Button}" />
 </ResourceDictionary>
