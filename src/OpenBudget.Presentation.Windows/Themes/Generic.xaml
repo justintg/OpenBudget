@@ -414,7 +414,7 @@
     <Style TargetType="{x:Type controls:PopupButton}" x:Key="NotePopupButton">
         <Setter Property="Content" Value="{Binding}" />
         <Setter Property="OpenPreference" Value="Bottom" />
-        <Setter Property="Background" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:PopupButton">
@@ -465,52 +465,59 @@
     </Style>
 
     <Style TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource CategoryRowMouseOverBrush}" />
+            </Trigger>
+        </Style.Triggers>
+        <Setter Property="Background" Value="White" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:BudgetEditorCategoryRow}">
-                    <StackPanel Orientation="Horizontal">
-                        <controls:PopupButton Content="{Binding}"
+                    <Border Background="{TemplateBinding Background}">
+                        <StackPanel Orientation="Horizontal">
+                            <controls:PopupButton Content="{Binding}"
                                               x:Name="CategoryHeaderPopupButton"
-                                              Foreground="Black"
-                                              Background="White"
+                                              Foreground="Black"                                             
                                               FontWeight="Normal"
                                               IsPopupOpen="{Binding CategoryEditorOpen, Mode=TwoWay}"
                                               Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"
                                               PopupTemplate="{StaticResource CategoryPopupTemplate}">
-                            <controls:PopupButton.Template>
-                                <ControlTemplate TargetType="controls:PopupButton">
-                                    <DockPanel Background="White">
-                                        <controls:PopupButton DockPanel.Dock="Right"
+                                <controls:PopupButton.Template>
+                                    <ControlTemplate TargetType="controls:PopupButton">
+                                        <DockPanel>
+                                            <controls:PopupButton DockPanel.Dock="Right"
                                                               x:Name="CategoryNoteButton"
                                                               Style="{StaticResource NotePopupButton}" 
                                                               Margin="0 0 3 0"
                                                               Foreground="Gray"
                                                               IsPopupOpen="{Binding CategoryNoteEditorOpen, Mode=TwoWay}">
-                                            <controls:PopupButton.Visibility>
-                                                <MultiBinding Converter="{StaticResource BooleanOrVisibilityConveter}">
-                                                    <Binding Path="IsMouseOver" ElementName="CategoryHeaderPopupButton" />
-                                                    <Binding Path="IsPopupOpen" RelativeSource="{RelativeSource Self}" />
-                                                    <Binding Path="HasCategoryNote" />
-                                                </MultiBinding>
-                                            </controls:PopupButton.Visibility>
-                                        </controls:PopupButton>
+                                                <controls:PopupButton.Visibility>
+                                                    <MultiBinding Converter="{StaticResource BooleanOrVisibilityConveter}">
+                                                        <Binding Path="IsMouseOver" ElementName="CategoryHeaderPopupButton" />
+                                                        <Binding Path="IsPopupOpen" RelativeSource="{RelativeSource Self}" />
+                                                        <Binding Path="HasCategoryNote" />
+                                                    </MultiBinding>
+                                                </controls:PopupButton.Visibility>
+                                            </controls:PopupButton>
 
-                                        <TextBlock Text="{Binding Category.Name}" />
-                                    </DockPanel>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="CategoryNoteButton" Property="Foreground" Value="Black" />
-                                        </Trigger>
-                                        <Trigger Property="IsPopupOpen" SourceName="CategoryNoteButton" Value="True">
-                                            <Setter TargetName="CategoryNoteButton" Property="Foreground" Value="Black" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </controls:PopupButton.Template>
-                        </controls:PopupButton>
-                        <ItemsPresenter />
-                    </StackPanel>
+                                            <TextBlock Text="{Binding Category.Name}" />
+                                        </DockPanel>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="CategoryNoteButton" Property="Foreground" Value="Black" />
+                                            </Trigger>
+                                            <Trigger Property="IsPopupOpen" SourceName="CategoryNoteButton" Value="True">
+                                                <Setter TargetName="CategoryNoteButton" Property="Foreground" Value="Black" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </controls:PopupButton.Template>
+                            </controls:PopupButton>
+                            <ItemsPresenter />
+                        </StackPanel>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
