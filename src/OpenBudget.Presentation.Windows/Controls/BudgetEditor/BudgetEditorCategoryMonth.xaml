@@ -5,7 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Controls.BudgetEditor" xmlns:controls="clr-namespace:OpenBudget.Presentation.Windows.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             RenderOptions.EdgeMode="Aliased"
+             RenderOptions.BitmapScalingMode="NearestNeighbor">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -14,6 +16,9 @@
         </Grid.ColumnDefinitions>
         <TextBox Text="{Binding AmountBudgeted, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Column="0"
                  x:Name="AmountBudgetedTextbox"
+                 RenderOptions.EdgeMode="Aliased"
+                 RenderOptions.BitmapScalingMode="NearestNeighbor"
+                 UseLayoutRounding="True"
                  BorderBrush="Blue" BorderThickness="{Binding CategoryRowViewModel.IsFirstCategoryRow, Converter={StaticResource CategoryMonthTextBoxBorderConverter}}"/>
 
         <controls:DashedBorder Grid.Column="1" BorderBrush="Gray" BorderThickness="{Binding CategoryRowViewModel.IsFirstCategoryRow, Converter={StaticResource CategoryMonthTextBlockBorderConverter}}">
