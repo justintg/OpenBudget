@@ -11,5 +11,6 @@
     <conv:CategoryMonthBorderThicknessConverter x:Key="CategoryMonthTextBlockBorderConverter" FirstMonthThickness="0 1 1 1" NotFirstMonthThickness="0 0 1 1" />
     <conv:DecimalToVisibilityConverter x:Key="PositiveDecimalVisibilityConverter" Zero="Visible" GreaterThanZero="Visible" LessThanZero="Collapsed" />
     <conv:DecimalToVisibilityConverter x:Key="NegativeDecimalVisibilityConverter" Zero="Collapsed" GreaterThanZero="Collapsed" LessThanZero="Visible" />
+    <conv:DecimalToBrushConverter x:Key="DecimalToBrushConverter" PositiveBrush="{StaticResource PositiveNumberBrush}" NegativeBrush="{StaticResource NegativeNumberBrush}"/>
 
 </ResourceDictionary>

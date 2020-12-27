@@ -10,5 +10,8 @@
     <Color x:Key="BudgetMenuColor">#119EDA</Color>
     <SolidColorBrush x:Key="BudgetMenuBrush" Color="{StaticResource BudgetMenuColor}" />
 
+    <SolidColorBrush x:Key="PositiveNumberBrush" Color="DarkGreen" />
+    <SolidColorBrush x:Key="NegativeNumberBrush" Color="DarkRed" />
+
     <Style x:Key="MetroPopupButtonStyle" TargetType="{x:Type controls:PopupButton}" BasedOn="{StaticResource MahApps.Styles.Button}" />
 </ResourceDictionary>
