@@ -674,7 +674,8 @@
                                 </controls:PopupButton>
                             </Border>
 
-                            <ItemsControl Grid.Column="1" ItemsSource="{Binding MasterCategoryMonthViews}">
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding MasterCategoryMonthViews}"
+                                          IsTabStop="False">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Horizontal" />
