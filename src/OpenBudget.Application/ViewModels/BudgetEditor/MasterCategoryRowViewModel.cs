@@ -38,7 +38,7 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                 //BudgetMonthView holds it's own copy of the Budget and Categories so you have to match them up based on entityId
                 //instead of ReferenceEquals on the instance
                 BudgetMonthView view = v.BudgetMonthView;
-                MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory.EntityID == _masterCategory.EntityID).Single();
+                MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory.EntityID == _masterCategory.EntityID).SingleOrDefault();
                 if (masterView != null)
                 {
                     return new MasterCategoryMonthViewModel(_budgetEditor, v, this, masterView);
