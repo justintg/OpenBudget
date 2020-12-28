@@ -502,7 +502,7 @@
                                                 </controls:PopupButton.Visibility>
                                             </controls:PopupButton>
 
-                                            <TextBlock Text="{Binding Category.Name}" />
+                                            <TextBlock Text="{Binding Category.Name}" VerticalAlignment="Center"/>
                                         </DockPanel>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
@@ -635,40 +635,67 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type budEdit:BudgetEditorMasterCategoryRow}">
-                    <Grid Background="White">
+                    <Grid Background="{TemplateBinding Background}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-
-                        <Border Background="{TemplateBinding Background}" Grid.Row="0">
-                            <controls:PopupButton 
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Background="{TemplateBinding Background}" Grid.Column="0">
+                                <controls:PopupButton 
                                                 FontWeight="Bold"  HorizontalAlignment="Left"
                                               IsPopupOpen="{Binding EditMasterCategoryEditor.IsEditorOpen, Mode=TwoWay}"
                                                 Content="{Binding}"
                                               PopupTemplate="{StaticResource MasterCategoryPopupTemplate}">
-                                <controls:PopupButton.ContentTemplate>
-                                    <DataTemplate>
-                                        <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
-                                            <controls:PopupButton DockPanel.Dock="Right" Focusable="False"  
+                                    <controls:PopupButton.ContentTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Width="{Binding CategoryColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=budEdit:BudgetEditor}}">
+                                                <controls:PopupButton DockPanel.Dock="Right" Focusable="False"  
                                                                   DataContext="{Binding AddCategoryEditor}"
                                                                   Margin="3 3" Padding="0"
                                                                   OpenPreference="Bottom"
                                                                   IsPopupOpen="{Binding IsEditorOpen, Mode=TwoWay}"
                                                                   PopupTemplate="{StaticResource AddCategoryEditor}">
-                                                <Border Background="Beige" Width="15">
-                                                    <TextBlock Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                                </Border>
-                                            </controls:PopupButton>
-                                            <ToggleButton Style="{StaticResource MasterCategoryExpandingToggleButton}" DockPanel.Dock="Left"
+                                                    <Border Background="Beige" Width="15">
+                                                        <TextBlock Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                </controls:PopupButton>
+                                                <ToggleButton Style="{StaticResource MasterCategoryExpandingToggleButton}" DockPanel.Dock="Left"
                                                           IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type budEdit:BudgetEditorMasterCategoryRow}}}"
                                                           VerticalAlignment="Stretch"/>
-                                            <TextBlock Text="{Binding MasterCategory.Name}" VerticalAlignment="Center" />
-                                        </DockPanel>
+                                                <TextBlock Text="{Binding MasterCategory.Name}" VerticalAlignment="Center" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </controls:PopupButton.ContentTemplate>
+                                </controls:PopupButton>
+                            </Border>
+
+                            <ItemsControl Grid.Column="1" ItemsSource="{Binding MasterCategoryMonthViews}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <budEdit:BudgetEditorMasterCategoryMonth 
+                                            Width="{Binding Path=MonthColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}">
+                                            <budEdit:BudgetEditorMasterCategoryMonth.Margin>
+                                                <MultiBinding Converter="{StaticResource BudgetEditorMonthMarginConverter}">
+                                                    <Binding Path="BudgetMonthViewModel.IsFirstVisibleMonth"/>
+                                                    <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}" />
+                                                </MultiBinding>
+                                            </budEdit:BudgetEditorMasterCategoryMonth.Margin>
+                                        </budEdit:BudgetEditorMasterCategoryMonth>
                                     </DataTemplate>
-                                </controls:PopupButton.ContentTemplate>
-                            </controls:PopupButton>
-                        </Border>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+
                         <Grid Grid.Row="1">
                             <ItemsPresenter Grid.Row="1" x:Name="CategoryRowItemPresenter"/>
                         </Grid>

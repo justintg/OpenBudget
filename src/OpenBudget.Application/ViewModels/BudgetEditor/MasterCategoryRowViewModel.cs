@@ -1,9 +1,11 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using OpenBudget.Model.BudgetView;
 using OpenBudget.Model.Entities;
 using OpenBudget.Util.Collections;
 using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading;
 
 namespace OpenBudget.Application.ViewModels.BudgetEditor
@@ -22,6 +24,37 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             if (!_masterCategory.Categories.IsLoaded)
                 _masterCategory.Categories.LoadCollection();
 
+            InitializeCategories(masterCategory);
+
+            InitializeMonthViews();
+            UpdateIsFirstCategoryRow();
+        }
+
+        private void InitializeMonthViews()
+        {
+            _masterCategoryMonthViews = new TransformingObservableCollection<BudgetMonthViewModel, MasterCategoryMonthViewModel>(
+            _budgetEditor.VisibleMonthViews, v =>
+            {
+                //BudgetMonthView holds it's own copy of the Budget and Categories so you have to match them up based on entityId
+                //instead of ReferenceEquals on the instance
+                BudgetMonthView view = v.BudgetMonthView;
+                MasterCategoryMonthView masterView = view.MasterCategories.Where(mcv => mcv.MasterCategory.EntityID == _masterCategory.EntityID).Single();
+                if (masterView != null)
+                {
+                    return new MasterCategoryMonthViewModel(_budgetEditor, v, this, masterView);
+                }
+                else
+                {
+                    return new MasterCategoryMonthViewModel(_budgetEditor, v, this, view, _masterCategory.EntityID);
+                }
+            },
+            cmv =>
+            {
+            });
+        }
+
+        private void InitializeCategories(MasterCategory masterCategory)
+        {
             _categories = new TransformingObservableCollection<Category, CategoryRowViewModel>(
                 masterCategory.Categories,
                 c => { return new CategoryRowViewModel(this, c, _budgetEditor); },
@@ -29,7 +62,6 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
 
             _categories.Sort(c => c.Category.SortOrder);
             _categories.CollectionChanged += Categories_CollectionChanged;
-            UpdateIsFirstCategoryRow();
         }
 
         private void Categories_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -60,12 +92,20 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             set { _masterCategory = value; RaisePropertyChanged(); }
         }
 
+        private TransformingObservableCollection<BudgetMonthViewModel, MasterCategoryMonthViewModel> _masterCategoryMonthViews;
+
+        public TransformingObservableCollection<BudgetMonthViewModel, MasterCategoryMonthViewModel> MasterCategoryMonthViews
+        {
+            get { return _masterCategoryMonthViews; }
+            private set { _masterCategoryMonthViews = value; RaisePropertyChanged(); }
+        }
+
         private TransformingObservableCollection<Category, CategoryRowViewModel> _categories;
 
         public TransformingObservableCollection<Category, CategoryRowViewModel> Categories
         {
             get { return _categories; }
-            set { _categories = value; RaisePropertyChanged(); }
+            private set { _categories = value; RaisePropertyChanged(); }
         }
 
         private AddCategoryViewModel _addCategoryEditor;
