@@ -81,6 +81,13 @@ namespace OpenBudget.Model.BudgetView
             private set { _transactionsInMonth = value; RaisePropertyChanged(); }
         }
 
+        private NegativeBalanceHandlingTypes _negativeBalanceHandling;
+
+        public NegativeBalanceHandlingTypes NegativeBalanceHandling
+        {
+            get { return _negativeBalanceHandling; }
+            set { _negativeBalanceHandling = value; RaisePropertyChanged(); }
+        }
 
         private void RefreshValues()
         {
@@ -92,6 +99,7 @@ namespace OpenBudget.Model.BudgetView
                 BeginningBalance = categoryMonth.BeginningBalance;
                 TransactionsInMonth = categoryMonth.TransactionsInMonth;
                 EndBalance = categoryMonth.EndBalance;
+                NegativeBalanceHandling = categoryMonth.NegativeBalanceHandling;
             }
             else
             {
@@ -100,6 +108,7 @@ namespace OpenBudget.Model.BudgetView
                     BeginningBalance = 0M;
                     TransactionsInMonth = 0M;
                     EndBalance = 0M;
+                    NegativeBalanceHandling = NegativeBalanceHandlingTypes.AvailableToBudget;
                 }
                 else
                 {
@@ -108,12 +117,14 @@ namespace OpenBudget.Model.BudgetView
                         BeginningBalance = 0M;
                         TransactionsInMonth = 0M;
                         EndBalance = 0M;
+                        NegativeBalanceHandling = categoryMonth.NegativeBalanceHandling;
                     }
                     else
                     {
                         BeginningBalance = categoryMonth.EndBalance;
                         TransactionsInMonth = 0M;
                         EndBalance = categoryMonth.EndBalance;
+                        NegativeBalanceHandling = categoryMonth.NegativeBalanceHandling;
                     }
                 }
             }

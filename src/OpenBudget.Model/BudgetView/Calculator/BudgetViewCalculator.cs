@@ -91,7 +91,7 @@ namespace OpenBudget.Model.BudgetView.Calculator
                 foreach (var categoryMonth in category.Value)
                 {
                     month.Budgeted += categoryMonth.AmountBudgeted;
-                    if (categoryMonth.EndBalance < 0M)
+                    if (categoryMonth.EndBalance < 0M && categoryMonth.NegativeBalanceHandling == NegativeBalanceHandlingTypes.AvailableToBudget)
                     {
                         if (nextMonth == null)
                         {

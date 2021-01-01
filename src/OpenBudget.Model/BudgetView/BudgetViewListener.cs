@@ -92,6 +92,10 @@ namespace OpenBudget.Model.BudgetView
                     {
                         return true;
                     }
+                    else if (updateEvent.Changes.ContainsKey(nameof(CategoryMonth.NegativeBalanceHandling)))
+                    {
+                        return true;
+                    }
                 }
             }
 
