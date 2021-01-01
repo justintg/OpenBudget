@@ -118,11 +118,61 @@ namespace OpenBudget.Model.Tests
             var mortgageThisMonth = new CategoryMonthView(_mortgage, thisMonthDate);
             var mortgageNextMonth = new CategoryMonthView(_mortgage, nextMonthDate);
 
+            //Negative Balance Handling is not explicit, but is assumed to be Availble To Budget By Default
+            Assert.That(mortgageThisMonth.CategoryMonth.NegativeBalanceHandling, Is.Null);
+            Assert.That(mortgageThisMonth.NegativeBalanceHandling, Is.EqualTo(NegativeBalanceHandlingTypes.AvailableToBudget));
             Assert.That(mortgageThisMonth.EndBalance, Is.EqualTo(-50));
             Assert.That(nextMonthView.OverspentPreviousMonth, Is.EqualTo(-50));
 
             Assert.That(mortgageNextMonth.BeginningBalance, Is.EqualTo(0));
             Assert.That(mortgageNextMonth.EndBalance, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BudgetMonthView_NegativeBalanceHandling_IsAvailableToBudgetByDefault()
+        {
+            DateTime thisMonthDate = DateTime.Today.FirstDayOfMonth();
+            DateTime nextMonthDate = DateTime.Today.FirstDayOfMonth().AddMonths(1);
+
+            AddTransaction(-150, 0);
+            BudgetMonthView thisMonthView = new BudgetMonthView(TestBudget.BudgetModel, thisMonthDate);
+            BudgetMonthView nextMonthView = new BudgetMonthView(TestBudget.BudgetModel, nextMonthDate);
+
+            var mortgageThisMonth = new CategoryMonthView(_mortgage, thisMonthDate);
+            var mortgageNextMonth = new CategoryMonthView(_mortgage, nextMonthDate);
+
+            //Negative Balance Handling is not explicit, but is assumed to be Availble To Budget By Default
+            Assert.That(mortgageThisMonth.CategoryMonth.NegativeBalanceHandling, Is.Null);
+            Assert.That(mortgageThisMonth.NegativeBalanceHandling, Is.EqualTo(NegativeBalanceHandlingTypes.AvailableToBudget));
+        }
+
+        [Test]
+        public void BudgetMonthView_NegativeBalanceHandling_HandlingTypeCarriedForwardOnceSet()
+        {
+            DateTime thisMonthDate = DateTime.Today.FirstDayOfMonth();
+            DateTime nextMonthDate = DateTime.Today.FirstDayOfMonth().AddMonths(1);
+            DateTime thirdMonthDate = DateTime.Today.FirstDayOfMonth().AddMonths(2);
+
+            AddTransaction(-150, 0);
+            BudgetMonthView thisMonthView = new BudgetMonthView(TestBudget.BudgetModel, thisMonthDate);
+            BudgetMonthView nextMonthView = new BudgetMonthView(TestBudget.BudgetModel, nextMonthDate);
+            BudgetMonthView thirdMonthView = new BudgetMonthView(TestBudget.BudgetModel, thirdMonthDate);
+
+            var mortgageThisMonth = new CategoryMonthView(_mortgage, thisMonthDate);
+            mortgageThisMonth.CategoryMonth.NegativeBalanceHandling = NegativeBalanceHandlingTypes.CarryForwardBalance;
+            TestBudget.SaveChanges();
+
+            Assert.That(mortgageThisMonth.CategoryMonth.NegativeBalanceHandling, Is.Not.Null);
+            Assert.That(mortgageThisMonth.CategoryMonth.NegativeBalanceHandling, Is.EqualTo(NegativeBalanceHandlingTypes.CarryForwardBalance));
+
+            var mortgageNextMonth = new CategoryMonthView(_mortgage, nextMonthDate);
+
+            Assert.That(mortgageNextMonth.CategoryMonth.NegativeBalanceHandling, Is.Null);
+            Assert.That(mortgageNextMonth.NegativeBalanceHandling, Is.EqualTo(NegativeBalanceHandlingTypes.CarryForwardBalance));
+            
+            var mortgateThirdMonth = new CategoryMonthView(_mortgage, thirdMonthDate);
+            Assert.That(mortgateThirdMonth.CategoryMonth.NegativeBalanceHandling, Is.Null);
+            Assert.That(mortgateThirdMonth.NegativeBalanceHandling, Is.EqualTo(NegativeBalanceHandlingTypes.CarryForwardBalance));
         }
 
         [Test]
@@ -140,6 +190,7 @@ namespace OpenBudget.Model.Tests
             TestBudget.SaveChanges();
             var mortgageNextMonth = new CategoryMonthView(_mortgage, nextMonthDate);
 
+            Assert.That(mortgageThisMonth.NegativeBalanceHandling, Is.EqualTo(NegativeBalanceHandlingTypes.CarryForwardBalance));
             Assert.That(mortgageThisMonth.EndBalance, Is.EqualTo(-50));
             Assert.That(nextMonthView.OverspentPreviousMonth, Is.EqualTo(0M));
 
