@@ -103,9 +103,18 @@ namespace OpenBudget.Model.BudgetView
                 }
                 else
                 {
-                    BeginningBalance = categoryMonth.EndBalance;
-                    TransactionsInMonth = 0M;
-                    EndBalance = categoryMonth.EndBalance;
+                    if (categoryMonth.EndBalance < 0M && categoryMonth.NegativeBalanceHandling == NegativeBalanceHandlingTypes.AvailableToBudget)
+                    {
+                        BeginningBalance = 0M;
+                        TransactionsInMonth = 0M;
+                        EndBalance = 0M;
+                    }
+                    else
+                    {
+                        BeginningBalance = categoryMonth.EndBalance;
+                        TransactionsInMonth = 0M;
+                        EndBalance = categoryMonth.EndBalance;
+                    }
                 }
             }
         }

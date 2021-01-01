@@ -11,7 +11,17 @@ namespace OpenBudget.Model.Entities
         public DateTime Month { get; set; }
         public long AmountBudgeted { get; set; }
         public int AmountBudgeted_Denominator { get; set; }
+
+        public NegativeBalanceHandlingTypes? NegativeBalanceHandling { get; set; } = null;
     }
+
+    public enum NegativeBalanceHandlingTypes
+    {
+        AvailableToBudget = 0,
+        CarryForwardBalance = 1
+    }
+
+
 
     public class CategoryMonth : NoCreateEntity<CategoryMonthSnapshot>
     {
@@ -40,6 +50,12 @@ namespace OpenBudget.Model.Entities
         {
             get => GetCurrency();
             set => SetCurrency(value);
+        }
+
+        public NegativeBalanceHandlingTypes? NegativeBalanceHandling
+        {
+            get => GetProperty<NegativeBalanceHandlingTypes?>();
+            set => SetProperty(value);
         }
     }
 }

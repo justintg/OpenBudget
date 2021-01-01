@@ -28,7 +28,8 @@ namespace OpenBudget.Model.Serialization
             [58] = typeof(TypedFieldChange<AccountTypes>),
             [59] = typeof(TypedFieldChange<int?>),
             [60] = typeof(TypedFieldChange<long>),
-            [61] = typeof(TypedFieldChange<int>)
+            [61] = typeof(TypedFieldChange<int>),
+            [62] = typeof(TypedFieldChange<NegativeBalanceHandlingTypes>)
         };
 
         public void BindToName(Type serializedType, out string assemblyName, out string typeName)

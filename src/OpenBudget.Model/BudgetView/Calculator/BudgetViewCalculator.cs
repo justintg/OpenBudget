@@ -143,8 +143,18 @@ namespace OpenBudget.Model.BudgetView.Calculator
                 {
                     if (count > 0)
                     {
-                        decimal previousEndBalance = category.Value[count - 1].EndBalance;
-                        result.BeginningBalance = (previousEndBalance > 0M) ? previousEndBalance : 0M;
+                        var previousMonth = category.Value[count - 1];
+                        decimal previousEndBalance = previousMonth.EndBalance;
+
+                        if (previousEndBalance < 0M &&
+                            previousMonth.NegativeBalanceHandling == NegativeBalanceHandlingTypes.AvailableToBudget)
+                        {
+                            result.BeginningBalance = 0M;
+                        }
+                        else
+                        {
+                            result.BeginningBalance = previousEndBalance;
+                        }
                     }
 
                     result.EndBalance = result.BeginningBalance + result.AmountBudgeted + result.TransactionsInMonth;
@@ -157,7 +167,7 @@ namespace OpenBudget.Model.BudgetView.Calculator
         private CategoryResultsDictionary InitializeResults(TransactionDictionary groupedTransactions)
         {
             CategoryResultsDictionary results = AddTransactionsInMonth(groupedTransactions);
-            AddAmountsBudgeted(results);
+            PopulateCategoryMonthData(results);
             return results;
             //return results.ToDictionary(r => r.Key, r => r.Value.Values.OrderBy(rcm => rcm.Month).ToList());
         }
@@ -167,12 +177,12 @@ namespace OpenBudget.Model.BudgetView.Calculator
             return groupedTransactions.ToDictionary(td => td.Key, td => new BudgetViewCategoryMonth(td.Key.EntityID, td.Key.FirstDayOfMonth) { TransactionsInMonth = td.Value });
         }
 
-        private void AddAmountsBudgeted(CategoryResultsDictionary results)
+        private void PopulateCategoryMonthData(CategoryResultsDictionary results)
         {
             var categoryMonths = _snapshotStore.GetAllSnapshots<CategoryMonthSnapshot>();
             foreach (var categoryMonth in categoryMonths)
             {
-                if (categoryMonth.AmountBudgeted == 0M) continue;
+                if (categoryMonth.AmountBudgeted == 0M && categoryMonth.NegativeBalanceHandling == null) continue;
 
                 CategoryMonthKey monthKey = new CategoryMonthKey(categoryMonth.Parent, categoryMonth.Month);
                 BudgetViewCategoryMonth monthResult = null;
@@ -180,11 +190,30 @@ namespace OpenBudget.Model.BudgetView.Calculator
                 BudgetViewCategoryMonth monthValues = null;
                 if (results.TryGetValue(monthKey, out monthValues))
                 {
-                    monthValues.AmountBudgeted = GetCategoryMonthAmount(categoryMonth);
+                    if (categoryMonth.AmountBudgeted != 0M)
+                    {
+                        monthValues.AmountBudgeted = GetCategoryMonthAmount(categoryMonth);
+                    }
+
+                    if (categoryMonth.NegativeBalanceHandling != null)
+                    {
+                        monthValues.NegativeBalanceHandlingIsExplicit = true;
+                        monthValues.NegativeBalanceHandling = categoryMonth.NegativeBalanceHandling.Value;
+                    }
                 }
                 else
                 {
-                    monthResult = new BudgetViewCategoryMonth(monthKey.EntityID, monthKey.FirstDayOfMonth) { AmountBudgeted = GetCategoryMonthAmount(categoryMonth) };
+                    monthResult = new BudgetViewCategoryMonth(monthKey.EntityID, monthKey.FirstDayOfMonth);
+                    if (categoryMonth.AmountBudgeted != 0M)
+                    {
+                        monthResult.AmountBudgeted = GetCategoryMonthAmount(categoryMonth);
+                    }
+
+                    if (categoryMonth.NegativeBalanceHandling != null)
+                    {
+                        monthResult.NegativeBalanceHandlingIsExplicit = true;
+                        monthResult.NegativeBalanceHandling = categoryMonth.NegativeBalanceHandling.Value;
+                    }
                     results[monthKey] = monthResult;
                 }
             }

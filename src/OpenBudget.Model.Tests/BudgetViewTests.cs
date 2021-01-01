@@ -106,6 +106,26 @@ namespace OpenBudget.Model.Tests
         }
 
         [Test]
+        public void BudgetMonthView_NegativeBalanceHandling_AvailableToBudget()
+        {
+            DateTime thisMonthDate = DateTime.Today.FirstDayOfMonth();
+            DateTime nextMonthDate = DateTime.Today.FirstDayOfMonth().AddMonths(1);
+
+            AddTransaction(-150, 0);
+            BudgetMonthView thisMonthView = new BudgetMonthView(TestBudget.BudgetModel, thisMonthDate);
+            BudgetMonthView nextMonthView = new BudgetMonthView(TestBudget.BudgetModel, nextMonthDate);
+
+            var mortgageThisMonth = new CategoryMonthView(_mortgage, thisMonthDate);
+            var mortgageNextMonth = new CategoryMonthView(_mortgage, nextMonthDate);
+
+            Assert.That(mortgageThisMonth.EndBalance, Is.EqualTo(-50));
+            Assert.That(nextMonthView.OverspentPreviousMonth, Is.EqualTo(-50));
+
+            Assert.That(mortgageNextMonth.BeginningBalance, Is.EqualTo(0));
+            Assert.That(mortgageNextMonth.EndBalance, Is.EqualTo(0));
+        }
+
+        [Test]
         public void CategoryMonth_ValuesAreCorrect_OnInit()
         {
             CategoryMonthView view = new CategoryMonthView(_mortgage, DateTime.Today);

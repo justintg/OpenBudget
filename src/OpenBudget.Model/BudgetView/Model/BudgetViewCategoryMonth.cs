@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenBudget.Model.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,6 +13,8 @@ namespace OpenBudget.Model.BudgetView.Model
         public decimal TransactionsInMonth = 0M;
         public decimal AmountBudgeted = 0M;
         public decimal EndBalance = 0M;
+        public NegativeBalanceHandlingTypes NegativeBalanceHandling = NegativeBalanceHandlingTypes.AvailableToBudget;
+        public bool NegativeBalanceHandlingIsExplicit = false;
 
         public BudgetViewCategoryMonth(string categoryID, DateTime month)
         {
