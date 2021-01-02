@@ -382,7 +382,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="CategoryPopupTemplate">
-        <Grid Width="200" Margin="10 0 0 0">
+        <Grid Width="200" Margin="0 0 5 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="85" />
                 <RowDefinition Height="Auto" />
@@ -415,6 +415,7 @@
         <Setter Property="Content" Value="{Binding}" />
         <Setter Property="OpenPreference" Value="Bottom" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="PopupMargin" Value="-10 -7 0 0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:PopupButton">
@@ -429,7 +430,7 @@
         <Setter Property="PopupTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <Grid Width="300" Margin="-10 -7 0 0">
+                    <Grid Width="300" Margin="0 0 5 5">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="155" />
@@ -458,6 +459,7 @@
                                          AcceptsReturn="True"/>
                             <Button Content="Save Note" Grid.Row="1" Command="{Binding SaveCategoryNoteCommand}" HorizontalAlignment="Left" Margin="10 5 10 0" />
                         </Grid>
+
                     </Grid>
                 </DataTemplate>
             </Setter.Value>
@@ -482,6 +484,7 @@
                                               Foreground="Black"                                             
                                               FontWeight="Normal"
                                               IsPopupOpen="{Binding CategoryEditorOpen, Mode=TwoWay}"
+                                                  PopupMargin="10 0 0 0"
                                               Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type budEdit:BudgetEditor}}}"
                                               PopupTemplate="{StaticResource CategoryPopupTemplate}">
                                 <controls:PopupButton.Template>
@@ -545,8 +548,8 @@
         </Setter>
     </Style>
 
-    <DataTemplate x:Key="AddCategoryEditor">
-        <Grid Width="200" Margin="-165 0 0 0">
+    <DataTemplate x:Key="AddCategoryEditorBottom">
+        <Grid Width="200">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="85" />
@@ -568,6 +571,35 @@
                     <Button Content="Add" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding AddCategoryCommand}"/>
                 </Grid>
             </Border>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="AddCategoryEditorTop">
+        <Grid Width="200">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="85" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="LightBlue" CornerRadius="5">
+                <Border.Effect>
+                    <DropShadowEffect Opacity="0.5"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBox Margin="10 12 10 0" x:Name="focusElement" Text="{Binding NewCategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Content="Add" Grid.Row="1" Width="50" HorizontalAlignment="Left" Margin="10 5 10 0" Command="{Binding AddCategoryCommand}"/>
+                </Grid>
+            </Border>
+
+            <Path Grid.Row="1" Margin="-2 -1 0 -1" Data="M 160,0 L 175,15 190,0 Z" Fill="LightBlue">
+                <Path.Effect>
+                    <DropShadowEffect Opacity="0.5" />
+                </Path.Effect>
+            </Path>
         </Grid>
     </DataTemplate>
 
@@ -659,7 +691,9 @@
                                                                   Margin="3 3" Padding="0"
                                                                   OpenPreference="Bottom"
                                                                   IsPopupOpen="{Binding IsEditorOpen, Mode=TwoWay}"
-                                                                  PopupTemplate="{StaticResource AddCategoryEditor}">
+                                                                  PopupTemplate="{StaticResource AddCategoryEditorBottom}"
+                                                                  PopupTopTemplate="{StaticResource AddCategoryEditorTop}"
+                                                                  PopupMargin="-165 0 0 0">
                                                     <Border Background="Beige" Width="15">
                                                         <TextBlock Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                                     </Border>

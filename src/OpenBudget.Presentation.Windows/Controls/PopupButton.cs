@@ -25,7 +25,7 @@ namespace OpenBudget.Presentation.Windows.Controls
         }
     }
 
-    public class PopupButton : Button
+    public class PopupButton : Button, IPopupPositionCallback
     {
         static PopupButton()
         {
@@ -33,7 +33,8 @@ namespace OpenBudget.Presentation.Windows.Controls
         }
 
         private PopupAdorner _popup;
-        private FrameworkElement _popupContent;
+        private BindingExpressionBase _contentBinding;
+        private ContentControl _popupContent;
 
 
         public PopupButton()
@@ -50,6 +51,35 @@ namespace OpenBudget.Presentation.Windows.Controls
         public static readonly DependencyProperty PopupTemplateProperty =
             DependencyProperty.Register("PopupTemplate", typeof(DataTemplate), typeof(PopupButton), new PropertyMetadata(null));
 
+
+
+        public DataTemplate PopupTopTemplate
+        {
+            get { return (DataTemplate)GetValue(PopupTopTemplateProperty); }
+            set { SetValue(PopupTopTemplateProperty, value); }
+        }
+
+        public static readonly DependencyProperty PopupTopTemplateProperty =
+            DependencyProperty.Register("PopupTopTemplate", typeof(DataTemplate), typeof(PopupButton), new PropertyMetadata(null));
+
+        public DataTemplate PopupBottomTemplate
+        {
+            get { return (DataTemplate)GetValue(PopupBottomTemplateProperty); }
+            set { SetValue(PopupBottomTemplateProperty, value); }
+        }
+
+        public static readonly DependencyProperty PopupBottomTemplateProperty =
+            DependencyProperty.Register("PopupBottomTemplate", typeof(DataTemplate), typeof(PopupButton), new PropertyMetadata(null));
+
+        public Thickness PopupMargin
+        {
+            get { return (Thickness)GetValue(PopupMarginProperty); }
+            set { SetValue(PopupMarginProperty, value); }
+        }
+
+        public static readonly DependencyProperty PopupMarginProperty =
+            DependencyProperty.Register("PopupMargin", typeof(Thickness), typeof(PopupButton), new PropertyMetadata(new Thickness(0)));
+
         public PopupOpenPreference OpenPreference
         {
             get { return (PopupOpenPreference)GetValue(OpenPreferenceProperty); }
@@ -65,11 +95,12 @@ namespace OpenBudget.Presentation.Windows.Controls
 
             var popupContent = new ContentControl();
             popupContent.ContentTemplate = PopupTemplate;
-            popupContent.SetBinding(ContentControl.ContentProperty, new Binding());
+            _contentBinding = popupContent.SetBinding(ContentControl.ContentProperty, new Binding());
+            popupContent.SetBinding(ContentControl.MarginProperty, new Binding("PopupMargin") { Source = this });
             _popupContent = popupContent;
 
             var contentPresenter = popupContent.FindChild<ContentPresenter>();
-            _popup = new PopupAdorner(this, _popupContent);
+            _popup = new PopupAdorner(this, _popupContent, this);
 
             _popupContent.SetBinding(FrameworkElement.DataContextProperty, new Binding("DataContext") { Source = this });
         }
@@ -124,6 +155,42 @@ namespace OpenBudget.Presentation.Windows.Controls
         {
             PopupButtonOpenedEventArgs args = new PopupButtonOpenedEventArgs(this, _popup, PopupButtonOpenedEvent);
             RaiseEvent(args);
+        }
+
+        public void PopupPositionChanged(PopupOpenPosition position)
+        {
+            var oldTemplate = _popupContent.ContentTemplate;
+            var content = _popupContent.Content;
+            if(position == PopupOpenPosition.Bottom && PopupBottomTemplate != null)
+            {
+                _popupContent.ContentTemplate = PopupBottomTemplate;
+                BindingOperations.ClearBinding(_popupContent, ContentControl.ContentProperty);
+                _contentBinding = _popupContent.SetBinding(ContentControl.ContentProperty, new Binding());
+                _contentBinding.UpdateTarget();
+            }
+            else if(position == PopupOpenPosition.Top && PopupTopTemplate != null)
+            {
+                _popupContent.ContentTemplate = PopupTopTemplate;
+                BindingOperations.ClearBinding(_popupContent, ContentControl.ContentProperty);
+                _contentBinding = _popupContent.SetBinding(ContentControl.ContentProperty, new Binding());
+                _contentBinding.UpdateTarget();
+            }
+            else
+            {
+                _popupContent.ContentTemplate = PopupTemplate;
+                BindingOperations.ClearBinding(_popupContent, ContentControl.ContentProperty);
+                _contentBinding = _popupContent.SetBinding(ContentControl.ContentProperty, new Binding());
+                _contentBinding.UpdateTarget();
+            }
+            if(oldTemplate != _popupContent.ContentTemplate)
+            {
+                this.Dispatcher.BeginInvoke(() =>
+                {
+                    _popup.InvalidateMeasure();
+                    _popup.InvalidateArrange();
+                    _popup.InvalidateVisual();
+                }, DispatcherPriority.ApplicationIdle);
+            }
         }
     }
 }

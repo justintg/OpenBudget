@@ -19,10 +19,22 @@ namespace OpenBudget.Presentation.Windows.Controls
         Bottom,
         Top
     }
+
+    public enum PopupOpenPosition
+    {
+        Bottom,
+        Top
+    }
+
+    public interface IPopupPositionCallback
+    {
+        void PopupPositionChanged(PopupOpenPosition position);
+    }
+
     public class PopupAdorner : Adorner
     {
         private VisualCollection _visuals;
-        private ContentPresenter _presenter;
+        private FrameworkElement _content;
 
         /// <summary>
         /// Creates a new popup adorner with the specified content.
@@ -34,10 +46,29 @@ namespace OpenBudget.Presentation.Windows.Controls
             : base(adornedElement)
         {
             _visuals = new VisualCollection(this);
-            _presenter = new ContentPresenter();
-            _visuals.Add(_presenter);
-            _presenter.Content = content;
+            if (content is FrameworkElement visual)
+            {
+                _content = visual;
+                _visuals.Add(visual);
+            }
+            else
+            {
+                var presenter = new ContentPresenter();
+                _content = presenter;
+                presenter.Content = content;
+                _visuals.Add(_content);
+            }
+            AddLogicalChild(content);
+            //AddVisualChild(content);
         }
+
+        public PopupAdorner(UIElement adornedElement, UIElement content, IPopupPositionCallback positionCallback)
+            : this(adornedElement, content)
+        {
+            _positionCallback = positionCallback;
+        }
+
+        private IPopupPositionCallback _positionCallback;
 
         public bool IsOpen
         {
@@ -51,22 +82,27 @@ namespace OpenBudget.Presentation.Windows.Controls
 
         protected override Size MeasureOverride(Size constraint)
         {
-            _presenter.Measure(constraint);
-            return _presenter.DesiredSize;
+            _content.Measure(constraint);
+            return _content.DesiredSize;
         }
         protected override Size ArrangeOverride(Size finalSize)
         {
             double yPos = 0;
+            double xPos = 0;
             if (ShouldOpenOnTop())
             {
-                yPos = -(_presenter.DesiredSize.Height);
+                OpenPosition = PopupOpenPosition.Top;
+                yPos = -(_content.DesiredSize.Height);
             }
             else
             {
+                OpenPosition = PopupOpenPosition.Bottom;
                 var adornedElement = AdornedElement as FrameworkElement;
                 yPos = adornedElement.ActualHeight;
             }
-            _presenter.Arrange(new Rect(0, yPos, finalSize.Width, finalSize.Height));
+            //yPos += _content.Margin.Top;
+            //xPos += _content.Margin.Left;
+            _content.Arrange(new Rect(xPos, yPos, finalSize.Width, finalSize.Height));
             return finalSize;
         }
 
@@ -85,7 +121,7 @@ namespace OpenBudget.Presentation.Windows.Controls
                 {
                     //double heightAbove = container.ActualHeight - (relativeLocation.Y + (AdornedElement as FrameworkElement).ActualHeight);
                     double heightAbove = relativeLocation.Y;
-                    if (heightAbove >= _presenter.DesiredSize.Height)
+                    if (heightAbove >= _content.DesiredSize.Height)
                         return true;
                     else
                         return false;
@@ -93,7 +129,7 @@ namespace OpenBudget.Presentation.Windows.Controls
                 else if (_openPreference == PopupOpenPreference.Bottom)
                 {
                     double heightBelow = container.ActualHeight - (relativeLocation.Y + (AdornedElement as FrameworkElement).ActualHeight);
-                    if (heightBelow >= _presenter.DesiredSize.Height)
+                    if (heightBelow >= _content.DesiredSize.Height)
                     {
                         return false;
                     }
@@ -161,6 +197,23 @@ namespace OpenBudget.Presentation.Windows.Controls
             {
                 _adornerLayer.Remove(this);
                 IsOpen = false;
+            }
+        }
+
+        public PopupOpenPosition OpenPosition
+        {
+            get { return (PopupOpenPosition)GetValue(OpenPositionProperty); }
+            set { SetValue(OpenPositionProperty, value); }
+        }
+
+        public static readonly DependencyProperty OpenPositionProperty =
+            DependencyProperty.Register("OpenPosition", typeof(PopupOpenPosition), typeof(PopupAdorner), new PropertyMetadata(PopupOpenPosition.Bottom, OnOpenPositionChanged));
+
+        private static void OnOpenPositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is PopupAdorner popupAdorner && e.NewValue is PopupOpenPosition openPosition)
+            {
+                popupAdorner._positionCallback?.PopupPositionChanged(openPosition);
             }
         }
     }
