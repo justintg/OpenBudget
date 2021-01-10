@@ -11,6 +11,7 @@ namespace OpenBudget.Model.Entities
         public DateTime Month { get; set; }
         public long AmountBudgeted { get; set; }
         public int AmountBudgeted_Denominator { get; set; }
+        public string Note { get; set; }
 
         public NegativeBalanceHandlingTypes? NegativeBalanceHandling { get; set; } = null;
     }
@@ -55,6 +56,12 @@ namespace OpenBudget.Model.Entities
         public NegativeBalanceHandlingTypes? NegativeBalanceHandling
         {
             get => GetProperty<NegativeBalanceHandlingTypes?>();
+            set => SetProperty(value);
+        }
+
+        public string Note
+        {
+            get => GetProperty<string>();
             set => SetProperty(value);
         }
     }

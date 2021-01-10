@@ -329,13 +329,26 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
                 _dragHandler = null;
 
             var position = e.GetPosition(this);
+            PopupButton popupButton = null;
             DependencyObject child = null;
             if (position != null)
             {
-                child = VisualTreeHelper.HitTest(this, position)?.VisualHit;
+                //child = VisualTreeHelper.HitTest(this, position)?.VisualHit;
+                VisualTreeHelper.HitTest(this, null, (result) =>
+                {
+                    child = result.VisualHit;
+                    popupButton = child.FindParent<PopupButton>();
+                    if (popupButton != null)
+                    {
+                        return HitTestResultBehavior.Stop;
+                    }
+                    else
+                    {
+                        return HitTestResultBehavior.Continue;
+                    }
+                }, new PointHitTestParameters(position));
             }
 
-            var popupButton = child.FindParent<PopupButton>();
             if (_popupButton != null)
             {
                 if (popupButton == null || popupButton != _popupButton)
