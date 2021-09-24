@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenBudget.Application\OpenBudget.Application.csproj" />
+    <ProjectReference Include="..\OpenBudget.Tests.Shared\OpenBudget.Tests.Shared.csproj" />
   </ItemGroup>
   
 </Project>
