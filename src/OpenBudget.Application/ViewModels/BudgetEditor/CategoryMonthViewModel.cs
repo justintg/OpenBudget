@@ -1,21 +1,40 @@
-﻿using GalaSoft.MvvmLight;
-using OpenBudget.Model.BudgetView;
-using OpenBudget.Model.Entities;
+﻿using OpenBudget.Model.BudgetView;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text;
 
 namespace OpenBudget.Application.ViewModels.BudgetEditor
 {
-    public class CategoryMonthViewModel : ViewModelBase, IDisposable
+    public class CategoryMonthViewModel : UtilViewModelBase, IDisposable
     {
         private CategoryMonthView _categoryMonthView;
 
         public CategoryMonthView CategoryMonthView
         {
             get { return _categoryMonthView; }
-            set { _categoryMonthView = value; RaisePropertyChanged(); }
+            set
+            {
+                MountSet(ref _categoryMonthView, value, MountCategoryMonthView, UnmountCategoryMonthView);
+                RaisePropertyChanged();
+            }
+        }
+
+        private void MountCategoryMonthView(CategoryMonthView obj)
+        {
+            obj.PropertyChanged += MonthView_PropertyChanged;
+            NoteEditor = new CategoryMonthNoteEditorViewModel(obj.CategoryMonth);
+        }
+
+        private void UnmountCategoryMonthView(CategoryMonthView obj)
+        {
+            obj.PropertyChanged -= MonthView_PropertyChanged;
+        }
+
+        private CategoryMonthNoteEditorViewModel _noteEditor;
+
+        public CategoryMonthNoteEditorViewModel NoteEditor
+        {
+            get { return _noteEditor; }
+            private set { MountSet(ref _noteEditor, value, null, obj => obj.Dispose()); RaisePropertyChanged(); }
         }
 
         public BudgetMonthViewModel BudgetMonthViewModel { get; private set; }
@@ -26,7 +45,6 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
             BudgetMonthViewModel = budgetMonthViewModel;
             CategoryRowViewModel = categoryRowViewModel;
             CategoryMonthView = monthView;
-            CategoryMonthView.PropertyChanged += MonthView_PropertyChanged;
         }
 
         public CategoryMonthViewModel(BudgetMonthViewModel budgetMonthViewModel, CategoryRowViewModel categoryRowViewModel, MasterCategoryMonthView masterCategoryMonthView, string categoryId)
@@ -55,7 +73,6 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
                     if (item.Category.EntityID == _categoryId)
                     {
                         CategoryMonthView = item;
-                        CategoryMonthView.PropertyChanged += MonthView_PropertyChanged;
                         _masterCategoryMonthView.Categories.CollectionChanged -= CategoryCollectionChanged;
                         _masterCategoryMonthView = null;
                         _categoryId = null;
@@ -75,6 +92,7 @@ namespace OpenBudget.Application.ViewModels.BudgetEditor
         public void Dispose()
         {
             CategoryMonthView.PropertyChanged -= MonthView_PropertyChanged;
+            NoteEditor?.Dispose();
         }
 
         public decimal AmountBudgeted

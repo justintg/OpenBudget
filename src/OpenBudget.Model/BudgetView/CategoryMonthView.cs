@@ -1,13 +1,7 @@
 ﻿using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.Entities;
-using OpenBudget.Model.Events;
-using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Util;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
 
 namespace OpenBudget.Model.BudgetView
 {
@@ -79,6 +73,11 @@ namespace OpenBudget.Model.BudgetView
         {
             get { return _transactionsInMonth; }
             private set { _transactionsInMonth = value; RaisePropertyChanged(); }
+        }
+
+        public string Note
+        {
+            get { return CategoryMonth.Note; }
         }
 
         private NegativeBalanceHandlingTypes _negativeBalanceHandling;

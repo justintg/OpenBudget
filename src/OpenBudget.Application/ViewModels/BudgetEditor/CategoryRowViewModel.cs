@@ -4,7 +4,6 @@ using OpenBudget.Model.BudgetView;
 using OpenBudget.Model.Entities;
 using OpenBudget.Util.Collections;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace OpenBudget.Application.ViewModels.BudgetEditor

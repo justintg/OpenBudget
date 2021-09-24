@@ -16,6 +16,7 @@ namespace OpenBudget.Model.Serialization
             {
                 TypeNameHandling = TypeNameHandling.Auto,
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+                Formatting = Formatting.None,
                 ContractResolver = contractResolver,
                 SerializationBinder = new EventTypeBinder()
             };
@@ -30,6 +31,7 @@ namespace OpenBudget.Model.Serialization
                 TypeNameHandling = TypeNameHandling.Auto,
                 TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                 ContractResolver = new CustomResolver(),
+                Formatting = Formatting.None,
                 SerializationBinder = new EventTypeBinder()
             };
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
@@ -20,8 +21,11 @@ namespace OpenBudget.Presentation.Windows.Converters
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            //Ignore unset values
+            List<object> filteredValues = values.Where(v => v != DependencyProperty.UnsetValue).ToList();
+
             bool result = false;
-            foreach (object objValue in values)
+            foreach (object objValue in filteredValues)
             {
                 if (objValue is bool boolValue)
                 {
