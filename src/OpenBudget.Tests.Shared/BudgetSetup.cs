@@ -1,45 +1,12 @@
-﻿using OpenBudget.Model.Synchronization;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenBudget.Model.Infrastructure;
-using OpenBudget.Model.Entities;
-using OpenBudget.Model.Events;
+﻿using Microsoft.Data.Sqlite;
+using OpenBudget.Model;
 using OpenBudget.Model.BudgetStore;
-using NUnit.Framework.Internal;
-using Microsoft.Data.Sqlite;
+using OpenBudget.Model.Entities;
 using OpenBudget.Model.SQLite;
+using System;
 
-namespace OpenBudget.Model.Tests
+namespace OpenBudget.Tests.Shared
 {
-    public class TestBudget
-    {
-        public IBudgetStore BudgetStore;
-        public TestEventStore EventStore;
-        public BudgetModel BudgetModel;
-        public Guid DeviceID;
-        public Budget Budget;
-        public List<ModelEvent> TestEvents;
-
-        public void ReloadBudget()
-        {
-            BudgetModel = BudgetModel.Load(DeviceID, BudgetStore);
-            Budget = BudgetModel.GetBudget();
-        }
-
-        public void ClearEvents()
-        {
-            EventStore.TestEvents.Clear();
-        }
-
-        public void SaveChanges()
-        {
-            BudgetModel.SaveChanges();
-        }
-    }
-
     public enum BudgetBackends
     {
         Memory = 1,

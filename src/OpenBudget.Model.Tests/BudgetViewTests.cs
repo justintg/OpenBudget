@@ -2,11 +2,9 @@
 using OpenBudget.Model.BudgetView;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Util;
+using OpenBudget.Tests.Shared;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Tests
 {
