@@ -7,7 +7,6 @@
     xmlns:columns="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/OpenBudget;component/Resources/Converters.xaml" />
-        <ResourceDictionary Source="/OpenBudget;component/Controls/BudgetEditor/BudgetEditor.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <Style TargetType="controls:PopupButton">
@@ -308,13 +307,15 @@
     </Style>
 
     <Style TargetType="{x:Type trxGrid:TransactionGridHeader}">
+        <Setter Property="Width" Value="{Binding Width, Mode=TwoWay}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type trxGrid:TransactionGridHeader}">
-                    <Border BorderThickness="1 1 0 1" BorderBrush="Gray" Width="{Binding Width}"
+                    <Border BorderThickness="1 1 0 1" BorderBrush="Gray"
                             Padding="3">
                         <DockPanel>
-                            <Thumb DockPanel.Dock="Right" Width="6" Cursor="SizeWE" Margin="0 0 -5 0" Background="Transparent" Foreground="Transparent" Opacity="0"/>
+                            <Thumb DockPanel.Dock="Right" Width="6" Cursor="SizeWE" Margin="0 0 -5 0" Background="Transparent" Foreground="Transparent" Opacity="0"
+                                   x:Name="PART_ResizeThumb"/>
                             <TextBlock Text="{Binding Header}" />
                         </DockPanel>
                     </Border>
