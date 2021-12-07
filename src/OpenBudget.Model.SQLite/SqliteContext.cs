@@ -1,8 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Infrastructure;
 using OpenBudget.Model.Infrastructure.Entities;
+using OpenBudget.Model.SQLite.Converters;
 using OpenBudget.Model.SQLite.Tables;
 using System;
 using System.Collections.Generic;
@@ -68,6 +70,7 @@ namespace OpenBudget.Model.SQLite
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.UseModel(SqliteModels.SqliteContextModel.Instance);
             optionsBuilder.UseSqlite(_connection);
         }
 
@@ -79,8 +82,8 @@ namespace OpenBudget.Model.SQLite
                 builder.HasKey(e => e.EventID);
                 builder.HasIndex(e => e.EntityID);
                 builder.HasIndex(e => new { e.EntityType, e.EntityID });
-                builder.Property(e => e.EventID).HasConversion(g => g.ToByteArray(), b => new Guid(b));
-                builder.Property(e => e.DeviceID).HasConversion(g => g.ToByteArray(), b => new Guid(b));
+                builder.Property(e => e.EventID).HasConversion<GuidConverter>();
+                builder.Property(e => e.DeviceID).HasConversion<GuidConverter>();
             });
 
             modelBuilder.Entity<Info>(builder =>
@@ -94,7 +97,7 @@ namespace OpenBudget.Model.SQLite
                 modelBuilder.Entity(entityType, builder =>
                 {
                     builder.HasKey(nameof(EntitySnapshot.EntityID));
-                    builder.Property<VectorClock>(nameof(EntitySnapshot.LastEventVector)).HasConversion(v => v.ToByteArray(), b => new VectorClock(b));
+                    builder.Property<VectorClock>(nameof(EntitySnapshot.LastEventVector)).HasConversion<VectorClockConverter>();
 
                     var entityReferenceProperties = entityType.GetProperties().Where(p => p.PropertyType == typeof(EntityReference)).ToList();
                     foreach (var entityReference in entityReferenceProperties)
