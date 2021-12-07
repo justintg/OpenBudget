@@ -2,18 +2,18 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>OpenBudget</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="gong-wpf-dragdrop" Version="2.2.0" />
+    <PackageReference Include="gong-wpf-dragdrop" Version="3.0.0" />
     <PackageReference Include="MahApps.Metro">
-      <Version>2.4.7</Version>
+      <Version>2.4.9</Version>
     </PackageReference>
-    <PackageReference Include="MahApps.Metro.IconPacks" Version="4.9.0" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
     <PackageReference Include="MvvmLightLibsStd10">
       <Version>5.4.1.1</Version>
     </PackageReference>
