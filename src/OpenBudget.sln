@@ -19,9 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Util", "OpenBudg
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Model.SQLite.Tests", "OpenBudget.Model.SQLite.Tests\OpenBudget.Model.SQLite.Tests.csproj", "{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Application.Tests", "OpenBudget.Application.Tests\OpenBudget.Application.Tests.csproj", "{DCB3DF2C-13F8-452F-A847-1471DC26975E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Application.Tests", "OpenBudget.Application.Tests\OpenBudget.Application.Tests.csproj", "{DCB3DF2C-13F8-452F-A847-1471DC26975E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Tests.Shared", "OpenBudget.Tests.Shared\OpenBudget.Tests.Shared.csproj", "{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Tests.Shared", "OpenBudget.Tests.Shared\OpenBudget.Tests.Shared.csproj", "{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Avalonia", "OpenBudget.Avalonia\OpenBudget.Avalonia.csproj", "{15E4FC32-D364-4CAC-9002-31F3A1F0F335}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15E4FC32-D364-4CAC-9002-31F3A1F0F335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15E4FC32-D364-4CAC-9002-31F3A1F0F335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15E4FC32-D364-4CAC-9002-31F3A1F0F335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15E4FC32-D364-4CAC-9002-31F3A1F0F335}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
