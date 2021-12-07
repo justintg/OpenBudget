@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenBudget.Avalonia.Views.CreateBudgetView">
+	<Grid>
+		<Border Background="CornflowerBlue" CornerRadius="10" Padding="10" Width="500" Height="500" VerticalAlignment="Center" HorizontalAlignment="Center">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="*"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+
+
+				<Label Content="Budget Name" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+				<TextBox Grid.Column="2" Text="{Binding Budget.Name}" Margin="0 3 0 0" />
+
+				<Label Grid.Row="1" Content="Currency" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+				<ComboBox Grid.Row="1" Grid.Column="2" Items="{Binding CurrencyList}" SelectedItem="{Binding SelectedCurrency}" Margin="0 3 0 0">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding DisplayName}" FontFamily="{Binding}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+
+				<Label Grid.Row="2" Content="Format" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+				<ComboBox Grid.Row="2" Grid.Column="2" Items="{Binding SelectedCurrency.Cultures}" SelectedItem="{Binding SelectedCurrencyCulture}" Margin="0 3 0 0">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding DisplayName}" FontFamily="{Binding}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+
+
+				<StackPanel Orientation="Horizontal" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0 3 0 0">
+					<Button Content="Go Back" Command="{Binding BackCommand}" Margin="0 0 3 0"/>
+					<Button Content="Create" Command="{Binding CreateBudgetCommand}" />
+				</StackPanel>
+			</Grid>
+		</Border>
+	</Grid>
+</UserControl>

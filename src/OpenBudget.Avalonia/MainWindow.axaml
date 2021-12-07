@@ -2,8 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:local="clr-namespace:OpenBudget.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="OpenBudget.Avalonia.MainWindow"
-        Title="OpenBudget.Avalonia">
-    Welcome to Avalonia!
+        Title="OpenBudget">
+	<Window.DataTemplates>
+		<local:ViewLocator />
+	</Window.DataTemplates>
+	<ContentControl Content="{Binding CurrentWorkspace}">
+		
+	</ContentControl>
 </Window>

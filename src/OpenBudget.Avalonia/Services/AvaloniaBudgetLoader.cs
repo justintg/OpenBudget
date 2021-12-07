@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+﻿using Avalonia.Controls;
 using OpenBudget.Application.Model;
 using OpenBudget.Application.PlatformServices;
 using OpenBudget.Application.Settings;
@@ -7,7 +7,9 @@ using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.SQLite;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace OpenBudget.Avalonia.Services
 {
@@ -78,23 +80,41 @@ namespace OpenBudget.Avalonia.Services
 
         public string GetBudgetSavePath(string defaultName = null)
         {
-            /*SaveFileDialog saveFileDialog = new SaveFileDialog();
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Save Your Budget";
-            saveFileDialog.Filter = $"OpenBudget Budget (*{BudgetExtension})|*{BudgetExtension}";
-            saveFileDialog.InitialDirectory = Path.GetFullPath(DefaultSavePath);
+            FileDialogFilter filter = new FileDialogFilter();
+            filter.Name = "OpenBudget Budget";
+            filter.Extensions = new List<string> { "db" };
+            saveFileDialog.Filters = new List<FileDialogFilter> { filter };
+            saveFileDialog.Directory = Path.GetFullPath(DefaultSavePath);
 
             if (defaultName != null)
-                saveFileDialog.FileName = defaultName;
+                saveFileDialog.InitialFileName = defaultName;
 
-            if ((bool)saveFileDialog.ShowDialog())
+            var result = GetSaveDialogResult(saveFileDialog);
+            if (!string.IsNullOrWhiteSpace(result))
             {
-                return saveFileDialog.FileName;
+                return result;
             }
             else
             {
                 return null;
-            }*/
-            return null;
+            }
+        }
+
+        private MainWindow GetMainWindow()
+        {
+            return ((App)App.Current).MainWindow;
+        }
+
+        private string GetSaveDialogResult(SaveFileDialog dialog)
+        {
+            Task<string> dialogTask = Task.Run(async () =>
+            {
+                return await dialog.ShowAsync(GetMainWindow());
+            });
+
+            return dialogTask.Result;
         }
 
         public BudgetModel LoadBudget(string budgetPath)

@@ -24,7 +24,9 @@ namespace OpenBudget.Avalonia.Services
             _serviceCollection.AddSingleton<IDialogService, AvaloniaDialogService>();
             _serviceCollection.AddSingleton<IBudgetLoader, AvaloniaBudgetLoader>();
             _serviceCollection.AddSingleton<ISettingsProvider, AvaloniaSettingsProvider>();
-            _serviceCollection.AddSingleton<MainViewModel, DesktopMainViewModel>();
+            _serviceCollection.AddSingleton<INavigationService, AvaloniaNavigationService>();
+            _serviceCollection.AddSingleton<DesktopMainViewModel>();
+            _serviceCollection.AddSingleton<MainViewModel>(x => x.GetRequiredService<DesktopMainViewModel>());
             _serviceCollection.AddSingleton<MainBudgetViewModel>();
 
             _serviceProvider = _serviceCollection.BuildServiceProvider();
@@ -32,7 +34,8 @@ namespace OpenBudget.Avalonia.Services
 
         public TInterface GetInstance<TInterface>()
         {
-            return _serviceProvider.GetService<TInterface>();
+            return _serviceProvider.GetService<TInterface>() 
+                ?? ActivatorUtilities.CreateInstance<TInterface>(_serviceProvider);
         }
     }
 }

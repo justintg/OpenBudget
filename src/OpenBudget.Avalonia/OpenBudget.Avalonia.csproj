@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>OpenBudget</AssemblyName>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove=".gitignore" />
@@ -19,5 +20,9 @@
 		<ProjectReference Include="..\OpenBudget.Application\OpenBudget.Application.csproj" />
 		<ProjectReference Include="..\OpenBudget.Model.SQLite\OpenBudget.Model.SQLite.csproj" />
 		<ProjectReference Include="..\OpenBudget.Util\OpenBudget.Util.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Views\" />
 	</ItemGroup>
 </Project>
