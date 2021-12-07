@@ -35,23 +35,22 @@ namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 
                 PopupButton popupButton = null;
                 DependencyObject child = null;
-                if (position != null)
+
+                //child = VisualTreeHelper.HitTest(this, position)?.VisualHit;
+                VisualTreeHelper.HitTest(textBox, null, (result) =>
                 {
-                    //child = VisualTreeHelper.HitTest(this, position)?.VisualHit;
-                    VisualTreeHelper.HitTest(textBox, null, (result) =>
+                    child = result.VisualHit;
+                    popupButton = child.FindParent<PopupButton>();
+                    if (popupButton != null)
                     {
-                        child = result.VisualHit;
-                        popupButton = child.FindParent<PopupButton>();
-                        if (popupButton != null)
-                        {
-                            return HitTestResultBehavior.Stop;
-                        }
-                        else
-                        {
-                            return HitTestResultBehavior.Continue;
-                        }
-                    }, new PointHitTestParameters(position));
-                }
+                        return HitTestResultBehavior.Stop;
+                    }
+                    else
+                    {
+                        return HitTestResultBehavior.Continue;
+                    }
+                }, new PointHitTestParameters(position));
+
 
                 if (popupButton == null)
                 {
