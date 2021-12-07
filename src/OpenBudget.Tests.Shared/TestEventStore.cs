@@ -5,7 +5,7 @@ using OpenBudget.Model.Infrastructure;
 using System;
 using System.Collections.Generic;
 
-namespace OpenBudget.Model.Tests
+namespace OpenBudget.Tests.Shared
 {
     public class TestEventStore : EventStoreDecorator
     {

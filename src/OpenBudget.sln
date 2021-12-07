@@ -11,13 +11,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Model.Tests", "O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Application", "OpenBudget.Application\OpenBudget.Application.csproj", "{6E4482B6-2FF2-471D-8CD6-745BE18EE74C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Presentation.Windows", "OpenBudget.Presentation.Windows\OpenBudget.Presentation.Windows.csproj", "{FBA66430-F55B-4897-9670-24AF969D731F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Presentation.Windows", "OpenBudget.Presentation.Windows\OpenBudget.Presentation.Windows.csproj", "{FBA66430-F55B-4897-9670-24AF969D731F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3A968318-F05B-45A5-8087-CA14D25291D7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Util", "OpenBudget.Util\OpenBudget.Util.csproj", "{FB5179E0-F9ED-429D-A2E1-D1411279B508}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenBudget.Model.SQLite.Tests", "OpenBudget.Model.SQLite.Tests\OpenBudget.Model.SQLite.Tests.csproj", "{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Application.Tests", "OpenBudget.Application.Tests\OpenBudget.Application.Tests.csproj", "{DCB3DF2C-13F8-452F-A847-1471DC26975E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenBudget.Tests.Shared", "OpenBudget.Tests.Shared\OpenBudget.Tests.Shared.csproj", "{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +57,14 @@ Global
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCB3DF2C-13F8-452F-A847-1471DC26975E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCB3DF2C-13F8-452F-A847-1471DC26975E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCB3DF2C-13F8-452F-A847-1471DC26975E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCB3DF2C-13F8-452F-A847-1471DC26975E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +72,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{36FA9935-D224-4F78-9728-877D22DC4851} = {3A968318-F05B-45A5-8087-CA14D25291D7}
 		{4E732291-6FF0-4F3C-A3BF-7A602DC9CAE6} = {3A968318-F05B-45A5-8087-CA14D25291D7}
+		{DCB3DF2C-13F8-452F-A847-1471DC26975E} = {3A968318-F05B-45A5-8087-CA14D25291D7}
+		{A5CA7DE9-CC75-46C1-BF79-831F96A57B2D} = {3A968318-F05B-45A5-8087-CA14D25291D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9936DB8C-5EF9-4AF1-8D36-4595CDCCCB5A}

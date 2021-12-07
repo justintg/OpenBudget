@@ -1,13 +1,9 @@
 ﻿using NUnit.Framework;
-using OpenBudget.Model.BudgetStore;
 using OpenBudget.Model.Entities;
 using OpenBudget.Model.Infrastructure.Entities;
 using OpenBudget.Model.Infrastructure.UnitOfWork;
-using System;
-using System.Collections.Generic;
+using OpenBudget.Tests.Shared;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenBudget.Model.Tests
 {

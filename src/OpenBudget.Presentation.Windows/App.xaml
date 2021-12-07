@@ -6,6 +6,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Theme.xaml" />
                 <ResourceDictionary Source="/OpenBudget;component/Resources/Converters.xaml" />
+                <ResourceDictionary Source="/OpenBudget;component/Controls/BudgetEditor/BudgetEditor.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

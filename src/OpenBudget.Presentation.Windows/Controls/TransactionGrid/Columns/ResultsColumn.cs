@@ -250,6 +250,17 @@ namespace OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns
             set { SetValue(ResultsProperty, value); }
         }
 
+        public string Watermark
+        {
+            get { return (string)GetValue(WatermarkProperty); }
+            set { SetValue(WatermarkProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Watermark.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty WatermarkProperty =
+            DependencyProperty.Register("Watermark", typeof(string), typeof(ResultsColumn), new PropertyMetadata(null));
+
+
         // Using a DependencyProperty as the backing store for Results.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ResultsProperty =
             DependencyProperty.Register("Results", typeof(ObservableCollection<ResultCategoryViewModel>), typeof(ResultsColumn), new PropertyMetadata(null, OnResultsChanged));

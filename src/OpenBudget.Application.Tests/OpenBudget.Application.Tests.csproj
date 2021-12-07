@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -13,9 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OpenBudget.Model.SQLite\OpenBudget.Model.SQLite.csproj" />
-    <ProjectReference Include="..\OpenBudget.Model\OpenBudget.Model.csproj" />
+    <ProjectReference Include="..\OpenBudget.Application\OpenBudget.Application.csproj" />
     <ProjectReference Include="..\OpenBudget.Tests.Shared\OpenBudget.Tests.Shared.csproj" />
   </ItemGroup>
-
+  
 </Project>

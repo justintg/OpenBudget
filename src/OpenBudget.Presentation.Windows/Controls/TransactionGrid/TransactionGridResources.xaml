@@ -3,7 +3,8 @@
                     xmlns:local="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid"
                     xmlns:columns="clr-namespace:OpenBudget.Presentation.Windows.Controls.TransactionGrid.Columns"
                     xmlns:vmCol="clr-namespace:OpenBudget.Application.ViewModels.TransactionGrid.Columns;assembly=OpenBudget.Application"
-                    xmlns:conv="clr-namespace:OpenBudget.Presentation.Windows.Converters">
+                    xmlns:conv="clr-namespace:OpenBudget.Presentation.Windows.Converters"
+                    xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls">
 
     <conv:SplitTransactionVisibilityConverter x:Key="SplitVisiblityConverter" />
 
@@ -66,7 +67,8 @@
                         SearchText="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         ResultsOpen="{Binding ShowResults, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Results="{Binding Results, Mode=OneWay}"
-                        SelectResultItemCommand="{Binding SelectResultItemCommand}"/>
+                        SelectResultItemCommand="{Binding SelectResultItemCommand}"
+                        Watermark="{Binding Column.Header}"/>
                 </DataTemplate>
             </local:TransactionGridCell.EditTemplate>
         </local:TransactionGridCell>
@@ -95,7 +97,8 @@
                         SearchText="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         ResultsOpen="{Binding ShowResults, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         Results="{Binding Results, Mode=OneWay}"
-                        SelectResultItemCommand="{Binding SelectResultItemCommand}"/>
+                        SelectResultItemCommand="{Binding SelectResultItemCommand}"
+                        Watermark="{Binding Column.Header}"/>
                 </DataTemplate>
             </local:TransactionGridCell.EditTemplate>
         </local:TransactionGridCell>
@@ -140,7 +143,7 @@
             </local:TransactionGridCell.NormalTemplate>
             <local:TransactionGridCell.EditTemplate>
                 <DataTemplate>
-                    <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Controls:TextBoxHelper.Watermark="{Binding Column.Header}" />
                 </DataTemplate>
             </local:TransactionGridCell.EditTemplate>
         </local:TransactionGridCell>
