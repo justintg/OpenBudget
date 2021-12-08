@@ -7,6 +7,7 @@
         <ResourceDictionary Source="/OpenBudget;component/Resources/Converters.xaml" />
         <ResourceDictionary Source="/Controls/BudgetEditor/BudgetEditorMasterCategoryRow.xaml" />
         <ResourceDictionary Source="/Controls/BudgetEditor/BudgetEditorCategoryRow.xaml" />
+        <ResourceDictionary Source="/Controls/BudgetEditor/BudgetEditorCategoryMonth.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <Style x:Key="EmptyButtonStyle" TargetType="Button">

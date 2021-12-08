@@ -6,19 +6,27 @@ using System.Windows.Media;
 
 namespace OpenBudget.Presentation.Windows.Controls.BudgetEditor
 {
-    /// <summary>
-    /// Interaction logic for CategoryMonth.xaml
-    /// </summary>
-    public partial class BudgetEditorCategoryMonth : UserControl
+    public class BudgetEditorCategoryMonth : Control
     {
-        public BudgetEditorCategoryMonth()
+        static BudgetEditorCategoryMonth()
         {
-            InitializeComponent();
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(BudgetEditorCategoryMonth), new FrameworkPropertyMetadata(typeof(BudgetEditorCategoryMonth)));
+        }
+
+        private TextBox _amountBudgetedTextBox = null;
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            _amountBudgetedTextBox = this.GetTemplateChild("PART_AmountBudgetedTextbox") as TextBox;
+            _amountBudgetedTextBox.PreviewMouseLeftButtonDown += AmountBudgetedTextbox_PreviewMouseLeftButtonDown;
+            _amountBudgetedTextBox.GotKeyboardFocus += AmountBudgetedTextbox_GotFocus;
         }
 
         private void AmountBudgetedTextbox_GotFocus(object sender, RoutedEventArgs e)
         {
-            AmountBudgetedTextbox.SelectAll();
+            _amountBudgetedTextBox.SelectAll();
         }
 
         private void AmountBudgetedTextbox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
