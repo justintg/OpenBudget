@@ -2,7 +2,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:OpenBudget.Avalonia.Views;assembly=OpenBudget"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="OpenBudget.Avalonia.Views.MainBudgetView">
-  Main Budget View
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="240"/>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <local:BudgetMenuView DataContext="{Binding Menu}"/>
+
+    <GridSplitter Width="3" Grid.Column="1" Grid.RowSpan="1" HorizontalAlignment="Stretch" Background="DarkBlue"/>
+
+    <ContentControl Content="{Binding CurrentScreen}" Grid.Column="2"/>
+  </Grid>
 </UserControl>

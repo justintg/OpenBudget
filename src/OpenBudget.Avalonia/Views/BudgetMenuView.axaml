@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:OpenBudget.Avalonia.Views"
+             xmlns:controls="clr-namespace:OpenBudget.Avalonia.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenBudget.Avalonia.Views.BudgetMenuView">
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="BudgetMenuBrush" Color="#00FF00" />
+  </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="controls|SelectableButton">
+      <!--
+      <Style.Triggers>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="Blue" />
+        </Trigger>
+      </Style.Triggers>-->
+      <Setter Property="Background" Value="{StaticResource BudgetMenuBrush}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Padding="{TemplateBinding Padding}"
+                            RecognizesAccessKey="True"
+                            TextBlock.Foreground="{TemplateBinding Foreground}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+
+    <Style Selector="controls|SelectableButton[IsSelected=True]">
+      <!--
+      <Style.Triggers>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="Blue" />
+        </Trigger>
+      </Style.Triggers>-->
+      <Setter Property="Background" Value="Blue" />
+    </Style>
+
+    <Style Selector="Button.AccountHeaderButton">
+    </Style>
+  </UserControl.Styles>
+  <DockPanel>
+    <Button DockPanel.Dock="Bottom" Command="{Binding AddAccountCommand}">Add Account</Button>
+
+    <StackPanel>
+      <controls:SelectableButton DataContext="{Binding BudgetViewItem}"
+                             IsSelected="{Binding IsSelected}"
+                             Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
+                             CommandParameter="{Binding}">
+        <Grid>
+          <TextBlock Text="{Binding Label}" />
+        </Grid>
+      </controls:SelectableButton>
+
+      <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 1" BorderBrush="Black">
+        <StackPanel>
+          <Button Command="{Binding ToggleOnBudgetExpandedCommand}" Classes="AccountHeaderButton" HorizontalAlignment="Stretch">
+            <DockPanel>
+              <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold" />
+              <TextBlock Text="On-Budget" FontWeight="Bold" />
+            </DockPanel>
+          </Button>
+
+          <ItemsControl Items="{Binding OnBudgetAccounts}"
+                        IsVisible="{Binding OnBudgetExpanded}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <controls:SelectableButton
+                   IsSelected="{Binding IsSelected}"
+                   Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
+                   CommandParameter="{Binding}">
+                  <DockPanel>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
+                    <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
+                  </DockPanel>
+                </controls:SelectableButton>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 0 0 1" BorderBrush="Black">
+        <StackPanel>
+          <Button Command="{Binding ToggleOffBudgetExpandedCommand}" Classes="AccountHeaderButton" HorizontalAlignment="Stretch">
+            <DockPanel>
+              <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold"/>
+              <TextBlock Text="Off-Budget" FontWeight="Bold"/>
+            </DockPanel>
+          </Button>
+
+          <ItemsControl Items="{Binding OffBudgetAccounts}"
+                        IsVisible="{Binding OffBudgetExpanded}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <controls:SelectableButton
+                   IsSelected="{Binding IsSelected}"
+                   Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
+                   CommandParameter="{Binding}">
+                  <DockPanel>
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
+                    <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
+                  </DockPanel>
+                </controls:SelectableButton>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </DockPanel>
+</UserControl>

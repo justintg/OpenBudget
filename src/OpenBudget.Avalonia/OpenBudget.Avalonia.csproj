@@ -21,8 +21,4 @@
 		<ProjectReference Include="..\OpenBudget.Model.SQLite\OpenBudget.Model.SQLite.csproj" />
 		<ProjectReference Include="..\OpenBudget.Util\OpenBudget.Util.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Views\" />
-	</ItemGroup>
 </Project>
