@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenBudget.Avalonia.Controls.BudgetEditor.MonthSelector">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="Auto"/>
+    </Grid.ColumnDefinitions>
+    <Button Content="&lt;" Command="{Binding SelectPreviousMonthCommand}"></Button>
+    <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding MonthSelector.Year}" Margin="10 0"/>
+    <ItemsControl Grid.Column="2"
+            Items="{Binding MonthSelector.Months}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <UniformGrid Columns="12"/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Button Cursor="Hand" Classes="MonthSelectorButton" Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+                      CommandParameter="{Binding}" Content="{Binding MonthName}">
+            <i:Interaction.Behaviors>
+              <ia:DataTriggerBehavior Binding="{Binding IsVisible}"
+                  ComparisonCondition="Equal"
+                  Value="True">
+                <ia:ChangePropertyAction PropertyName="Background"
+                                         Value="LightGray" />
+              </ia:DataTriggerBehavior>
+              <ia:DataTriggerBehavior Binding="{Binding IsSelected}"
+                                      ComparisonCondition="Equal"
+                                      Value="True">
+                <ia:ChangePropertyAction PropertyName="Background"
+                                         Value="Red" />
+              </ia:DataTriggerBehavior>
+            </i:Interaction.Behaviors>
+          </Button>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <Button Grid.Column="3" Content="&gt;" Command="{Binding SelectNextMonthCommand}"></Button>
+  </Grid>
+</UserControl>
