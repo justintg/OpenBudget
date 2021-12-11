@@ -36,19 +36,15 @@
     </Style>
 
     <Style Selector="controls|SelectableButton[IsSelected=True]">
-      <!--
-      <Style.Triggers>
-        <Trigger Property="IsSelected" Value="True">
-          <Setter Property="Background" Value="Blue" />
-        </Trigger>
-      </Style.Triggers>-->
       <Setter Property="Background" Value="Blue" />
     </Style>
 
     <Style Selector="Button.AccountHeaderButton">
+      <Setter Property="Background" Value="Transparent" />
     </Style>
   </UserControl.Styles>
-  <DockPanel>
+
+  <DockPanel Background="{StaticResource BudgetMenuBrush}">
     <Button DockPanel.Dock="Bottom" Command="{Binding AddAccountCommand}">Add Account</Button>
 
     <StackPanel>
@@ -61,61 +57,56 @@
         </Grid>
       </controls:SelectableButton>
 
-      <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 1" BorderBrush="Black">
-        <StackPanel>
-          <Button Command="{Binding ToggleOnBudgetExpandedCommand}" Classes="AccountHeaderButton" HorizontalAlignment="Stretch">
-            <DockPanel>
-              <TextBlock Text="{Binding OnBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold" />
-              <TextBlock Text="On-Budget" FontWeight="Bold" />
-            </DockPanel>
-          </Button>
 
-          <ItemsControl Items="{Binding OnBudgetAccounts}"
-                        IsVisible="{Binding OnBudgetExpanded}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <controls:SelectableButton
-                   IsSelected="{Binding IsSelected}"
-                   Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
-                   CommandParameter="{Binding}">
-                  <DockPanel>
-                    <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
-                    <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
-                  </DockPanel>
-                </controls:SelectableButton>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-      </Border>
+      <Button Command="{Binding ToggleOnBudgetExpandedCommand}" Classes="AccountHeaderButton" HorizontalAlignment="Stretch">
+        <DockPanel>
+          <TextBlock Text="{Binding OnBudgetBalance, StringFormat={}{0:C}}" DockPanel.Dock="Right" FontWeight="Bold" />
+          <TextBlock Text="On-Budget" FontWeight="Bold" />
+        </DockPanel>
+      </Button>
 
-      <Border Background="{StaticResource BudgetMenuBrush}" BorderThickness="0 0 0 1" BorderBrush="Black">
-        <StackPanel>
-          <Button Command="{Binding ToggleOffBudgetExpandedCommand}" Classes="AccountHeaderButton" HorizontalAlignment="Stretch">
-            <DockPanel>
-              <TextBlock Text="{Binding OffBudgetBalance, StringFormat=C}" DockPanel.Dock="Right" FontWeight="Bold"/>
-              <TextBlock Text="Off-Budget" FontWeight="Bold"/>
-            </DockPanel>
-          </Button>
+      <ItemsControl Items="{Binding OnBudgetAccounts}"
+                    IsVisible="{Binding OnBudgetExpanded}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <controls:SelectableButton
+               IsSelected="{Binding IsSelected}"
+               Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
+               CommandParameter="{Binding}">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat={}{0:C}}" />
+                <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
+              </DockPanel>
+            </controls:SelectableButton>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
 
-          <ItemsControl Items="{Binding OffBudgetAccounts}"
-                        IsVisible="{Binding OffBudgetExpanded}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <controls:SelectableButton
-                   IsSelected="{Binding IsSelected}"
-                   Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
-                   CommandParameter="{Binding}">
-                  <DockPanel>
-                    <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat=C}" />
-                    <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
-                  </DockPanel>
-                </controls:SelectableButton>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-      </Border>
+
+
+      <Button Command="{Binding ToggleOffBudgetExpandedCommand}" Classes="AccountHeaderButton" HorizontalAlignment="Stretch">
+        <DockPanel>
+          <TextBlock Text="{Binding OffBudgetBalance, StringFormat={}{0:C}}" DockPanel.Dock="Right" FontWeight="Bold"/>
+          <TextBlock Text="Off-Budget" FontWeight="Bold"/>
+        </DockPanel>
+      </Button>
+
+      <ItemsControl Items="{Binding OffBudgetAccounts}"
+                    IsVisible="{Binding OffBudgetExpanded}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <controls:SelectableButton
+               IsSelected="{Binding IsSelected}"
+               Command="{Binding DataContext.SelectMenuItemCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BudgetMenuView}}"
+               CommandParameter="{Binding}">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Payload.Balance, StringFormat={}{0:C}}" />
+                <TextBlock Text="{Binding Payload.Name}" Margin="5 0 0 0"/>
+              </DockPanel>
+            </controls:SelectableButton>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
     </StackPanel>
   </DockPanel>
 </UserControl>

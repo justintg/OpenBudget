@@ -1,0 +1,94 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="using:Avalonia.Xaml.Interactivity"
+        xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
+        xmlns:local="using:OpenBudget.Avalonia.Controls.BudgetEditor">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+  <Style Selector="Button.MonthSelectorButton">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="Transparent"
+                          BorderThickness="0"
+                          CornerRadius="0"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
+                          TextBlock.Foreground="{TemplateBinding Foreground}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="local|BudgetEditor">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="Auto,*" ColumnDefinitions="*,Auto">
+
+          <!--Header Section-->
+
+          <Grid Grid.Row="0" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+            <Grid Grid.Row="0" Grid.Column="0" Width="{TemplateBinding CategoryColumnWidth}"></Grid>
+            <Grid Grid.Row="0" Grid.Column="1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <Button Content="&lt;" Command="{Binding SelectPreviousMonthCommand}"></Button>
+              <TextBlock VerticalAlignment="Center" Grid.Column="1" Text="{Binding MonthSelector.Year}" Margin="10 0"/>
+              <ItemsControl Grid.Column="2"
+                      Items="{Binding MonthSelector.Months}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="12"/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Cursor="Hand" Classes="MonthSelectorButton" Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+                                CommandParameter="{Binding}" Content="{Binding MonthName}">
+                      <i:Interaction.Behaviors>
+                        <ia:DataTriggerBehavior Binding="{Binding IsVisible}"
+                            ComparisonCondition="Equal"
+                            Value="True">
+                          <ia:ChangePropertyAction PropertyName="Background"
+                                                   Value="LightGray" />
+                        </ia:DataTriggerBehavior>
+                        <ia:DataTriggerBehavior Binding="{Binding IsSelected}"
+                                                ComparisonCondition="Equal"
+                                                Value="True">
+                          <ia:ChangePropertyAction PropertyName="Background"
+                                                   Value="Red" />
+                        </ia:DataTriggerBehavior>
+                      </i:Interaction.Behaviors>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Button Grid.Column="3" Content="&gt;" Command="{Binding SelectNextMonthCommand}"></Button>
+            </Grid>
+          </Grid>
+        </Grid>
+
+
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

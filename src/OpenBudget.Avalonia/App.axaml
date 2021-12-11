@@ -1,7 +1,8 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="OpenBudget.Avalonia.App">
-    <Application.Styles>
-        <FluentTheme Mode="Light"/>
-    </Application.Styles>
+  <Application.Styles>
+    <FluentTheme Mode="Light"/>
+    <StyleInclude Source="avares://OpenBudget/Controls/BudgetEditor/BudgetEditor.axaml" />
+  </Application.Styles>
 </Application>

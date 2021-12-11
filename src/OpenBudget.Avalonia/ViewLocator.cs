@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using OpenBudget.Application.ViewModels;
+using OpenBudget.Application.ViewModels.BudgetEditor;
 using OpenBudget.Avalonia.Views;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace OpenBudget.Avalonia
             Map<WelcomeViewModel, WelcomeView>();
             Map<CreateBudgetViewModel, CreateBudgetView>();
             Map<MainBudgetViewModel, MainBudgetView>();
+            Map<BudgetEditorViewModel, BudgetEditorView>();
         }
 
         private void Map<TViewModel, TView>()
@@ -38,7 +40,8 @@ namespace OpenBudget.Avalonia
 
         public bool Match(object data)
         {
-            return data is ClosableViewModel;
+            if (data == null) return false;
+            return _mappings.ContainsKey(data.GetType());
         }
     }
 }

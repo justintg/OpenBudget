@@ -12,6 +12,7 @@
 		<PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0014036-beta" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.10" />
+		<PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.11.2-rc.2" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
 	</ItemGroup>
