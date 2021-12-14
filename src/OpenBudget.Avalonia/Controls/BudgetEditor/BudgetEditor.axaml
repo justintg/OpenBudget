@@ -45,6 +45,7 @@
           <Grid Grid.Row="0" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
             <Grid Grid.Row="0" Grid.Column="0" Width="{TemplateBinding CategoryColumnWidth}"></Grid>
             <local:MonthSelector Grid.Row="0" Grid.Column="1" />
+            <local:MonthHeaderPanel Grid.Row="1" Grid.Column="1" />
           </Grid>
         </Grid>
 

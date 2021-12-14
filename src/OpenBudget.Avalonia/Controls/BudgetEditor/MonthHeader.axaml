@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="OpenBudget.Avalonia.Controls.BudgetEditor.MonthHeader">
+  <Grid Background="Gray">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="2*" />
+      <ColumnDefinition Width="10" />
+      <ColumnDefinition Width="3*" />
+    </Grid.ColumnDefinitions>
+    <TextBlock Grid.ColumnSpan="3" Text="{Binding BudgetMonthView.Date, StringFormat={}{0:MMMM yyyy}}"
+               HorizontalAlignment="Center"
+               FontSize="18"
+               Margin="0 4"/>
+
+
+    <TextBlock Grid.Column="0" Grid.Row="1" Text="{Binding BudgetMonthView.NotBudgetedPreviousMonth, StringFormat={}{0:C}}" HorizontalAlignment="Right"/>
+    <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding PreviousMonthDate, StringFormat=Not Budgeted in {0:MMM}}" HorizontalAlignment="Left"
+               IsVisible="{Binding BudgetMonthView.NotBudgetedPreviousMonth, Converter={StaticResource PositiveDecimalVisibilityConverter}}"/>
+    <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding PreviousMonthDate, StringFormat=Overbudgeted in {0:MMM}}" HorizontalAlignment="Left"
+               IsVisible="{Binding BudgetMonthView.NotBudgetedPreviousMonth, Converter={StaticResource NegativeDecimalVisibilityConverter}}"/>
+
+    <TextBlock Grid.Column="0" Grid.Row="2" Text="{Binding BudgetMonthView.OverspentPreviousMonth, StringFormat={}{0:C}}" HorizontalAlignment="Right"/>
+    <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding PreviousMonthDate, StringFormat=Overspent in {0:MMM}}" HorizontalAlignment="Left"/>
+
+    <TextBlock Grid.Column="0" Grid.Row="3" Text="{Binding BudgetMonthView.IncomeThisMonth, StringFormat={}{0:C}}" HorizontalAlignment="Right"/>
+    <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding BudgetMonthView.Date, StringFormat=Income in {0:MMM}}" HorizontalAlignment="Left"/>
+
+    <TextBlock Grid.Column="0" Grid.Row="4" Text="{Binding BudgetMonthView.BudgetedThisMonth, StringFormat={}{0:C}}" HorizontalAlignment="Right"/>
+    <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding BudgetMonthView.Date, StringFormat=Budgeted in {0:MMM}}" HorizontalAlignment="Left"/>
+
+    <TextBlock Grid.Row="5" Grid.ColumnSpan="3" Margin="0 0 0 -5" FontSize="32" FontWeight="Bold" Foreground="Green" Text="{Binding BudgetMonthView.AvailableToBudget, StringFormat='={0:C}'}" HorizontalAlignment="Center"
+               IsVisible="{Binding BudgetMonthView.AvailableToBudget, Converter={StaticResource PositiveDecimalVisibilityConverter}}"/>
+
+    <TextBlock Grid.Row="5" Grid.ColumnSpan="3" Margin="0 0 0 -5" FontSize="32" FontWeight="Bold" Foreground="Red" Text="{Binding BudgetMonthView.AvailableToBudget, StringFormat='={0:C}'}" HorizontalAlignment="Center"
+               IsVisible="{Binding BudgetMonthView.AvailableToBudget, Converter={StaticResource NegativeDecimalVisibilityConverter}}"/>
+
+    <TextBlock Grid.Row="6" Grid.ColumnSpan="3" Margin="0 0 0 4" Text="Available To Budget" HorizontalAlignment="Center"
+               IsVisible="{Binding BudgetMonthView.AvailableToBudget, Converter={StaticResource PositiveDecimalVisibilityConverter}}"/>
+
+    <TextBlock Grid.Row="6" Grid.ColumnSpan="3" Margin="0 0 0 4" Text="Overbudgeted" HorizontalAlignment="Center"
+               IsVisible="{Binding BudgetMonthView.AvailableToBudget, Converter={StaticResource NegativeDecimalVisibilityConverter}}"/>
+  </Grid>
+</UserControl>

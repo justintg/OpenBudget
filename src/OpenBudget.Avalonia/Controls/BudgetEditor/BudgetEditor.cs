@@ -35,24 +35,29 @@ namespace OpenBudget.Avalonia.Controls.BudgetEditor
         public static readonly DirectProperty<BudgetEditor, double> MonthColumnWidthProperty
             = AvaloniaProperty.RegisterDirect<BudgetEditor, double>(nameof(MonthColumnWidth), o => o.MonthColumnWidth);
 
+        private double _monthMarginLeft = MONTH_MARGIN_WIDTH;
+
+        public double MonthMarginLeft
+        {
+            get { return _monthMarginLeft; }
+            protected set { SetAndRaise(MonthMarginLeftProperty, ref _monthMarginLeft, value); }
+        }
+
+        public static readonly DirectProperty<BudgetEditor, double> MonthMarginLeftProperty
+            = AvaloniaProperty.RegisterDirect<BudgetEditor, double>(nameof(MonthMarginLeft), o => o.MonthMarginLeft);
+
         static BudgetEditor()
         {
-            WidthProperty.Changed.AddClassHandler<BudgetEditor>(OnWidthChanged);
             BoundsProperty.Changed.AddClassHandler<BudgetEditor>(OnBoundsChanged);
         }
 
-        private static void OnBoundsChanged(BudgetEditor arg1, AvaloniaPropertyChangedEventArgs arg2)
+        private static void OnBoundsChanged(BudgetEditor editor, AvaloniaPropertyChangedEventArgs arg2)
         {
-            arg1.OnRenderSizeChanged();
-        }
-
-        private static void OnWidthChanged(BudgetEditor arg1, AvaloniaPropertyChangedEventArgs arg2)
-        {
+            editor.OnRenderSizeChanged();
         }
 
         public BudgetEditor()
         {
-            Button button;
         }
 
         private void OnRenderSizeChanged()
