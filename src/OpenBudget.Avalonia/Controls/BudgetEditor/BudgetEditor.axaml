@@ -8,6 +8,8 @@
       <!-- Add Controls for Previewer Here -->
     </Border>
   </Design.PreviewWith>
+  
+  <StyleInclude Source="/Controls/BudgetEditor/MasterCategoryRow.axaml" />
 
   <Style Selector="Button.MonthSelectorButton">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -47,6 +49,8 @@
             <local:MonthSelector Grid.Row="0" Grid.Column="1" />
             <local:MonthHeaderPanel Grid.Row="1" Grid.Column="1" />
           </Grid>
+
+          <local:MasterCategoryRow Grid.Row="1" />
         </Grid>
 
 

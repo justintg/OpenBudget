@@ -1,12 +1,6 @@
 ﻿using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using OpenBudget.Application.ViewModels.BudgetEditor;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenBudget.Avalonia.Controls.BudgetEditor
 {
