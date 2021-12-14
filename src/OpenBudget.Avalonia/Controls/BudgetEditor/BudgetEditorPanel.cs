@@ -15,10 +15,17 @@ namespace OpenBudget.Avalonia.Controls.BudgetEditor
         {
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _budgetEditor = this.FindAncestorOfType<BudgetEditor>();
+        }
+
+        private BudgetEditor _budgetEditor;
 
         protected BudgetEditor FindBudgetEditor()
         {
-            return this.FindAncestorOfType<BudgetEditor>();
+            return _budgetEditor;
         }
 
         protected override Size MeasureOverride(Size availableSize)
