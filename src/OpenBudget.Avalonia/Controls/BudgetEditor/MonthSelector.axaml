@@ -4,8 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
+             xmlns:local="clr-namespace:OpenBudget.Avalonia.Controls.BudgetEditor;assembly=OpenBudget"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="OpenBudget.Avalonia.Controls.BudgetEditor.MonthSelector">
+             x:Class="OpenBudget.Avalonia.Controls.BudgetEditor.MonthSelector"
+             >
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="Auto"/>
@@ -19,13 +21,17 @@
             Items="{Binding MonthSelector.Months}">
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
-          <UniformGrid Columns="12"/>
+          <!--          <UniformGrid Columns="12"/>-->
+          <local:UniformStackPanel />
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <Button Cursor="Hand" Classes="MonthSelectorButton" Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
-                      CommandParameter="{Binding}" Content="{Binding MonthName}">
+          <Button Cursor="Hand" Classes="MonthSelectorButton" 
+                  Command="{Binding Path=DataContext.MonthSelector.MonthSelectedCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}"
+                  CommandParameter="{Binding}"
+                  Content="{Binding MonthName}"
+                  >
             <i:Interaction.Behaviors>
               <ia:DataTriggerBehavior Binding="{Binding IsVisible}"
                   ComparisonCondition="Equal"

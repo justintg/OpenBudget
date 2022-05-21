@@ -8,7 +8,7 @@
       <!-- Add Controls for Previewer Here -->
     </Border>
   </Design.PreviewWith>
-  
+
   <StyleInclude Source="/Controls/BudgetEditor/MasterCategoryRow.axaml" />
 
   <Style Selector="Button.MonthSelectorButton">
@@ -50,7 +50,13 @@
             <local:MonthHeaderPanel Grid.Row="1" Grid.Column="1" />
           </Grid>
 
-          <local:MasterCategoryRow Grid.Row="1" />
+          <ItemsControl Grid.Row="1" Items="{Binding MasterCategories}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <local:MasterCategoryRow Grid.Row="1" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
         </Grid>
 
 

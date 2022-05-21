@@ -12,7 +12,8 @@
         <DockPanel>
           <TextBlock DockPanel.Dock="Left" 
                      Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:BudgetEditor}}}"
-                     Background="Blue">Row</TextBlock>
+                     Background="Blue"
+                     Text="{Binding Path=MasterCategory.Name}"></TextBlock>
           <TextBlock>Content</TextBlock>
         </DockPanel>
       </ControlTemplate>

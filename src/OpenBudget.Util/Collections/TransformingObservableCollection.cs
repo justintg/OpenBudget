@@ -14,6 +14,7 @@ namespace OpenBudget.Util.Collections
         private INotifyCollectionChanged _collectionChanged;
         private Dictionary<TSource, TTransformed> _mapping;
         private List<TTransformed> _transformedCollection;
+        private bool _disposed = false;
         Func<TSource, TTransformed> _onAddAction;
         Action<TTransformed> _onRemovedAction;
         private bool _listenForChanges;
@@ -401,18 +402,19 @@ namespace OpenBudget.Util.Collections
             _sourceCollection = null;
             _transformedCollection = null;
             _mapping = null;
+            _disposed = true;
         }
 
         IEnumerator<TTransformed> IEnumerable<TTransformed>.GetEnumerator()
         {
             if (ReturnEmptyOnEmuerate) return Enumerable.Empty<TTransformed>().GetEnumerator();
-            return _transformedCollection.GetEnumerator();
+            return _transformedCollection?.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             if (ReturnEmptyOnEmuerate) return Enumerable.Empty<TTransformed>().GetEnumerator();
-            return _transformedCollection.GetEnumerator();
+            return _transformedCollection?.GetEnumerator();
         }
 
         public int IndexOf(TTransformed item) => _transformedCollection.IndexOf(item);
