@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:local="using:OpenBudget.Avalonia.Controls.BudgetEditor"
+             x:Class="OpenBudget.Avalonia.Controls.BudgetEditor.CategoryMonth">
+  <local:UniformStackPanel>
+    <TextBox Text="{Binding AmountBudgeted, Mode=TwoWay}" />
+    <TextBlock Text="{Binding CategoryMonthView.TransactionsInMonth, Converter={StaticResource DecimalToStringConverter}}" HorizontalAlignment="Right" Padding="0 0 5 0" />
+    <TextBlock Text="{Binding CategoryMonthView.EndBalance, Converter={StaticResource DecimalToStringConverter}}" HorizontalAlignment="Right" Padding="0 0 5 0" />
+  </local:UniformStackPanel>
+</UserControl>

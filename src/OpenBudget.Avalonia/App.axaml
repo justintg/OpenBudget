@@ -10,5 +10,6 @@
     <conv:DecimalToVisibilityConverter x:Key="PositiveDecimalVisibilityConverter" Zero="True" GreaterThanZero="True" LessThanZero="False" />
     <conv:DecimalToVisibilityConverter x:Key="NegativeDecimalVisibilityConverter" Zero="False" GreaterThanZero="False" LessThanZero="True" />
     <conv:BudgetEditorMonthMarginConverter x:Key="BudgetEditorMonthMarginConverter" />
+    <conv:DecimalToStringConverter x:Key="DecimalToStringConverter" />
   </Application.Resources>
 </Application>

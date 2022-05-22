@@ -9,6 +9,7 @@
     </Border>
   </Design.PreviewWith>
 
+  <StyleInclude Source="/Controls/BudgetEditor/CategoryRow.axaml" />
   <StyleInclude Source="/Controls/BudgetEditor/MasterCategoryRow.axaml" />
 
   <Style Selector="Button.MonthSelectorButton">

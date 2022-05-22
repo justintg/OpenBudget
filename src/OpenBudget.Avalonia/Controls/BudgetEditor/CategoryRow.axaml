@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:OpenBudget.Avalonia.Controls.BudgetEditor">
+        xmlns:controls="using:OpenBudget.Avalonia.Controls.BudgetEditor"
+        xmlns:local="using:OpenBudget.Avalonia.Controls.BudgetEditor">
   <Design.PreviewWith>
     <controls:CategoryRow />
   </Design.PreviewWith>
@@ -9,7 +10,24 @@
     <!-- Set Defaults -->
     <Setter Property="Template">
       <ControlTemplate>
-        <TextBlock Text="Templated Control" />
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Left"
+                     Width="{Binding Path=CategoryColumnWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:BudgetEditor}}}"
+                     Text="{Binding Path=Category.Name}"></TextBlock>
+          <ItemsControl
+            Items="{Binding CategoryMonthViews}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <local:BudgetEditorPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <local:CategoryMonth />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </DockPanel>
       </ControlTemplate>
     </Setter>
   </Style>

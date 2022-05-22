@@ -25,11 +25,7 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <local:UniformStackPanel>
-                    <TextBlock Text="Text1" />
-                    <TextBlock Text="Text2" />
-                    <TextBlock Text="Text3" HorizontalAlignment="Right"/>
-                  </local:UniformStackPanel>
+                  <local:MasterCategoryMonth />
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -38,7 +34,7 @@
           <ItemsControl Items="{Binding Categories}" Grid.Row="1">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding Category.Name}" />
+                <local:CategoryRow />
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
