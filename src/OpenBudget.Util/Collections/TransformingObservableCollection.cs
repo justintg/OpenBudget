@@ -300,7 +300,7 @@ namespace OpenBudget.Util.Collections
             {
                 _transformedCollection.Add(transformed);
                 TTransformed[] newItems = new TTransformed[] { transformed };
-                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems.ToList());
+                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems.ToList(), _transformedCollection.Count - 1);
                 CollectionChanged?.Invoke(this, args);
             }
 
